@@ -55,3 +55,8 @@ Oprava: nová politika `Parents view moved-in sessions`.
 2. `src/pages/ParentDashboard.tsx`
 
 Migrácia musí prebehnúť skôr, inak RPC `training_day_overview` neexistuje.
+
+## Kde je kanonický kód
+
+Tento adresár je len kópia. Zmeny sú zlúčené do `XxxAnDrei/ctvz` vetva `main`
+(commit 5e32e73). Migrácia je aplikovaná na Supabase projekt ctvz.
