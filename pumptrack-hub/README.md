@@ -49,14 +49,46 @@ Oprava: nová politika `Parents view moved-in sessions`.
     sa pre presunutý tréning nenačítali a tlačidlo Neprítomnosť malo zlý stav),
   - nový odsek **Ostatné skupiny** s rozklikávacími oknami pre jednotlivé skupiny.
 
+## 3. Presuny v trénerských pohľadoch
+
+Súpisku podľa `riders.group_id` staval aj `Attendance.tsx` a `AdminDashboard.tsx`
+(domovská stránka trénera – role `admin`), takže presunutý jazdec chýbal v cieľovej
+skupine a stále sa počítal do pôvodnej. `Trainings.tsx` to riešil už predtým.
+
+- `Attendance.tsx` – `getRidersForSession()` ako v `Trainings.tsx`; počty sa rátajú
+  len zo súpisky daného tréningu, takže staré odhlásenie presunutého jazdca
+  neskresľuje výsledok. Hosť má odznak „z &lt;domovská skupina&gt;“.
+- `AdminDashboard.tsx` – súpisky a stav prítomnosti berie z RPC
+  `training_day_overview`, rovnako ako rodičovský pohľad. Odznak „presun“.
+
+Miesta, kde `group_id` zostáva správne (trvalé zaradenie, nie denná súpiska):
+správa jazdcov, platby, časové sloty skupín, lap times.
+
+## 4. Notifikácie rodičom o zmenách tréningu
+
+Zmena miesta sa ukladala, ale nezaradila sa medzi zmeny spúšťajúce notifikáciu –
+`notifyTrainingChange` skončil na prázdnom poli, takže neodišiel ani push, ani
+email. Bez notifikácie bolo aj obnovenie zrušeného tréningu a jeho vymazanie.
+
+- `Trainings.tsx` – porovnanie `location` → `kind: "location"`; `restoreSession`
+  posiela `restored`; `deleteSession` posiela `deleted` **pred** zmazaním, lebo
+  edge funkcia si tréning dohľadáva podľa id.
+- `notify-training-change` – nové typy `location` / `restored` / `deleted`,
+  jedna súhrnná správa za celé uloženie namiesto jednej za každú zmenu, a do
+  správ pribudol aktuálny stav tréningu (dátum, čas od–do, miesto, tréner).
+
+Email je pre klub hlavný kanál: z 37 rodičov má PWA push len 7.
+`sendEmail` sa potichu preskočí, ak chýba secret `BREVO_API_KEY`.
+
 ## Nasadenie
 
 1. `supabase/migrations/20260731090000_parent_moved_sessions_and_day_overview.sql`
-2. `src/pages/ParentDashboard.tsx`
-
-Migrácia musí prebehnúť skôr, inak RPC `training_day_overview` neexistuje.
+   (musí prebehnúť skôr, inak RPC `training_day_overview` neexistuje)
+2. `src/pages/ParentDashboard.tsx`, `Attendance.tsx`, `AdminDashboard.tsx`,
+   `Trainings.tsx`
+3. edge funkcia `notify-training-change` (samostatný deploy, nestačí frontend)
 
 ## Kde je kanonický kód
 
 Tento adresár je len kópia. Zmeny sú zlúčené do `XxxAnDrei/ctvz` vetva `main`
-(commit 5e32e73). Migrácia je aplikovaná na Supabase projekt ctvz.
+(commit 83699c9). Migrácia je aplikovaná na Supabase projekt ctvz.
