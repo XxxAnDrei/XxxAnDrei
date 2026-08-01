@@ -115,4 +115,5 @@ AS $function$
 $function$;
 
 REVOKE ALL ON FUNCTION public.training_day_overview(date) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.training_day_overview(date) FROM anon;
 GRANT EXECUTE ON FUNCTION public.training_day_overview(date) TO authenticated;
