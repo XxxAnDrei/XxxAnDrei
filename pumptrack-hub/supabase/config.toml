@@ -1,0 +1,30 @@
+project_id = "ahuszqknzgghrpyqzugz"
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.send-push]
+verify_jwt = false
+
+[functions.training-reminders]
+verify_jwt = false
+
+[functions.notify-training-change]
+verify_jwt = false
+
+[functions.parent-account]
+verify_jwt = false
+
+# Verejný endpoint — volá sa z prihlasovacej obrazovky, kde ešte nie je session.
+[functions.request-password-reset]
+verify_jwt = false
+
+[functions.payment-automations]
+verify_jwt = false
+
+[functions.export-backup]
+verify_jwt = false
+
+
+
+

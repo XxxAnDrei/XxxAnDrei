@@ -80,15 +80,53 @@ email. Bez notifikácie bolo aj obnovenie zrušeného tréningu a jeho vymazanie
 Email je pre klub hlavný kanál: z 37 rodičov má PWA push len 7.
 `sendEmail` sa potichu preskočí, ak chýba secret `BREVO_API_KEY`.
 
+## 5. Obnovenie hesla („Zabudnuté heslo?“)
+
+Symptóm bol „po kliknutí sa nič nestane“. Tlačidlo pritom fungovalo –
+v `auth.users` malo `recovery_sent_at` vyplnené 4 účtov.
+
+Príčina: aplikácia používa shadcn `useToast` (16 súborov), ale v `App.tsx`
+bol pripojený len `<Sonner/>`. Shadcn `<Toaster/>` nebol v strome nikde,
+takže sa nevykreslil **žiadny** toast z `useToast` – ani pri prihlásení,
+dochádzke či tréningoch. Oprava je jednoriadková, dopad má na celú appku.
+
+Reset hesla zároveň prešiel z `supabase.auth.resetPasswordForEmail()` na
+vlastnú edge funkciu `request-password-reset`:
+
+- email cez Brevo z klubovej adresy v CTVZ brandingu, nie cez vstavaný mailer,
+- cieľ odkazu berie server zo `SITE_URL` (prípadne `APP_URL`); klient ho
+  neposiela, takže sa nedá presmerovať recovery token na cudziu doménu,
+- rate limit 3/hod na email a 10/hod na IP,
+- odpoveď vždy `{ ok: true }` s minimálnym trvaním 700 ms – cez endpoint sa
+  nedá zisťovať, ktoré adresy majú konto (ani obsahom, ani časom odpovede),
+- email a IP sa ukladajú len ako SHA-256,
+- `password_reset_attempts` má RLS zapnuté a zámerne **nula policy**, práva
+  odobrané `anon` aj `authenticated` – dostane sa k nej len `service_role`.
+
+`ResetPassword.tsx` navyše zobrazí dôvod, keď je odkaz expirovaný alebo už
+použitý; predtým ukazoval mätúce „Otvorte odkaz z emailu na tomto zariadení“.
+
 ## Nasadenie
 
-1. `supabase/migrations/20260731090000_parent_moved_sessions_and_day_overview.sql`
-   (musí prebehnúť skôr, inak RPC `training_day_overview` neexistuje)
-2. `src/pages/ParentDashboard.tsx`, `Attendance.tsx`, `AdminDashboard.tsx`,
-   `Trainings.tsx`
-3. edge funkcia `notify-training-change` (samostatný deploy, nestačí frontend)
+1. Migrácie:
+   - `20260731090000_parent_moved_sessions_and_day_overview.sql`
+     (musí prebehnúť skôr, inak RPC `training_day_overview` neexistuje)
+   - `20260801120000_password_reset_attempts.sql`
+2. Frontend: `ParentDashboard.tsx`, `Attendance.tsx`, `AdminDashboard.tsx`,
+   `Trainings.tsx`, `App.tsx`, `Login.tsx`, `ResetPassword.tsx`
+3. Edge funkcie – samostatný deploy, nasadenie frontendu ich neaktualizuje:
+   - `notify-training-change`
+   - `request-password-reset` (musí mať `verify_jwt = false`)
+4. Secrets: `BREVO_API_KEY`, `SITE_URL` (alebo `APP_URL`).
+   Voliteľne `EMAIL_FROM_NAME` – default je „CTVZ Platby“, čo pri emaile
+   o hesle znie zvláštne.
+5. Supabase → Authentication → URL Configuration: Site URL a Redirect URLs
+   musia sedieť s adresou aplikácie (`https://ctvz.vercel.app`), inak GoTrue
+   recovery odkaz zahodí a presmeruje na prihlásenie bez tokenu.
 
 ## Kde je kanonický kód
 
-Tento adresár je len kópia. Zmeny sú zlúčené do `XxxAnDrei/ctvz` vetva `main`
-(commit 83699c9). Migrácia je aplikovaná na Supabase projekt ctvz.
+Tento adresár je len kópia pre dokumentáciu. Ostrý kód je v
+`XxxAnDrei/ctvz` vetva `main` (commit a627e0e); tam sú zmeny zlúčené
+a odtiaľ sa nasadzuje. Obe migrácie sú aplikované na Supabase projekt
+`ahuszqknzgghrpyqzugz`. Appka beží na Verceli (`https://ctvz.vercel.app`).
