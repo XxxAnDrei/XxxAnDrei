@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Loader2, KeyRound } from "lucide-react";
+import { Loader2, KeyRound, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ctvzLogo from "@/assets/ctvz-logo.png";
 
@@ -14,6 +14,7 @@ const ResetPassword = () => {
   const [confirm, setConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -108,16 +109,40 @@ const ResetPassword = () => {
               </p>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Náhľad hesla — jeden prepínač ovláda obe polia, nech si používateľ
+                    vie skontrolovať, čo naozaj napísal. */}
                 <div className="space-y-2">
                   <Label htmlFor="pwd">Nové heslo</Label>
-                  <Input id="pwd" type="password" value={password} minLength={10}
-                    onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" />
-                  <p className="text-xs text-muted-foreground">Min. 10 znakov. Uniknuté heslá sú blokované.</p>
+                  <div className="relative">
+                    <Input id="pwd" type={showPassword ? "text" : "password"} value={password} minLength={10}
+                      onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password"
+                      className="pr-10" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? "Skryť heslo" : "Zobraziť heslo"}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Min. 10 znakov.</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="pwd2">Zopakovať heslo</Label>
-                  <Input id="pwd2" type="password" value={confirm} minLength={10}
-                    onChange={(e) => setConfirm(e.target.value)} required autoComplete="new-password" />
+                  <div className="relative">
+                    <Input id="pwd2" type={showPassword ? "text" : "password"} value={confirm} minLength={10}
+                      onChange={(e) => setConfirm(e.target.value)} required autoComplete="new-password"
+                      className="pr-10" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? "Skryť heslo" : "Zobraziť heslo"}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
