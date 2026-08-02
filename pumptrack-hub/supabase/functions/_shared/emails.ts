@@ -1,9 +1,12 @@
 // _shared/emails.ts — odosielanie emailov cez Brevo (Sendinblue) + HTML šablóny (CTVZ branding)
 const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
 
-export async function sendEmail(to: string, subject: string, html: string) {
+// Vracia true, keď Brevo správu naozaj prijalo. Väčšina volajúcich to nerieši,
+// ale pri prístupových údajoch je rozdiel medzi "odoslané" a "tichý neúspech"
+// podstatný — bez emailu sa rodič k heslu nedostane.
+export async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
   const key = Deno.env.get("BREVO_API_KEY");
-  if (!key) { console.warn("BREVO_API_KEY chýba — email neodoslaný:", subject); return; }
+  if (!key) { console.warn("BREVO_API_KEY chýba — email neodoslaný:", subject); return false; }
   const fromEmail = Deno.env.get("EMAIL_FROM") ?? "info@ctvz.sk";
   // Odosielateľ je celý klub, nie „platby“ — cez tento modul chodia aj
   // notifikácie o tréningoch a obnovenie hesla.
@@ -18,7 +21,11 @@ export async function sendEmail(to: string, subject: string, html: string) {
       htmlContent: html,
     }),
   });
-  if (!res.ok) console.error("Brevo error:", await res.text());
+  if (!res.ok) {
+    console.error("Brevo error:", await res.text());
+    return false;
+  }
+  return true;
 }
 
 const eur = (cents: number) => (cents / 100).toFixed(2).replace(".", ",") + " €";
@@ -133,6 +140,45 @@ export function communicationEmail({ settings, bodyHtml, senderName }: any) {
   return shell(`
     ${bodyHtml}
     ${senderName ? `<p style="margin:20px 0 0;color:#6b7180;">${senderName}<br><span style="font-size:12px;">${settings?.club_name ?? ""}</span></p>` : ""}
+  `, settings);
+}
+
+// ── Nové konto rodiča (dočasné heslo) ──
+// Heslo generujeme z alfanumerickej abecedy, takže sa v HTML nemusí escapovať.
+export function newParentAccountEmail({ settings, email, password }: any) {
+  const clubName = settings?.club_name ?? "Cyklo Team Veľké Zálužie";
+  const loginUrl = APP_BASE ? `${APP_BASE}/login` : "";
+  return shell(`
+    <h2 style="margin:0 0 8px;font-size:18px;">Vitajte v ${clubName}</h2>
+    <p style="margin:0 0 16px;">
+      Vytvorili sme vám konto v klubovej aplikácii. Nájdete v nej tréningy vášho
+      dieťaťa, môžete ho odhlásiť z tréningu a vidíte platby.
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;margin:0 0 16px;">
+      <tr>
+        <td style="padding:8px 0;color:#6b7180;">Prihlasovací email</td>
+        <td style="padding:8px 0;text-align:right;font-weight:bold;">${email}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;color:#6b7180;border-top:1px solid #e4e8f0;">Dočasné heslo</td>
+        <td style="padding:8px 0;text-align:right;border-top:1px solid #e4e8f0;">
+          <span style="font-family:Consolas,Menlo,monospace;font-size:16px;font-weight:bold;letter-spacing:1px;">${password}</span>
+        </td>
+      </tr>
+    </table>
+    ${loginUrl ? `<p style="margin:0 0 20px;">
+      <a href="${loginUrl}" style="display:inline-block;background:#1A75E6;color:#ffffff;
+         text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:bold;">
+        Prihlásiť sa
+      </a>
+    </p>` : ""}
+    <p style="margin:0 0 8px;color:#6b7180;font-size:12px;">
+      Po prihlásení vás aplikácia rovno vyzve, aby ste si nastavili vlastné heslo.
+      Dočasné heslo tým prestane platiť.
+    </p>
+    <p style="margin:0;color:#6b7180;font-size:12px;">
+      Toto heslo nikomu neposielajte ďalej.
+    </p>
   `, settings);
 }
 

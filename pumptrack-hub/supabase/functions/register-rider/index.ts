@@ -2,6 +2,21 @@
 // zmena emailu, prilinkovanie/odlinkovanie druhého rodiča.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendEmail, newParentAccountEmail } from "../_shared/emails.ts";
+
+// Dočasné heslo pre nové konto. Bez znakov, ktoré sa dajú zameniť (0/O, 1/l/I),
+// a bez symbolov — nech sa dá bez problémov prepísať aj z mobilu a nemusí sa
+// escapovať v HTML emailu. 12 znakov z 56-znakovej abecedy ≈ 69 bitov entropie.
+function generateTempPassword() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  const buf = new Uint32Array(12);
+  crypto.getRandomValues(buf);
+  const chars = [...buf].map((n) => alphabet[n % alphabet.length]);
+  // Rozdelené po štvoriciach kvôli čitateľnosti: napr. Kf3n-Qw8p-Zr2t
+  return [chars.slice(0, 4), chars.slice(4, 8), chars.slice(8, 12)]
+    .map((g) => g.join(""))
+    .join("-");
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,7 +96,8 @@ serve(async (req) => {
       }, { onConflict: "rider_id,parent_user_id" });
       if (linkErr) return j({ error: linkErr.message }, 500);
 
-      return j({ success: true, parent_user_id: parentUserId.id, is_new_user: parentUserId.isNew });
+      return j({ success: true, parent_user_id: parentUserId.id, is_new_user: parentUserId.isNew,
+                 credentials_email_sent: parentUserId.emailSent ?? false });
     }
 
     // ── Odlinkovanie druhého rodiča (hlavného nedá) ────────────────────
@@ -136,7 +152,7 @@ serve(async (req) => {
     if (riderError) return j({ error: riderError.message }, 500);
 
     // Druhý rodič — voliteľný
-    let secondaryInfo: { parent_user_id: string; is_new_user: boolean } | null = null;
+    let secondaryInfo: { parent_user_id: string; is_new_user: boolean; credentials_email_sent: boolean } | null = null;
     if (second_email && String(second_email).trim()) {
       const secondary = await findOrCreateParent(admin, {
         email: String(second_email).trim(),
@@ -147,7 +163,8 @@ serve(async (req) => {
         await admin.from("rider_parents").upsert({
           rider_id: rider.id, parent_user_id: secondary.id, is_primary: false,
         }, { onConflict: "rider_id,parent_user_id" });
-        secondaryInfo = { parent_user_id: secondary.id, is_new_user: secondary.isNew };
+        secondaryInfo = { parent_user_id: secondary.id, is_new_user: secondary.isNew,
+                          credentials_email_sent: secondary.emailSent ?? false };
       }
     }
 
@@ -155,6 +172,7 @@ serve(async (req) => {
       rider,
       parent_user_id: primaryUserId,
       is_new_user: primary.isNew,
+      credentials_email_sent: primary.emailSent ?? false,
       secondary: secondaryInfo,
     });
   } catch (err) {
@@ -167,7 +185,7 @@ async function findOrCreateParent(admin: any, args: {
   email: string;
   first_name?: string | null;
   last_name?: string | null;
-}): Promise<{ ok: true; id: string; isNew: boolean } | { ok: false; error: string }> {
+}): Promise<{ ok: true; id: string; isNew: boolean; emailSent?: boolean } | { ok: false; error: string }> {
   const email = args.email.trim().toLowerCase();
   const fullName = fullNameOf(args.first_name, args.last_name, null);
 
@@ -181,10 +199,13 @@ async function findOrCreateParent(admin: any, args: {
     return { ok: true, id: existing.id, isNew: false };
   }
 
-  // Vytvor nového (dočasné heslo "rodič123")
+  // Vytvor nového. Každý účet dostane vlastné náhodné dočasné heslo — predtým
+  // mali všetci rovnaké "rodič123", ktoré bolo navyše napísané v admin rozhraní,
+  // takže sa do nového konta vedel prihlásiť ktokoľvek skôr než sám rodič.
+  const tempPassword = generateTempPassword();
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email,
-    password: "rodič123",
+    password: tempPassword,
     email_confirm: true,
     user_metadata: { full_name: fullName || email },
   });
@@ -196,13 +217,22 @@ async function findOrCreateParent(admin: any, args: {
   // Rola 'parent'
   await admin.from("user_roles").insert({ user_id: userId, role: "parent" });
 
-  // Meno + vynútená zmena hesla.
-  // Každý nový účet dostáva rovnaké dočasné heslo "rodič123", takže zmenu
-  // vynucujeme vždy. Predtým to bolo voliteľné a volajúci ju žiadal len pre
-  // druhého rodiča — hlavný rodič tak zostal s verejne známym heslom natrvalo.
+  // Meno + vynútená zmena hesla. Dočasné heslo platí len po prvé prihlásenie,
+  // potom appka rodiča presmeruje na nastavenie vlastného.
   const updates: Record<string, unknown> = { must_change_password: true };
   if (fullName) updates.full_name = fullName;
   await admin.from("profiles").update(updates).eq("id", userId);
 
-  return { ok: true, id: userId, isNew: true };
+  // Prihlasovacie údaje pošli rodičovi. Heslo nikam nelogujeme.
+  let emailSent = false;
+  try {
+    const { data: settings } = await admin
+      .from("payment_settings").select("*").eq("id", 1).maybeSingle();
+    const html = newParentAccountEmail({ settings, email, password: tempPassword });
+    emailSent = await sendEmail(email, `Prístup do aplikácie — ${settings?.club_name ?? "CTVZ"}`, html);
+  } catch (e) {
+    console.error("Nepodarilo sa odoslať prístupové údaje", (e as Error).message);
+  }
+
+  return { ok: true, id: userId, isNew: true, emailSent };
 }

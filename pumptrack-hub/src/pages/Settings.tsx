@@ -266,7 +266,7 @@ export default function Settings() {
             <div className="space-y-2">
               <Label htmlFor="np">Nové heslo</Label>
               <Input id="np" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} required minLength={10} autoComplete="new-password" />
-              <p className="text-xs text-muted-foreground">Min. 10 znakov. Uniknuté heslá sú blokované.</p>
+              <p className="text-xs text-muted-foreground">Min. 10 znakov.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="np2">Zopakovať nové heslo</Label>
