@@ -6,6 +6,7 @@
 --    skupiny dieťaťa (r.group_id = training_sessions.group_id). Pri presune
 --    patrí cieľový tréning inej skupine, takže SELECT vrátil prázdny výsledok
 --    a v konte rodiča sa nezobrazilo nič.
+DROP POLICY IF EXISTS "Parents view moved-in sessions" ON public.training_sessions;
 CREATE POLICY "Parents view moved-in sessions"
 ON public.training_sessions
 FOR SELECT
