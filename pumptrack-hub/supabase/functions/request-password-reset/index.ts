@@ -107,12 +107,22 @@ Deno.serve(async (req) => {
       options: { redirectTo: `${appUrl}/reset-password` },
     });
     // Neexistujúci účet: mlčky končíme, navonok nerozoznateľné od úspechu.
-    if (linkErr || !linkData?.properties?.action_link) return await respond();
+    if (linkErr || !linkData?.properties) return await respond();
+
+    // Odkaz staviame na vlastnú doménu a token overíme sami cez verifyOtp.
+    // Hotový action_link vedie cez /auth/v1/verify, ktorý cieľ presmerovania
+    // porovnáva s allow-listom v Auth nastaveniach — ak tam nie je, používateľa
+    // to vyhodí na Site URL, teda na prihlásenie. Takto na tom nezávisíme.
+    const props = linkData.properties as { hashed_token?: string; action_link?: string };
+    const link = props.hashed_token
+      ? `${appUrl}/reset-password?token_hash=${encodeURIComponent(props.hashed_token)}&type=recovery`
+      : props.action_link;
+    if (!link) return await respond();
 
     const { data: settings } = await admin
       .from("payment_settings").select("*").eq("id", 1).maybeSingle();
 
-    const html = passwordResetEmail({ settings, link: linkData.properties.action_link });
+    const html = passwordResetEmail({ settings, link });
     const subj = `Obnovenie hesla — ${(settings as any)?.club_name ?? "CTVZ"}`;
     try {
       await sendEmail(email, subj, html);

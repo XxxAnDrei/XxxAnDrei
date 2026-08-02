@@ -33,6 +33,26 @@ const ResetPassword = () => {
       return;
     }
 
+    // Náš odkaz z emailu nesie token_hash a overujeme ho sami. Nezávisíme tak na
+    // allow-liste presmerovaní v Auth nastaveniach, ktorý inak používateľa vyhodí
+    // na prihlasovaciu obrazovku namiesto tohto formulára.
+    const q = new URLSearchParams(window.location.search);
+    const tokenHash = q.get("token_hash");
+    if (tokenHash && q.get("type") === "recovery") {
+      supabase.auth
+        .verifyOtp({ token_hash: tokenHash, type: "recovery" })
+        .then(({ error }) => {
+          if (error) {
+            setLinkError("Odkaz je neplatný alebo mu vypršala platnosť. Vyžiadajte si nový.");
+            return;
+          }
+          setReady(true);
+          // Token preč z adresného riadka — nech neostane v histórii ani v referrer.
+          window.history.replaceState({}, "", "/reset-password");
+        });
+      return;
+    }
+
     // Supabase auto-detects recovery hash and creates a temporary session.
     supabase.auth.getSession().then(({ data }) => {
       setReady(!!data.session);
