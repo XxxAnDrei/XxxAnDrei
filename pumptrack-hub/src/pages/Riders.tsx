@@ -270,7 +270,16 @@ export default function Riders() {
     if (res.error) {
       toast({ title: "Nepodarilo sa prilinkovať", description: res.error.message, variant: "destructive" });
     } else {
-      toast({ title: "Rodič prilinkovaný" });
+      const d: any = res.data;
+      toast({
+        title: "Rodič prilinkovaný",
+        description: !d?.is_new_user
+          ? "Konto už existovalo, prihlasuje sa svojím heslom."
+          : d?.credentials_email_sent
+            ? "Poslali sme mu email s prihlasovacími údajmi."
+            : "Konto sa vytvorilo, ale email s údajmi sa nepodarilo odoslať. Nech použije „Zabudnuté heslo?“.",
+        variant: d?.is_new_user && !d?.credentials_email_sent ? "destructive" : undefined,
+      });
       setLinkEmail(""); setLinkFirst(""); setLinkLast(""); setLinkOpen(false);
       await loadLinkedParents(editing.id);
     }
@@ -402,14 +411,23 @@ export default function Riders() {
         // povieme, či odišiel — a komu prípadne neodišiel.
         const noEmail: string[] = [];
         const withEmail: string[] = [];
-        if (data?.is_new_user) (data?.credentials_email_sent ? withEmail : noEmail).push("rodičovi");
-        if (data?.secondary?.is_new_user) {
-          (data?.secondary?.credentials_email_sent ? withEmail : noEmail).push("druhému rodičovi");
+        const existing: string[] = [];
+        const classify = (isNew: boolean, sent: boolean, label: string) => {
+          if (!isNew) existing.push(label);
+          else (sent ? withEmail : noEmail).push(label);
+        };
+        classify(!!data?.is_new_user, !!data?.credentials_email_sent, "rodičovi");
+        if (addSecondParent && secondEmail.trim()) {
+          classify(!!data?.secondary?.is_new_user, !!data?.secondary?.credentials_email_sent, "druhému rodičovi");
         }
         const parts: string[] = [];
         if (withEmail.length) parts.push(`Prihlasovacie údaje sme poslali ${withEmail.join(" aj ")}.`);
         if (noEmail.length) {
           parts.push(`Email s údajmi sa nepodarilo odoslať ${noEmail.join(" ani ")} — nech použije „Zabudnuté heslo?“.`);
+        }
+        // Bez tohto to vyzerá, že email zlyhal — pritom sme ho zámerne neposlali.
+        if (existing.length) {
+          parts.push(`Konto už existovalo ${existing.join(" aj ")}, prihlasuje sa svojím heslom.`);
         }
         toast({
           title: "Jazdec vytvorený",
