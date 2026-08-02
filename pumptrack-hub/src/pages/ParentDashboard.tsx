@@ -35,6 +35,30 @@ interface RosterRider {
   guest: boolean;
 }
 
+// Odpoveď na udalosť
+type RsvpResponse = "yes" | "maybe" | "no";
+
+const RSVP_ORDER: RsvpResponse[] = ["yes", "maybe", "no"];
+const RSVP_LABELS: Record<RsvpResponse, string> = {
+  yes: "Zúčastníme sa",
+  maybe: "Možno",
+  no: "Nezúčastníme sa",
+};
+// Nadpisy v prehľade odpovedí — tam ide o jednotlivé deti, nie o rodinu.
+const RSVP_HEADINGS: Record<RsvpResponse, string> = {
+  yes: "Zúčastnia sa",
+  maybe: "Možno",
+  no: "Nezúčastnia sa",
+};
+
+interface EventResponseRow {
+  rider_id: string | null;
+  rider_name: string | null;
+  group_name: string | null;
+  parent_name: string | null;
+  response: RsvpResponse;
+}
+
 interface DaySession {
   id: string;
   group_id: string;
@@ -101,9 +125,12 @@ export default function ParentDashboard() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [absences, setAbsences] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
-  const [myRsvps, setMyRsvps] = useState<Record<string, { id: string; rider_ids: string[] }>>({});
+  const [myRsvps, setMyRsvps] = useState<Record<string, { id: string; rider_ids: string[]; response: RsvpResponse }>>({});
   const [rsvpDialogEventId, setRsvpDialogEventId] = useState<string | null>(null);
+  const [rsvpDialogResponse, setRsvpDialogResponse] = useState<RsvpResponse>("yes");
   const [rsvpSelectedRiders, setRsvpSelectedRiders] = useState<string[]>([]);
+  // Kto sa ako vyjadril — pre udalosti vo vybraný deň
+  const [eventResponses, setEventResponses] = useState<Record<string, EventResponseRow[]>>({});
   const [history, setHistory] = useState<any[]>([]);
   // Jednorazové presuny do inej skupiny (len na daný deň)
   const [moves, setMoves] = useState<any[]>([]);
@@ -131,12 +158,14 @@ export default function ParentDashboard() {
       setRiders(riderData);
       setEvents(eventsRes.data ?? []);
 
-      const { data: rsvpData } = await supabase
+      const { data: rsvpData } = await (supabase as any)
         .from("event_rsvps")
-        .select("id, event_id, attending, rider_ids")
+        .select("id, event_id, response, rider_ids")
         .eq("user_id", user.id);
-      const rmap: Record<string, { id: string; rider_ids: string[] }> = {};
-      (rsvpData ?? []).forEach((r: any) => { if (r.attending) rmap[r.event_id] = { id: r.id, rider_ids: r.rider_ids ?? [] }; });
+      const rmap: Record<string, { id: string; rider_ids: string[]; response: RsvpResponse }> = {};
+      (rsvpData ?? []).forEach((r: any) => {
+        rmap[r.event_id] = { id: r.id, rider_ids: r.rider_ids ?? [], response: (r.response ?? "yes") as RsvpResponse };
+      });
       setMyRsvps(rmap);
 
 
@@ -275,43 +304,64 @@ export default function ParentDashboard() {
 
   const activeRiders = riders.filter((r) => r.is_active !== false);
 
-  const openRsvp = (eventId: string) => {
-    const existing = myRsvps[eventId];
-    if (existing) {
-      // Cancel attendance
-      (async () => {
-        await supabase.from("event_rsvps").delete().eq("id", existing.id);
-        setMyRsvps((prev) => { const n = { ...prev }; delete n[eventId]; return n; });
-        toast({ title: "Účasť zrušená" });
-      })();
+  const loadEventResponses = async (eventId: string) => {
+    const { data } = await (supabase as any).rpc("event_responses", { _event_id: eventId });
+    setEventResponses((prev) => ({ ...prev, [eventId]: (data as EventResponseRow[]) ?? [] }));
+  };
+
+  // Kliknutie na odpoveď. Pri viacerých deťoch sa najprv spýtame, koho sa týka —
+  // jedno dieťa môže ísť a druhé nie.
+  const openRsvp = (eventId: string, response: RsvpResponse) => {
+    if (myRsvps[eventId]?.response === response) {
+      // Rovnaká odpoveď druhýkrát = zrušenie, rodič sa vráti medzi nevyjadrených.
+      clearRsvp(eventId);
       return;
     }
     if (activeRiders.length <= 1) {
-      submitRsvp(eventId, activeRiders.map((r) => r.id));
+      submitRsvp(eventId, activeRiders.map((r) => r.id), response);
     } else {
-      setRsvpSelectedRiders(activeRiders.map((r) => r.id));
+      setRsvpSelectedRiders(myRsvps[eventId]?.rider_ids ?? activeRiders.map((r) => r.id));
       setRsvpDialogEventId(eventId);
+      setRsvpDialogResponse(response);
     }
   };
 
-  const submitRsvp = async (eventId: string, riderIds: string[]) => {
+  const clearRsvp = async (eventId: string) => {
+    const existing = myRsvps[eventId];
+    if (!existing) return;
+    await supabase.from("event_rsvps").delete().eq("id", existing.id);
+    setMyRsvps((prev) => { const n = { ...prev }; delete n[eventId]; return n; });
+    await loadEventResponses(eventId);
+    toast({ title: "Odpoveď zrušená" });
+  };
+
+  const submitRsvp = async (eventId: string, riderIds: string[], response: RsvpResponse) => {
     if (!user) return;
     if (riderIds.length === 0) {
       toast({ title: "Vyberte aspoň 1 dieťa", variant: "destructive" });
       return;
     }
+    // Na (event_id, user_id) je unikátny index, takže zmena odpovede prepíše
+    // pôvodný riadok namiesto vytvorenia druhého.
     const { data, error } = await supabase
       .from("event_rsvps")
-      .insert({ event_id: eventId, user_id: user.id, attending: true, rider_ids: riderIds })
+      .upsert(
+        { event_id: eventId, user_id: user.id, response, rider_ids: riderIds },
+        { onConflict: "event_id,user_id" },
+      )
       .select()
       .single();
     if (error) {
       toast({ title: "Chyba", description: error.message, variant: "destructive" });
-    } else if (data) {
-      setMyRsvps((prev) => ({ ...prev, [eventId]: { id: (data as any).id, rider_ids: (data as any).rider_ids ?? riderIds } }));
-      setRsvpDialogEventId(null);
-      toast({ title: "Účasť potvrdená" });
+      return;
     }
+    setMyRsvps((prev) => ({
+      ...prev,
+      [eventId]: { id: (data as any).id, rider_ids: (data as any).rider_ids ?? riderIds, response },
+    }));
+    setRsvpDialogEventId(null);
+    await loadEventResponses(eventId);
+    toast({ title: RSVP_LABELS[response] });
   };
 
   const monthStart = startOfMonth(currentMonth);
@@ -361,6 +411,15 @@ export default function ParentDashboard() {
         return selectedDateStr >= e.event_date && selectedDateStr <= end;
       })
     : [];
+
+  // Odpovede k udalostiam vybraného dňa. Kľúčom je zoznam id, nie samotné pole —
+  // to sa prepočíta pri každom renderi a effect by sa točil dokola.
+  const selectedEventIds = selectedEvents.map((e: any) => e.id).join(",");
+  useEffect(() => {
+    if (!user || !selectedEventIds) return;
+    selectedEventIds.split(",").forEach((id) => loadEventResponses(id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, selectedEventIds]);
 
   // Tréning, v ktorom je moje dieťa v tento deň — po presune je to cieľová skupina.
   const sessionForRider = (riderId: string) =>
@@ -501,7 +560,8 @@ export default function ParentDashboard() {
                 {format(selectedDate, "EEEE d. MMMM", { locale: sk })}
               </h3>
               {selectedEvents.length > 0 && selectedEvents.map((event) => {
-                const attending = !!myRsvps[event.id];
+                const myResponse = myRsvps[event.id]?.response;
+                const responses = eventResponses[event.id] ?? [];
                 return (
                 <Card key={event.id} className="border-orange-300 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800">
                   <CardContent className="p-3 space-y-2">
@@ -522,22 +582,73 @@ export default function ParentDashboard() {
                       </div>
                     </div>
                     {event.allow_rsvp && (
-                      <div className="space-y-1">
-                        <Button
-                          size="sm"
-                          variant={attending ? "outline" : "default"}
-                          className="w-full h-8 text-xs"
-                          onClick={() => openRsvp(event.id)}
-                        >
-                          {attending ? (<><Check className="h-3.5 w-3.5 mr-1" /> Zúčastníme sa – zrušiť</>) : (<>Zúčastníme sa</>)}
-                        </Button>
-                        {attending && myRsvps[event.id]?.rider_ids?.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-3 gap-1">
+                          {RSVP_ORDER.map((r) => (
+                            <Button
+                              key={r}
+                              size="sm"
+                              variant={myResponse === r ? "default" : "outline"}
+                              className="h-8 px-1 text-[11px]"
+                              onClick={() => openRsvp(event.id, r)}
+                            >
+                              {myResponse === r && <Check className="h-3 w-3 mr-1 shrink-0" />}
+                              {RSVP_LABELS[r]}
+                            </Button>
+                          ))}
+                        </div>
+                        {myResponse && myRsvps[event.id]?.rider_ids?.length > 0 && (
                           <p className="text-[11px] text-muted-foreground text-center">
                             {myRsvps[event.id].rider_ids
                               .map((rid) => activeRiders.find((r) => r.id === rid)?.name)
                               .filter(Boolean)
                               .join(", ")}
                           </p>
+                        )}
+
+                        {/* Prehľad za celý klub — nech si rodičia vedia pozrieť účasť */}
+                        {responses.length > 0 && (
+                          <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="responses" className="border-b-0">
+                              <AccordionTrigger className="py-1.5 text-[11px] hover:no-underline">
+                                <span className="flex items-center gap-2">
+                                  <Users className="h-3.5 w-3.5" />
+                                  Kto sa vyjadril
+                                  <span className="text-muted-foreground">
+                                    ({RSVP_ORDER.map((r) => responses.filter((x) => x.response === r).length).join(" / ")})
+                                  </span>
+                                </span>
+                              </AccordionTrigger>
+                              <AccordionContent className="pb-2 space-y-2">
+                                {RSVP_ORDER.map((r) => {
+                                  const list = responses.filter((x) => x.response === r);
+                                  if (list.length === 0) return null;
+                                  return (
+                                    <div key={r}>
+                                      <p className={`text-[11px] font-semibold mb-1 ${
+                                        r === "yes" ? "text-primary" : r === "no" ? "text-destructive" : "text-muted-foreground"
+                                      }`}>
+                                        {RSVP_HEADINGS[r]} ({list.length})
+                                      </p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {list.map((x, i) => (
+                                          <span
+                                            key={`${x.rider_id ?? x.parent_name}-${i}`}
+                                            title={x.group_name ? `Skupina ${x.group_name}` : undefined}
+                                            className={`rounded-full px-2 py-0.5 text-[11px] ${
+                                              r === "no" ? "bg-muted text-muted-foreground line-through" : "bg-muted text-muted-foreground"
+                                            }`}
+                                          >
+                                            {x.rider_name ?? x.parent_name ?? "—"}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
                         )}
                       </div>
                     )}
@@ -739,7 +850,13 @@ export default function ParentDashboard() {
       <Dialog open={!!rsvpDialogEventId} onOpenChange={(o) => !o && setRsvpDialogEventId(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Ktoré deti sa zúčastnia?</DialogTitle>
+            <DialogTitle>
+              {rsvpDialogResponse === "yes"
+                ? "Ktoré deti sa zúčastnia?"
+                : rsvpDialogResponse === "maybe"
+                  ? "Pri ktorých deťoch je účasť neistá?"
+                  : "Ktoré deti sa nezúčastnia?"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             {activeRiders.map((r) => {
@@ -761,8 +878,8 @@ export default function ParentDashboard() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRsvpDialogEventId(null)}>Zrušiť</Button>
-            <Button onClick={() => rsvpDialogEventId && submitRsvp(rsvpDialogEventId, rsvpSelectedRiders)}>
-              Potvrdiť účasť
+            <Button onClick={() => rsvpDialogEventId && submitRsvp(rsvpDialogEventId, rsvpSelectedRiders, rsvpDialogResponse)}>
+              Potvrdiť
             </Button>
           </DialogFooter>
         </DialogContent>

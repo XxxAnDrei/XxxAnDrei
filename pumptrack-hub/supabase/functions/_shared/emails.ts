@@ -151,8 +151,7 @@ export function newParentAccountEmail({ settings, email, password }: any) {
   return shell(`
     <h2 style="margin:0 0 8px;font-size:18px;">Vitajte v ${clubName}</h2>
     <p style="margin:0 0 16px;">
-      Vytvorili sme vám konto v klubovej aplikácii. Nájdete v nej tréningy vášho
-      dieťaťa, môžete ho odhlásiť z tréningu a vidíte platby.
+      Vytvorili sme vám konto v klubovej aplikácii.
     </p>
     <table style="width:100%;border-collapse:collapse;font-size:14px;margin:0 0 16px;">
       <tr>

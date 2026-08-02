@@ -63,7 +63,7 @@ interface EventRow {
   url_label?: string | null;
   allow_rsvp?: boolean | null;
 }
-interface RsvpRow { id: string; event_id: string; user_id: string; attending: boolean; rider_ids: string[]; }
+interface RsvpRow { id: string; event_id: string; user_id: string; attending: boolean; response?: "yes" | "maybe" | "no"; rider_ids: string[]; }
 interface RiderInfo { id: string; name: string; group_id: string | null; }
 interface AttendanceRecord { id: string; rider_id: string; session_id: string; present: boolean; }
 interface AbsenceRecord { id: string; rider_id: string; session_id: string; }
@@ -209,7 +209,9 @@ export default function Trainings() {
       setAbsences((absRes.data as AbsenceRecord[]) ?? []);
     }
 
-    const { data: rsvpData } = await supabase.from("event_rsvps").select("id, event_id, user_id, attending, rider_ids");
+    // `response` pribudol migráciou, vygenerované typy ho ešte nemajú.
+    const { data: rsvpData } = await (supabase as any)
+      .from("event_rsvps").select("id, event_id, user_id, attending, response, rider_ids");
     const rsvpRows = (rsvpData as RsvpRow[]) ?? [];
     setRsvps(rsvpRows);
     const uids = Array.from(new Set(rsvpRows.map((r) => r.user_id)));
@@ -1162,7 +1164,12 @@ export default function Trainings() {
                           )}
                           {ev.allow_rsvp && (
                             <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-orange-800 dark:text-orange-300 font-medium">
-                              <Users className="h-3 w-3" /> Zúčastní sa: {rsvps.filter((r) => r.event_id === ev.id && r.attending).length}
+                              <Users className="h-3 w-3" />
+                              {(() => {
+                                const forEv = rsvps.filter((r) => r.event_id === ev.id);
+                                const n = (resp: string) => forEv.filter((r) => (r.response ?? (r.attending ? "yes" : "no")) === resp).length;
+                                return <>Zúčastní sa: {n("yes")} · možno: {n("maybe")} · nie: {n("no")}</>;
+                              })()}
                             </p>
                           )}
                         </div>
