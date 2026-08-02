@@ -5,7 +5,9 @@ export async function sendEmail(to: string, subject: string, html: string) {
   const key = Deno.env.get("BREVO_API_KEY");
   if (!key) { console.warn("BREVO_API_KEY chýba — email neodoslaný:", subject); return; }
   const fromEmail = Deno.env.get("EMAIL_FROM") ?? "info@ctvz.sk";
-  const fromName = Deno.env.get("EMAIL_FROM_NAME") ?? "CTVZ Platby";
+  // Odosielateľ je celý klub, nie „platby“ — cez tento modul chodia aj
+  // notifikácie o tréningoch a obnovenie hesla.
+  const fromName = Deno.env.get("EMAIL_FROM_NAME") ?? "Cyklo Team Veľké Zálužie";
   const res = await fetch(BREVO_URL, {
     method: "POST",
     headers: { "api-key": key, "Content-Type": "application/json", "accept": "application/json" },
@@ -22,12 +24,26 @@ export async function sendEmail(to: string, subject: string, html: string) {
 const eur = (cents: number) => (cents / 100).toFixed(2).replace(".", ",") + " €";
 const skDate = (d: string | Date) => new Date(d).toLocaleDateString("sk-SK");
 
+// Verejná adresa aplikácie — z nej sa servíruje logo do emailov.
+const APP_BASE = (Deno.env.get("APP_URL") ?? Deno.env.get("SITE_URL") ?? "").replace(/\/+$/, "");
+
+function header() {
+  // Bez známej adresy by <img> smerovalo nikam — vtedy radšej textový názov.
+  if (!APP_BASE) {
+    return `<span style="font-size:20px;font-weight:bold;letter-spacing:2px;color:#ffffff;">CTVZ</span>`;
+  }
+  // width/height v atribútoch aj v style kvôli Outlooku.
+  // alt zámerne krátky: mnohí klienti blokujú vzdialené obrázky a dlhý názov
+  // by sa v 72px stĺpci zalomil do štyroch riadkov. Celý názov je v pätičke.
+  return `<img src="${APP_BASE}/email-logo.png" alt="CTVZ" width="72" height="72"
+       style="display:inline-block;border:0;width:72px;height:72px;color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:2px;">`;
+}
+
 function shell(inner: string, settings: any) {
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f3f5f9;font-family:Arial,Helvetica,sans-serif;">
   <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
-    <div style="background:#171C26;border-radius:12px 12px 0 0;padding:20px 24px;">
-      <span style="font-size:20px;font-weight:bold;letter-spacing:2px;color:#ffffff;">CTVZ</span>
-      <span style="font-size:12px;color:#8b93a3;margin-left:10px;">${settings?.club_name ?? "Cyklo Team Veľké Zálužie"}</span>
+    <div style="background:#171C26;border-radius:12px 12px 0 0;padding:20px 24px;text-align:center;">
+      ${header()}
     </div>
     <div style="background:#ffffff;border-radius:0 0 12px 12px;padding:24px;color:#141a27;font-size:14px;line-height:1.6;">
       ${inner}
@@ -139,7 +155,7 @@ export function passwordResetEmail({ settings, link, minutes = 60 }: any) {
     </p>
     <p style="margin:0;color:#6b7180;font-size:12px;">
       Ak ste o zmenu hesla nežiadali, tento email pokojne ignorujte —
-      vaše heslo zostáva nezmenené a nikto sa k účtu nedostal.
+      vaše heslo zostáva nezmenené a nikto sa k účtu nedostane.
     </p>
   `, settings);
 }
