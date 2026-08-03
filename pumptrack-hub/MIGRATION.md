@@ -97,6 +97,43 @@ druhí rodičia. **Schému treba postaviť odznova, nie dopĺňať.**
 Zapnuté rozšírenia: `pg_cron`, `pg_net` — cron joby pôjdu vytvoriť rovno.
 Storage: 0 bucketov, `chat-media` treba vytvoriť.
 
+## Stav prenosu
+
+### Hotové a overené
+
+| # | migrácia na cieli | obsah |
+|---|---|---|
+| 01 | `migracia_01_reset_schemy_typy_sekvencie` | drop+create `public`, práva a default privileges (bez role `sandbox_exec`, tá je artefakt Lovable), rozšírenia `pgcrypto`/`uuid-ossp`/`pg_net`, enumy `app_role` a `payment_status`, sekvencie `invoice_seq` a `vs_seq` |
+| 02 | `migracia_02_tabulky` | 33 tabuliek |
+| 03 | `migracia_03_view_parent_credit` | pohľad `parent_credit` |
+| 04 | `migracia_04_pk_unique_check` | primárne kľúče, unikátnosť, checky |
+| 05 | `migracia_05_cudzie_kluce` | 35 cudzích kľúčov |
+| 06 | `migracia_06_indexy` | 21 indexov mimo obmedzení |
+| 07 | `migracia_07_funkcie_a` | 10 funkcií |
+| 08 | `migracia_08_funkcie_b` | 9 funkcií (spolu 19) |
+
+**Overené zhody proti zdroju:**
+
+- odtlačok stĺpcov `81932bc0914d1a216a4fbe8525264a16`, **268 stĺpcov** — sedí
+- odtlačok obmedzení `f19b643bc2feb8b8afa750b561a50803`, **85 obmedzení** — sedí
+
+Prvý pokus dal 266 stĺpcov a iný odtlačok. Príčina: `parent_credit` je
+**pohľad**, nie tabuľka, takže vypadol zo zoznamu `BASE TABLE`. Po doplnení
+odtlačok sedí. Presne na toto tá kontrola je.
+
+### Zostáva
+
+1. triggre (vrátane `on_auth_user_created` na `auth.users`)
+2. RLS zapnúť + politiky (~60)
+3. `REVOKE`/`GRANT` na konkrétnych funkciách (`training_day_overview`,
+   `event_responses` — odobrané PUBLIC aj `anon`)
+4. `setval` sekvencií: `invoice_seq` na 2, `vs_seq` na 1000002
+5. dáta: `auth.users` (43) → `auth.identities` (43) → 33 tabuliek
+6. storage bucket `chat-media` + 9 súborov
+7. 16 edge funkcií + secrets
+8. 3 cron joby s novou URL
+9. prepnutie Vercel premenných
+
 ## Poradie prenosu (kvôli cudzím kľúčom)
 
 1. `auth.users` → `auth.identities`
