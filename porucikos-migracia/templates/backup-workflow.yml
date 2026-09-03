@@ -1,0 +1,124 @@
+# =============================================================================
+# Nočná záloha databázy Poručíkos
+# =============================================================================
+# ŠABLÓNA — skopíruj do repozitára porucikos ako:
+#     .github/workflows/backup.yml
+#
+# Zámerne to NIE JE v .github/workflows tohto repozitára, aby sa to nespustilo
+# skôr, než existuje nová databáza.
+#
+# Prečo to treba: Supabase Free plán nerobí žiadne zálohy. Bez tohto by pri
+# omyle alebo probléme neexistovala cesta späť k dátam 1 544 zákazníkov.
+#
+# Nastavenie:
+#   1) Skopíruj súbor do porucikos/.github/workflows/backup.yml
+#   2) V repozitári: Settings → Secrets and variables → Actions → New secret
+#        SUPABASE_DB_URL = postgresql://postgres.NOVYREF:HESLO@aws-0-...pooler.supabase.com:5432/postgres
+#   3) Prvý beh spusti ručne cez "Run workflow" a over, že artefakt vznikol
+#
+# Zálohy sa ukladajú ako artefakty behu (90 dní) a zároveň commitujú do vetvy
+# `backups`, aby existovala aj dlhodobá história.
+# =============================================================================
+
+name: Nočná záloha databázy
+
+on:
+  schedule:
+    # 02:15 UTC = 03:15 SEČ / 04:15 SELČ — mimo špičky rezervácií
+    - cron: '15 2 * * *'
+  workflow_dispatch:
+
+# Zabráni súbehu dvoch záloh naraz
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inštalácia PostgreSQL klienta 17
+        run: |
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Dump databázy
+        env:
+          PGSSLMODE: require
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          test -n "$DB_URL" || { echo "Chýba secret SUPABASE_DB_URL"; exit 1; }
+
+          mkdir -p backups
+          STAMP="$(date -u +%Y-%m-%d)"
+          FILE="backups/porucikos-$STAMP.sql.gz"
+
+          # Zálohujeme dáta aj schému, vrátane auth (účty a hashe hesiel).
+          # Vylúčené sú len logy cronu — inak by záloha zbytočne narástla.
+          pg_dump "$DB_URL" \
+            --clean --if-exists --quote-all-identifiers \
+            --schema=public --schema=auth --schema=storage \
+            --exclude-table='cron.job_run_details' \
+            | gzip -9 > "$FILE"
+
+          SIZE=$(stat -c%s "$FILE")
+          echo "Veľkosť zálohy: $(numfmt --to=iec "$SIZE")"
+
+          # Poistka proti tichému zlyhaniu: prázdny alebo podozrivo malý dump
+          # je horší než žiadny, lebo vzbudzuje falošný pocit istoty.
+          if [ "$SIZE" -lt 200000 ]; then
+            echo "CHYBA: záloha má menej než 200 kB — to nesedí, dump zrejme zlyhal."
+            exit 1
+          fi
+
+          # Rýchla kontrola obsahu
+          gzip -dc "$FILE" | grep -q 'auth"\."users' \
+            || { echo "CHYBA: v zálohe chýba auth.users"; exit 1; }
+
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+          echo "FILE=$FILE" >> "$GITHUB_ENV"
+
+      - name: Nahranie ako artefakt (90 dní)
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ env.STAMP }}
+          path: ${{ env.FILE }}
+          retention-days: 90
+
+      - name: Uloženie do vetvy backups
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin backups || true
+          if git rev-parse --verify origin/backups >/dev/null 2>&1; then
+            git checkout -B backups origin/backups
+          else
+            git checkout --orphan backups
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          mkdir -p backups
+          cp "$FILE" "backups/" 2>/dev/null || true
+
+          # Držíme 30 najnovších záloh, staršie mažeme.
+          ls -1t backups/porucikos-*.sql.gz 2>/dev/null | tail -n +31 | xargs -r rm -f
+
+          git add backups
+          if git diff --cached --quiet; then
+            echo "Žiadna zmena, nič necommitujem."
+          else
+            git commit -m "Záloha databázy $STAMP"
+            git push origin backups
+          fi
