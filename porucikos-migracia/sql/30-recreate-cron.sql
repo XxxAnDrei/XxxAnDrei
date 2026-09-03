@@ -42,23 +42,44 @@ WHERE jobname IN ('auto-complete-appointments',
                   'purge-cron-history');
 
 -- -----------------------------------------------------------------------------
--- 1) auto-complete-appointments  —  každých 5 minút
+-- POZNÁMKA K FREKVENCIÁM
+--
+-- Na starej DB bežali tieto úlohy každých 5 a 15 minút = 384 behov denne.
+-- Nižšie sú zámerne spomalené na 15 a 30 minút = 144 behov denne (-62 %),
+-- pretože ani jedna z nich rýchlejší takt nepotrebuje:
+--
+--   auto_complete_appointments — len označí rezervácie po skončení ako
+--     'completed'. Či sa to stane 5 alebo 15 minút po termíne, nikto
+--     nespozná; v admin kalendári to nie je viditeľný rozdiel.
+--
+--   send-booking-reminders — hľadá rezervácie v okne [teraz+23h, teraz+25h],
+--     teda 2 hodiny široké. Komentár priamo v tej funkcii hovorí "2h padding
+--     so we always catch them at the next cron tick". Pri takte 30 minút
+--     zostáva 4-násobná rezerva. Aj hodinový takt by bol bezpečný.
+--
+-- Ak by si chcel pôvodné hodnoty, staré rozvrhy boli '*/5 * * * *'
+-- a '*/15 * * * *'.
+-- -----------------------------------------------------------------------------
+
+-- -----------------------------------------------------------------------------
+-- 1) auto-complete-appointments  —  každých 15 minút
 --    Uzatvára rezervácie, ktorým už uplynul čas. Čisté SQL, žiadne URL.
 -- -----------------------------------------------------------------------------
 SELECT cron.schedule(
   'auto-complete-appointments',
-  '*/5 * * * *',
+  '*/15 * * * *',
   'SELECT public.auto_complete_appointments()'
 );
 
 -- -----------------------------------------------------------------------------
--- 2) send-booking-reminders-15min  —  každých 15 minút
+-- 2) send-booking-reminders-15min  —  každých 30 minút
 --    Volá edge funkciu, ktorá posiela pripomienky 24 h pred termínom.
+--    Názov úlohy ponechaný kvôli spätnej dohľadateľnosti.
 --    TU JE ZAKÓDOVANÉ PROJECT REF AJ ANON KEY — preto sa dosadzujú premenné.
 -- -----------------------------------------------------------------------------
 SELECT cron.schedule(
   'send-booking-reminders-15min',
-  '*/15 * * * *',
+  '*/30 * * * *',
   format($job$
   SELECT net.http_post(
     url := 'https://%s.supabase.co/functions/v1/send-booking-reminders',
