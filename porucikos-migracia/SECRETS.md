@@ -16,14 +16,14 @@ Hodnoty sa berú zo starého projektu a nastavujú v novom.
 
 Nastavenie:
 ```bash
-supabase secrets set --project-ref NOVYREF \
+supabase secrets set --project-ref vfewttbwcxvvpjpmvhhy \
   BOOKING_ACTION_HMAC_SECRET='...' \
   BREVO_API_KEY='...'
 ```
 
 Kontrola (vypíše len názvy, nie hodnoty):
 ```bash
-supabase secrets list --project-ref NOVYREF
+supabase secrets list --project-ref vfewttbwcxvvpjpmvhhy
 ```
 
 ---
@@ -32,9 +32,9 @@ supabase secrets list --project-ref NOVYREF
 
 | Názov | Zmena |
 |---|---|
-| `VITE_SUPABASE_URL` | `https://NOVYREF.supabase.co` |
+| `VITE_SUPABASE_URL` | `https://vfewttbwcxvvpjpmvhhy.supabase.co` |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | nový anon key |
-| `VITE_SUPABASE_PROJECT_ID` | `NOVYREF` |
+| `VITE_SUPABASE_PROJECT_ID` | `vfewttbwcxvvpjpmvhhy` |
 
 Nastav pre všetky tri prostredia (Production, Preview, Development).
 Zmena premennej sa prejaví až po novom nasadení.
@@ -58,7 +58,7 @@ Zmena premennej sa prejaví až po novom nasadení.
 
 Redirect URI v Google smeruje na **Supabase**, nie na web:
 ```
-https://NOVYREF.supabase.co/auth/v1/callback
+https://vfewttbwcxvvpjpmvhhy.supabase.co/auth/v1/callback
 ```
 
 ---

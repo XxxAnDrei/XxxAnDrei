@@ -28,7 +28,7 @@ Náhradou je natívne `supabase.auth.signInWithOAuth`, ktoré ide priamo na Goog
      ```
    - **Authorized redirect URIs** — sem patrí adresa **Supabase**, nie webu:
      ```
-     https://NOVYREF.supabase.co/auth/v1/callback
+     https://vfewttbwcxvvpjpmvhhy.supabase.co/auth/v1/callback
      ```
 4. Odlož si `Client ID` a `Client Secret`.
 

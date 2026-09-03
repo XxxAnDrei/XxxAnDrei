@@ -13,7 +13,7 @@
 # Nastavenie:
 #   1) Skopíruj súbor do porucikos/.github/workflows/backup.yml
 #   2) V repozitári: Settings → Secrets and variables → Actions → New secret
-#        SUPABASE_DB_URL = postgresql://postgres.NOVYREF:HESLO@aws-0-...pooler.supabase.com:5432/postgres
+#        SUPABASE_DB_URL = postgresql://postgres.vfewttbwcxvvpjpmvhhy:HESLO@aws-0-...pooler.supabase.com:5432/postgres
 #   3) Prvý beh spusti ručne cez "Run workflow" a over, že artefakt vznikol
 #
 # Zálohy sa ukladajú ako artefakty behu (90 dní) a zároveň commitujú do vetvy

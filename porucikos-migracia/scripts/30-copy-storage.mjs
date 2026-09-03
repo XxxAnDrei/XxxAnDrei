@@ -14,7 +14,7 @@
 //   npm i @supabase/supabase-js
 //   export OLD_URL='https://csteuzcbybwfwxmjmkjb.supabase.co'
 //   export OLD_SERVICE_KEY='...'      # Lovable → Cloud → API keys → service_role
-//   export NEW_URL='https://NOVYREF.supabase.co'
+//   export NEW_URL='https://vfewttbwcxvvpjpmvhhy.supabase.co'
 //   export NEW_SERVICE_KEY='...'
 //   node scripts/30-copy-storage.mjs
 //
@@ -32,8 +32,20 @@ for (const [k, v] of Object.entries({ OLD_URL, OLD_SERVICE_KEY, NEW_URL, NEW_SER
   }
 }
 
-if (NEW_URL.includes('csteuzcbybwfwxmjmkjb')) {
-  console.error('NEW_URL ukazuje na STARÝ projekt. Končím.');
+const OLD_REF = 'csteuzcbybwfwxmjmkjb';
+const NEW_REF = 'vfewttbwcxvvpjpmvhhy';
+
+if (NEW_URL.includes(OLD_REF)) {
+  console.error(`NEW_URL ukazuje na STARÝ projekt (${OLD_REF}). Skript zapisuje — končím.`);
+  process.exit(1);
+}
+if (!NEW_URL.includes(NEW_REF)) {
+  console.error(`NEW_URL neobsahuje očakávaný ref nového projektu (${NEW_REF}).`);
+  console.error('Ak si zámerne založil iný projekt, uprav NEW_REF v tomto skripte.');
+  process.exit(1);
+}
+if (!OLD_URL.includes(OLD_REF)) {
+  console.error(`OLD_URL neobsahuje ref starého projektu (${OLD_REF}) — číta sa z neho.`);
   process.exit(1);
 }
 

@@ -3,7 +3,8 @@
 Presun rezervačného systému z Lovable Cloud na vlastnú Supabase.
 Hosting na Verceli už beží a v tejto migrácii sa nemení.
 
-**Stav k 3. 9. 2026:** fáza 1 pripravená, na produkcii sa zatiaľ nezmenilo nič.
+**Stav k 3. 9. 2026:** nový projekt založený, dáta sa zatiaľ neprenášali.
+Na produkcii sa nezmenilo nič.
 
 ---
 
@@ -12,7 +13,7 @@ Hosting na Verceli už beží a v tejto migrácii sa nemení.
 | | |
 |---|---|
 | Starý projekt (Lovable Cloud) | `csteuzcbybwfwxmjmkjb` |
-| Nový projekt | *doplniť po založení* |
+| **Nový projekt** | **`vfewttbwcxvvpjpmvhhy`** — Central EU (Frankfurt), Free |
 | Tabuľky v `public` | 16 |
 | RLS politiky | 52 (všetky tabuľky majú RLS zapnuté) |
 | DB funkcie / triggery | 19 / 10 |
@@ -63,10 +64,12 @@ Bez kroku `30-copy-storage.mjs` zmiznú fotky barberov a logo v e-mailoch.
 
 > Všetko v tejto fáze sa dá robiť cez deň, kým systém normálne beží.
 
-- [ ] **1.1** Založiť Supabase účet na gmaile kaderníctva, pridať sa ako owner
-- [ ] **1.2** Nový projekt, región `eu-central-1` (Frankfurt)
-- [ ] **1.3** Zapísať si nový project ref a heslo do DB
+- [x] **1.1** Založiť Supabase účet na gmaile kaderníctva, pridať sa ako owner
+- [x] **1.2** Nový projekt, región `eu-central-1` (Frankfurt) — org `porucikos`, Free
+- [x] **1.3** Zapísať si nový project ref (`vfewttbwcxvvpjpmvhhy`) a heslo do DB
 - [ ] **1.4** Zapnúť rozšírenia: `pg_cron`, `pg_net`, `pgmq`, `pgcrypto`, `uuid-ossp`
+       (Database → Extensions; `20-restore-new.sh` ich síce vytvorí sám, ale
+       `pg_cron` a `pg_net` na Supabase treba povoliť cez dashboard)
 - [ ] **1.5** Google Cloud Console — OAuth klient → `patches/01-google-oauth.md`, krok A
 - [ ] **1.6** Supabase Auth → Google provider + redirect URLs → krok B
 - [ ] **1.7** Brevo SMTP do **Authentication → Emails → SMTP Settings**
@@ -86,7 +89,7 @@ Bez kroku `30-copy-storage.mjs` zmiznú fotky barberov a logo v e-mailoch.
        účtov podľa poskytovateľa = **zastaviť a riešiť**
 - [ ] **2.6** `node scripts/30-copy-storage.mjs` — 13 súborov
 - [ ] **2.7** `psql "$NEW_DB_URL" -v new_project_ref=... -v new_anon_key=... -f sql/30-recreate-cron.sql`
-- [ ] **2.8** `supabase functions deploy --project-ref NOVYREF` (všetkých 6)
+- [ ] **2.8** `supabase functions deploy --project-ref vfewttbwcxvvpjpmvhhy` (všetkých 6)
 - [ ] **2.9** Tajné kľúče do edge funkcií → `SECRETS.md`
 - [ ] **2.10** Aplikovať patch `01-google-oauth.md` (kroky C1–C3) na vetve, **nie na main**
 - [ ] **2.11** Preview nasadenie na Verceli s novými `VITE_*` premennými

@@ -9,7 +9,7 @@
 # alebo založ ďalší.
 #
 # Použitie:
-#   export NEW_DB_URL='postgresql://postgres.NOVYREF:HESLO@aws-0-eu-central-1.pooler.supabase.com:5432/postgres'
+#   export NEW_DB_URL='postgresql://postgres.vfewttbwcxvvpjpmvhhy:HESLO@aws-0-eu-central-1.pooler.supabase.com:5432/postgres'
 #   export OUT_DIR='./dump-20260903-181500'
 #   ./scripts/20-restore-new.sh
 # =============================================================================
@@ -31,8 +31,18 @@ echo
 # -----------------------------------------------------------------------------
 # 0) Poistka proti omylu — nesmieme písať do starej DB
 # -----------------------------------------------------------------------------
-if [[ "$NEW_DB_URL" == *"csteuzcbybwfwxmjmkjb"* ]]; then
-  echo "!!! NEW_DB_URL ukazuje na STARÝ Lovable projekt. Končím."
+OLD_REF="csteuzcbybwfwxmjmkjb"
+NEW_REF="vfewttbwcxvvpjpmvhhy"
+
+if [[ "$NEW_DB_URL" == *"$OLD_REF"* ]]; then
+  echo "!!! NEW_DB_URL ukazuje na STARÝ Lovable projekt ($OLD_REF). Končím."
+  echo "    Tento skript ZAPISUJE — omylom by prepísal produkciu."
+  exit 1
+fi
+
+if [[ "$NEW_DB_URL" != *"$NEW_REF"* ]]; then
+  echo "!!! NEW_DB_URL neobsahuje očakávaný ref nového projektu ($NEW_REF)."
+  echo "    Ak si zámerne založil iný projekt, uprav NEW_REF v tomto skripte."
   exit 1
 fi
 

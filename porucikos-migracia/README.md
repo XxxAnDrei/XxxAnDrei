@@ -79,8 +79,8 @@ Potrebné nástroje: Supabase CLI, psql 17+, Docker Desktop, Node 18+.
 |---|---|
 | Analýza a zmeranie | hotové |
 | Príprava skriptov a patchov | hotové |
-| 1 — nový Supabase projekt | *čaká na účet kaderníctva* |
-| 2 — skúšobný prenos | čaká na fázu 1 |
+| 1 — nový Supabase projekt | hotové — `vfewttbwcxvvpjpmvhhy` (Frankfurt) |
+| 2 — skúšobný prenos | **na rade** |
 | 3 — ostré prepnutie | čaká na fázu 2 |
 | 4 — zálohy a upratanie | čaká na fázu 3 |
 
