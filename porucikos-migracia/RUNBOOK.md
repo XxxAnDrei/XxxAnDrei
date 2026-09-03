@@ -31,7 +31,7 @@ Na produkcii sa nezmenilo nič.
 
 ---
 
-## Tri veci, ktoré sa dajú ľahko prehliadnuť
+## Štyri veci, ktoré sa dajú ľahko prehliadnuť
 
 ### 1. HMAC kľúč pre odkazy v e-mailoch
 
@@ -58,6 +58,16 @@ regeneruje anon aj service_role kľúče a pridáva komplikáciu. Neodporúčam.
 `pg_dump` prenesie záznamy v `storage.objects`, ale **nie samotné súbory**.
 Bez kroku `30-copy-storage.mjs` zmiznú fotky barberov a logo v e-mailoch.
 
+### 4. E-mailová fronta a 5-sekundový cron
+
+Trigger na pgmq frontách plánuje cron úlohu s taktom **5 sekúnd** (17 280 behov
+denne) vždy, keď sa odošle auth e-mail. **Toto je zdroj tých 1,5 GB.**
+Zároveň `auth-email-hook` overuje podpis cez `@lovable.dev/webhooks-js` —
+na čistom Supabase nebude fungovať a padne potvrdzovanie registrácií
+aj reset hesla.
+
+Vyžaduje rozhodnutie ešte pred fázou 2 → **`NALEZ-emailova-fronta.md`**.
+
 ---
 
 ## Fáza 1 — príprava (žiadny dopad na produkciu)
@@ -67,9 +77,11 @@ Bez kroku `30-copy-storage.mjs` zmiznú fotky barberov a logo v e-mailoch.
 - [x] **1.1** Založiť Supabase účet na gmaile kaderníctva, pridať sa ako owner
 - [x] **1.2** Nový projekt, región `eu-central-1` (Frankfurt) — org `porucikos`, Free
 - [x] **1.3** Zapísať si nový project ref (`vfewttbwcxvvpjpmvhhy`) a heslo do DB
-- [ ] **1.4** Zapnúť rozšírenia: `pg_cron`, `pg_net`, `pgmq`, `pgcrypto`, `uuid-ossp`
-       (Database → Extensions; `20-restore-new.sh` ich síce vytvorí sám, ale
-       `pg_cron` a `pg_net` na Supabase treba povoliť cez dashboard)
+- [x] **1.4** Rozšírenia — overené, všetkých 7 je na novom projekte
+       predinštalovaných (`pg_cron` 1.6.4, `pg_net` 0.20.4, `pgmq` 1.5.1,
+       `pgcrypto`, `uuid-ossp`, `supabase_vault`, `pg_stat_statements`)
+- [x] **1.4b** Odobraté default privilégiá v `public` pre `anon`/`authenticated`
+- [ ] **1.4c** ROZHODNÚŤ o auth e-mailoch → `NALEZ-emailova-fronta.md`
 - [ ] **1.5** Google Cloud Console — OAuth klient → `patches/01-google-oauth.md`, krok A
 - [ ] **1.6** Supabase Auth → Google provider + redirect URLs → krok B
 - [ ] **1.7** Brevo SMTP do **Authentication → Emails → SMTP Settings**
