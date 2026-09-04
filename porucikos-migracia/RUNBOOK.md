@@ -99,8 +99,25 @@ padne na RLS a nový zákazník zostane bez záznamu.
        (`smtp-relay.brevo.com:587`). Pozor: sú to SMTP údaje, **nie** REST API
        kľúč, ktorý používa `send-email`. Vstavaný Supabase mailer zvláda len
        2 e-maily/hod., čo by nestačilo.
-- [ ] **1.8** Auth hook **nezapínať** (Authentication → Hooks → Send Email Hook
-       nechať vypnutý)
+- [ ] **1.8** Auth hook — **nič nenastavuj**, len over
+
+       Na novom projekte je *Send Email Hook* vypnutý automaticky. Tento bod je
+       tu len ako poistka pre krok 2.8, aby sa `auth-email-hook` omylom
+       nenasadil a nezapol zo zvyku.
+
+       Hook je výhybkár, ktorý rozhoduje, ktorou cestou pôjde auth e-mail:
+
+       ```
+       ZAPNUTÝ (starý projekt):
+         Supabase Auth → auth-email-hook → pgmq fronta
+                       → cron každých 5 s → process-email-queue → Brevo
+
+       VYPNUTÝ (nový projekt — chceme toto):
+         Supabase Auth → SMTP → Brevo
+       ```
+
+       Zapnutie hooku by vrátilo presne ten 5-sekundový cron, kvôli ktorému
+       sa celá migrácia robí.
 
 ## Fáza 2 — skúšobný prenos (žiadny dopad na produkciu)
 
