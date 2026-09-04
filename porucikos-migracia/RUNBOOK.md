@@ -3,8 +3,8 @@
 Presun rezervačného systému z Lovable Cloud na vlastnú Supabase.
 Hosting na Verceli už beží a v tejto migrácii sa nemení.
 
-**Stav k 3. 9. 2026:** nový projekt založený, dáta sa zatiaľ neprenášali.
-Na produkcii sa nezmenilo nič.
+**Stav k 4. 9. 2026:** fáza 1 hotová. Nový projekt je založený a nastavený,
+databáza je zatiaľ prázdna (0 tabuliek, 0 účtov). Na produkcii sa nezmenilo nič.
 
 ---
 
@@ -91,15 +91,15 @@ padne na RLS a nový zákazník zostane bez záznamu.
        `pgcrypto`, `uuid-ossp`, `supabase_vault`, `pg_stat_statements`)
 - [x] **1.4b** Odobraté default privilégiá v `public` pre `anon`/`authenticated`
 - [x] **1.4c** Rozhodnuté: cesta A (zrušiť hook, ísť cez Brevo SMTP)
-- [ ] **1.4d** Overiť, že **„Confirm email" je VYPNUTÉ**
+- [x] **1.4d** Overené, že **„Confirm email" je VYPNUTÉ**
        (Authentication → Sign In / Providers → Email)
-- [ ] **1.5** Google Cloud Console — OAuth klient → `patches/01-google-oauth.md`, krok A
-- [ ] **1.6** Supabase Auth → Google provider + redirect URLs → krok B
-- [ ] **1.7** Brevo **SMTP** do *Authentication → Emails → SMTP Settings*
+- [x] **1.5** Google Cloud Console — OAuth klient → `patches/01-google-oauth.md`, krok A
+- [x] **1.6** Supabase Auth → Google provider + redirect URLs → krok B
+- [x] **1.7** Brevo **SMTP** do *Authentication → Emails → SMTP Settings*
        (`smtp-relay.brevo.com:587`). Pozor: sú to SMTP údaje, **nie** REST API
        kľúč, ktorý používa `send-email`. Vstavaný Supabase mailer zvláda len
        2 e-maily/hod., čo by nestačilo.
-- [ ] **1.8** Auth hook — **nič nenastavuj**, len over
+- [x] **1.8** Auth hook — **nič nenastavuj**, len over
 
        Na novom projekte je *Send Email Hook* vypnutý automaticky. Tento bod je
        tu len ako poistka pre krok 2.8, aby sa `auth-email-hook` omylom
@@ -123,6 +123,41 @@ padne na RLS a nový zákazník zostane bez záznamu.
 
 > Zo starej databázy sa len číta. Toto je najdôležitejšia fáza — tu sa nájdu
 > všetky drobné chyby, kým je čas ich riešiť.
+
+### Čo musí byť nainštalované
+
+Skripty sú v bashi, takže na Windows ich púšťaj v **Git Bash** alebo **WSL**,
+nie v PowerShelli.
+
+| Nástroj | Načo | Overenie |
+|---|---|---|
+| **Supabase CLI** | `supabase db dump` | `supabase --version` |
+| **PostgreSQL 17 klient** | `psql`, `pg_dump` | `psql --version` |
+| **Docker Desktop** | `supabase db dump` beží v kontajneri | `docker ps` |
+| **Node 18+** | prenos súborov v storage | `node --version` |
+
+Docker musí byť **spustený**, nie len nainštalovaný — inak `supabase db dump`
+spadne s nejasnou chybou o nedostupnom daemone.
+
+### Údaje, ktoré budeš potrebovať
+
+| Premenná | Kde ju vziať |
+|---|---|
+| `OLD_DB_URL` | Lovable → projekt porucikos → Cloud → Database → Connection string |
+| `NEW_DB_URL` | Supabase → nový projekt → **Connect** (hore) → Session pooler |
+| `OLD_SERVICE_KEY` | Lovable → Cloud → API keys → `service_role` |
+| `NEW_SERVICE_KEY` | Supabase → Project Settings → API keys → `service_role` |
+
+Connection string kopíruj z dashboardu, neskladaj ho ručne — hostname poolera
+sa medzi regiónmi líši.
+
+Nový anon key (verejný, je aj tak v prehliadačovom balíku) pre krok 2.7:
+
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmZXd0dGJ3Y3h2dnBqcG12aGh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NTY2MjIsImV4cCI6MjEwNDAzMjYyMn0.8YrUfoF-X81nNkJTmX626MNz2yBW2r5nfsT6lhwqS94
+```
+
+### Kroky
 
 - [ ] **2.1** `export OLD_DB_URL='...'` (Lovable → Cloud → Database → Connection string)
 - [ ] **2.2** `./scripts/10-dump-old.sh` — záloha + odtlačok starej DB
