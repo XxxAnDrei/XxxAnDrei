@@ -11,40 +11,92 @@ Náhradou je natívne `supabase.auth.signInWithOAuth`, ktoré ide priamo na Goog
 
 ---
 
+## Ako to funguje (aby dávali kroky zmysel)
+
+Tá callback adresa **nie je tvoja stránka** — je to adresa Supabase:
+
+```
+porucikos.sk  →  Google (človek sa prihlási)  →  Supabase  →  porucikos.sk
+                                                    ↑
+                                        https://vfewttbwcxvvpjpmvhhy.supabase.co/auth/v1/callback
+```
+
+Google pustí prihlásenie len na vopred zaregistrovanú adresu. Bez nej vráti
+chybu `redirect_uri_mismatch`.
+
+---
+
 ## Krok A — Google Cloud Console (zadarmo)
 
-1. <https://console.cloud.google.com/> → nový projekt, napr. `porucikos-auth`.
-2. **APIs & Services → OAuth consent screen**
-   - typ *External*, stav *In production*
-   - názov aplikácie: `Poručíkos Barbershop`
-   - podporný e-mail a doména: `porucikos.sk`
-3. **APIs & Services → Credentials → Create credentials → OAuth client ID**
-   - typ *Web application*
-   - **Authorized JavaScript origins:**
-     ```
-     https://porucikos.sk
-     https://www.porucikos.sk
-     http://localhost:8080
-     ```
-   - **Authorized redirect URIs** — sem patrí adresa **Supabase**, nie webu:
-     ```
-     https://vfewttbwcxvvpjpmvhhy.supabase.co/auth/v1/callback
-     ```
-4. Odlož si `Client ID` a `Client Secret`.
+### A1. Nový projekt
+1. <https://console.cloud.google.com/>
+2. Rozbaľovačka projektov hore → **New project**
+3. Názov `porucikos-auth` → **Create** → prepnúť sa doň
+
+### A2. Súhlasná obrazovka
+**APIs & Services → OAuth consent screen**
+(Google to premenoval na *Google Auth Platform*; ak vidíš **Get started**, klikni.)
+
+| Pole | Hodnota |
+|---|---|
+| App name | `Poručíkos Barbershop` |
+| User support email | tvoj / barbershopu |
+| Audience | **External** |
+| Contact information | tvoj e-mail |
+
+> **NAJDÔLEŽITEJŠÍ BOD CELÉHO POSTUPU**
+>
+> Po vytvorení musí byť stav **In production**, nie **Testing**.
+> V režime Testing sa prihlásia len ručne pridaní testeri — teda **nikto
+> zo 105 zákazníkov, ktorí dnes používajú Google**.
+>
+> **Audience → Publish app.** Pri základných rozsahoch (meno, e-mail)
+> je publikovanie okamžité, overovanie Googlom netreba.
+
+### A3. OAuth klient
+**Clients** (staršie *Credentials*) → **Create client**
+
+- Application type: **Web application**
+- Name: `porucikos-web` (interné)
+- **Authorized redirect URIs** → **+ Add URI**:
+  ```
+  https://vfewttbwcxvvpjpmvhhy.supabase.co/auth/v1/callback
+  ```
+  Bez lomky na konci.
+
+  *Authorized JavaScript origins* nechaj **prázdne** — pri tomto type
+  prihlásenia sa nepoužívajú (potrebné sú len pri Google One Tap).
+
+**Create** → skopíruj si **Client ID** a **Client Secret**.
 
 ## Krok B — Supabase Dashboard (nový projekt)
 
-1. **Authentication → Providers → Google** → zapnúť, vložiť Client ID a Secret.
-2. **Authentication → URL Configuration**
-   - *Site URL*: `https://porucikos.sk`
-   - *Redirect URLs* (jedna na riadok):
-     ```
-     https://porucikos.sk/**
-     https://www.porucikos.sk/**
-     https://porucikos.vercel.app/**
-     http://localhost:8080/**
-     ```
-   Bez preview adresy sa nedá otestovať pred ostrým prepnutím.
+### B1. Google provider
+**Authentication → Sign In / Providers → Google**
+1. **Enable Sign in with Google** → zapnúť
+2. **Client ID** a **Client Secret (for OAuth)** → vložiť z Googlu
+3. **Save**
+
+Supabase v tej istej sekcii zobrazuje **Callback URL** s tlačidlom Copy —
+skontroluj ňou, že u Googlu je presne tá istá.
+
+### B2. Povolené návratové adresy
+**Authentication → URL Configuration**
+
+- *Site URL*: `https://porucikos.sk`
+- *Redirect URLs*:
+  ```
+  https://porucikos.sk/**
+  https://www.porucikos.sk/**
+  https://porucikos.vercel.app/**
+  http://localhost:8080/**
+  ```
+  Tretia je nutná na otestovanie pred ostrým prepnutím.
+
+### B3. Kontrolný zoznam pred pokračovaním
+- [ ] Consent screen je **In production**, nie Testing
+- [ ] Redirect URI u Googlu sedí znak po znaku s tým v Supabase
+- [ ] Google provider je Enabled a uložený
 
 ---
 
