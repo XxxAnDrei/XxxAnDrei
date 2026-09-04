@@ -66,7 +66,16 @@ Zároveň `auth-email-hook` overuje podpis cez `@lovable.dev/webhooks-js` —
 na čistom Supabase nebude fungovať a padne potvrdzovanie registrácií
 aj reset hesla.
 
-Vyžaduje rozhodnutie ešte pred fázou 2 → **`NALEZ-emailova-fronta.md`**.
+**ROZHODNUTÉ (4. 9. 2026): cesta A** — auth hook sa ruší, auth e-maily pôjdu
+cez Supabase + Brevo SMTP. Tým odpadá celý 5-sekundový cron.
+Rozbor → `NALEZ-emailova-fronta.md`, overenie dopadov →
+`OVERENIE-zrusenie-auth-hooku.md`.
+
+Z toho vyplýva jedno kritické nastavenie:
+**„Confirm email" musí na novom projekte zostať VYPNUTÉ** (na starom je
+vypnuté — 180/180 účtov potvrdených, ale potvrdzovací e-mail dostalo len 7).
+So zapnutým potvrdzovaním `signUp()` nevráti session, insert do `customers`
+padne na RLS a nový zákazník zostane bez záznamu.
 
 ---
 
@@ -81,12 +90,17 @@ Vyžaduje rozhodnutie ešte pred fázou 2 → **`NALEZ-emailova-fronta.md`**.
        predinštalovaných (`pg_cron` 1.6.4, `pg_net` 0.20.4, `pgmq` 1.5.1,
        `pgcrypto`, `uuid-ossp`, `supabase_vault`, `pg_stat_statements`)
 - [x] **1.4b** Odobraté default privilégiá v `public` pre `anon`/`authenticated`
-- [ ] **1.4c** ROZHODNÚŤ o auth e-mailoch → `NALEZ-emailova-fronta.md`
+- [x] **1.4c** Rozhodnuté: cesta A (zrušiť hook, ísť cez Brevo SMTP)
+- [ ] **1.4d** Overiť, že **„Confirm email" je VYPNUTÉ**
+       (Authentication → Sign In / Providers → Email)
 - [ ] **1.5** Google Cloud Console — OAuth klient → `patches/01-google-oauth.md`, krok A
 - [ ] **1.6** Supabase Auth → Google provider + redirect URLs → krok B
-- [ ] **1.7** Brevo SMTP do **Authentication → Emails → SMTP Settings**
-       (vstavaný Supabase mailer zvláda len 2 e-maily/hod., pri ~13 registráciách
-       denne to nestačí; Brevo kľúč už existuje)
+- [ ] **1.7** Brevo **SMTP** do *Authentication → Emails → SMTP Settings*
+       (`smtp-relay.brevo.com:587`). Pozor: sú to SMTP údaje, **nie** REST API
+       kľúč, ktorý používa `send-email`. Vstavaný Supabase mailer zvláda len
+       2 e-maily/hod., čo by nestačilo.
+- [ ] **1.8** Auth hook **nezapínať** (Authentication → Hooks → Send Email Hook
+       nechať vypnutý)
 
 ## Fáza 2 — skúšobný prenos (žiadny dopad na produkciu)
 
@@ -101,11 +115,18 @@ Vyžaduje rozhodnutie ešte pred fázou 2 → **`NALEZ-emailova-fronta.md`**.
        účtov podľa poskytovateľa = **zastaviť a riešiť**
 - [ ] **2.6** `node scripts/30-copy-storage.mjs` — 13 súborov
 - [ ] **2.7** `psql "$NEW_DB_URL" -v new_project_ref=... -v new_anon_key=... -f sql/30-recreate-cron.sql`
-- [ ] **2.8** `supabase functions deploy --project-ref vfewttbwcxvvpjpmvhhy` (všetkých 6)
+- [ ] **2.8** Nasadiť **4 edge funkcie** (nie 6):
+       `send-email`, `send-booking-reminders`, `create-guest-booking`,
+       `handle-booking-action`.
+       **Nenasadzovať** `auth-email-hook` ani `process-email-queue` — rušia sa.
 - [ ] **2.9** Tajné kľúče do edge funkcií → `SECRETS.md`
 - [ ] **2.10** Aplikovať patch `01-google-oauth.md` (kroky C1–C3) na vetve, **nie na main**
 - [ ] **2.11** Preview nasadenie na Verceli s novými `VITE_*` premennými
 - [ ] **2.12** Prejsť testovací zoznam z `01-google-oauth.md`, krok E
+- [ ] **2.13** Registrácia nového testovacieho účtu e-mailom + overiť v DB,
+       že pribudol riadok v `public.customers`
+       (toto odhalí zle nastavené „Confirm email")
+- [ ] **2.14** Reset hesla — overiť, že e-mail dorazí cez Brevo SMTP
 
 > Po fáze 2 stále beží všetko po starom. Nová databáza je len pripravená kópia.
 
