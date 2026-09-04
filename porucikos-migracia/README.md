@@ -25,6 +25,7 @@ hosting, Brevo e-maily — všetko v rámci free tierov.
 ```
 porucikos-migracia/
 ├── RUNBOOK.md                    ← ZAČNI TU. Fázy 1–4, checklisty, návrat späť.
+├── STAV-prenosu.md               Čo je hotové na novej DB + čo zostáva.
 ├── SECRETS.md                    Zoznam kľúčov (názvy, nie hodnoty).
 ├── sql/
 │   ├── 00-cleanup-cron-logs.sql  Upratanie 1,5 GB. Nezávislé, dá sa hneď.
@@ -57,7 +58,10 @@ export OUT_DIR='./dump-RRRRMMDD-HHMMSS'
 node scripts/30-copy-storage.mjs
 ```
 
-Potrebné nástroje: Supabase CLI, psql 17+, Docker Desktop, Node 18+.
+Potrebné nástroje: **žiadne.** Skripty v `scripts/` sú CLI cesta, ktorá sa
+nakoniec nepoužila — prenos prebehol priamo z databázy do databázy cez `pg_net`
+a PostgREST. Nechávam ich tu ako zálohu, ak by si to niekedy chcel zopakovať
+klasicky (vtedy: Supabase CLI, psql 17+, Docker Desktop, Node 18+).
 
 ---
 
@@ -80,9 +84,16 @@ Potrebné nástroje: Supabase CLI, psql 17+, Docker Desktop, Node 18+.
 | Analýza a zmeranie | hotové |
 | Príprava skriptov a patchov | hotové |
 | 1 — nový Supabase projekt | hotové — `vfewttbwcxvvpjpmvhhy` (Frankfurt) |
-| 2 — skúšobný prenos | **na rade** |
-| 3 — ostré prepnutie | čaká na fázu 2 |
+| 2 — prenos schémy a dát | **hotové a overené** → `STAV-prenosu.md` |
+| 2b — secrets, storage, OAuth | **na rade** |
+| 3 — ostré prepnutie | čaká na 2b |
 | 4 — zálohy a upratanie | čaká na fázu 3 |
+
+Schéma aj dáta sú na novej databáze prenesené a overené kontrolnými súčtami
+(zhoda do posledného bajtu na 12 tabuľkách vrátane `auth.users` — heslá teda
+fungujú bez resetu). Nasadených je 5 edge funkcií a 3 cron úlohy, z toho dve
+zámerne vypnuté, aby nový projekt neposielal zákazníkom pripomienky súbežne
+so starým. Podrobnosti a zoznam zvyšných krokov: **`STAV-prenosu.md`**.
 
 Podrobný rozbor nákladov a rozhodnutí:
 <https://claude.ai/code/artifact/965ccc9b-5e2b-4a25-a4f1-d8ae1df6f79b>
