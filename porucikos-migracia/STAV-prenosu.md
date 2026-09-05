@@ -144,7 +144,70 @@ dvojité `\\n` v popise udalosti, `/\s+/`). Zhoda.
 
 ---
 
-## 7. Zámerná odchýlka od produkcie
+## 7. Storage — prekopírovaný a overený
+
+13 súborov (11 637 053 bajtov) prenesených **bez dashboardu**. Na nový projekt
+som nasadil jednorazovú edge funkciu, ktorá si súbory stiahla z verejných
+URL starého projektu a nahrala ich cez Storage API. Edge funkcie majú
+`SUPABASE_SERVICE_ROLE_KEY` injektovaný automaticky, takže žiadny kľúč nebolo
+treba nikde zadávať ani mi ho ukazovať.
+
+| Bucket | Súborov | Bajtov | Odtlačok (zhodný na oboch stranách) |
+|---|---:|---:|---|
+| `email-assets` | 1 | 594 375 | `eb76d72f867b139b018d864292527aec` |
+| `employee-avatars` | 12 | 11 042 678 | `b5e6526fcb76496d3aceda79787376e8` |
+
+Funkcia `tmp-copy-storage` je **vyradená** — telo je nahradené stubom, ktorý
+vracia 410, a `verify_jwt` je späť na `true`. Zmazať sa dá v dashboarde:
+Edge Functions → `tmp-copy-storage` → Delete. Nechal som ju tam len preto, že
+cez API sa edge funkcie mazať nedajú.
+
+---
+
+## 8. Kľúče na novom projekte majú NOVÝ formát
+
+Toto je dobré vedieť, lebo to mätie:
+
+| Premenná | Starý projekt | Nový projekt |
+|---|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | JWT (`eyJ…`) | **`sb_secret_…`** (41 znakov) |
+| `SUPABASE_ANON_KEY` | JWT (`eyJ…`) | **`sb_publishable_…`** (46 znakov) |
+
+Názvy premenných zostali, ale hodnoty už nie sú JWT. Praktický dôsledok:
+pri priamom volaní REST/Storage API **nestačí `Authorization: Bearer <kľúč>`**
+— server sa to pokúsi rozparsovať ako JWT a vráti `Invalid Compact JWS`.
+Treba poslať aj hlavičku `apikey`. `supabase-js` posiela obe sám, takže
+v edge funkciách to problém nie je.
+
+---
+
+## 9. Druhá chyba, ktorú odhalil test
+
+Migrácia `restore_default_table_grants` (bod 4) pokryla `anon` a `authenticated`,
+ale **`service_role` som vynechal**. Edge funkcie chodia cez service_role, takže
+`send-email` vracala:
+
+```
+Appointment not found: permission denied for table appointments
+```
+
+service_role síce obchádza RLS, ale table-level GRANT potrebuje rovnako ako
+každá iná rola — Postgres kontroluje GRANT **pred** RLS. Opravené migráciou
+`restore_service_role_table_grants`; granty sú teraz zhodné s produkciou
+(136 záznamov, md5 `6628ad0f581ade4e6256276e25d3dedc`).
+
+Po oprave test prešiel: `{"success":true,"skipped":"already_sent"}` (HTTP 200).
+Test bol nedeštruktívny — použil rezerváciu, ktorá e-mail už dostala, takže
+sa zastavil na idempotenčnej poistke a nič neodoslal. Overil tým naraz:
+nábeh funkcie, prítomnosť `BREVO_API_KEY` a čítanie z DB cez service_role.
+
+Čo tým **nie je** overené: `BOOKING_ACTION_HMAC_SECRET`. Podpisovanie odkazov
+sa spúšťa až za idempotenčnou poistkou, takže sa naň nedostalo. Overí sa až
+pri ostrom teste s novou rezerváciou.
+
+---
+
+## 10. Zámerná odchýlka od produkcie
 
 `public.create_guest_booking()` má na Lovable EXECUTE aj pre `anon`
 a `authenticated`. Je to pozostatok default privileges — migrácia
@@ -160,15 +223,10 @@ Správanie identické, prístup tesnejší.
 
 ## Čo ešte zostáva
 
-- [ ] **Secrets pre edge funkcie:**
-      `BOOKING_ACTION_HMAC_SECRET` — **nový náhodný reťazec**, napr.
-      `openssl rand -hex 32`. Starý netreba: odkazy v už rozposlaných e-mailoch
-      mieria na starý project ref (`PROJECT_REF` je v `send-email` napevno),
-      takže na nový projekt nikdy neprídu. Podrobne v `RUNBOOK.md`, bod 1.
-      `BREVO_API_KEY` — pokojne ten istý ako na starom projekte. Brevo kľúče
-      patria účtu, nie projektu, a denný limit je tiež na účet.
-- [ ] **Storage:** 13 súborov v 2 bucketoch (11,6 MB) prekopírovať cez dashboard.
-      Bez toho nebude logo v e-mailoch ani fotky barberov.
+- [x] ~~**Secrets pre edge funkcie**~~ — hotové, oba nastavené 5. 9. 2026.
+      `BOOKING_ACTION_HMAC_SECRET` je nový náhodný (starý sa neprenáša, viď
+      `RUNBOOK.md` bod 1), `BREVO_API_KEY` je ten istý ako na starom projekte.
+
 - [ ] **Google OAuth** podľa `patches/01-google-oauth.md` + odstrániť
       `@lovable.dev/cloud-auth-js` z frontendu.
 - [ ] **"Confirm email" musí zostať VYPNUTÉ.** Zapnuté rozbije registráciu:
