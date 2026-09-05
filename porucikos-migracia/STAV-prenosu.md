@@ -207,7 +207,95 @@ pri ostrom teste s novou rezerváciou.
 
 ---
 
-## 10. Zámerná odchýlka od produkcie
+## 11. Kompletný audit schémy proti predlohe
+
+Porovnané 14 oblastí, rovnaký dotaz na oboch databázach. Predlohou je **starý
+Lovable projekt**, nie migrácie v repozitári.
+
+| Oblasť | Počet | Zhoda |
+|---|---:|:--:|
+| stĺpce (typ, NOT NULL, default) | 130 | ✅ |
+| indexy | 46 | ✅ |
+| constrainty (PK, FK, UNIQUE, CHECK) | 49 | ✅ |
+| funkcie (telo, SECURITY DEFINER, search_path) | 17 | ✅ |
+| triggery | 8 | ✅ |
+| RLS politiky `public` | 52 | ✅ |
+| RLS politiky `storage` | 4 | ✅ |
+| tabuľky so zapnutým RLS | 16 | ✅ |
+| granty (anon/authenticated/service_role) | 407 | ✅ |
+| pohľady | 1 | ✅ |
+| enumy | 3 | ✅ |
+| realtime publikácia | 3 | ✅ |
+| sekvencie | 0 | ✅ |
+| storage buckety | 2 | ✅ |
+
+### Čo audit našiel
+
+Dve funkcie sa líšili — `check_appointment_conflict()` a `create_guest_booking()`.
+Nie logikou: **chýbali im komentáre.** Pri príprave dávok migrácií som SQL
+komentáre odstránil, takže na novej DB boli funkcie o 504 a 399 znakov kratšie.
+Správanie by to nezmenilo, ale 1:1 to nebolo a budúci čitateľ by prišiel
+o vysvetlenie, prečo sa napr. preskakuje kontrola konfliktu pri UPDATE.
+
+Obe som prepísal presne podľa predlohy (`pg_get_functiondef` zo starej DB).
+Hash funkcií je odvtedy `690ce320522d766a77dc2569475e2fb5` na oboch stranách.
+Granty ani triggery to nenarušilo — `CREATE OR REPLACE` zachováva ACL aj OID.
+
+---
+
+## 12. Frontend — odpojený od Lovable
+
+Vetva `claude/porucikos-vercel-migration-i7w27q` v repozitári `XxxAnDrei/porucikos`.
+
+| Zmena | Prečo |
+|---|---|
+| `Auth.tsx` → natívny `supabase.auth.signInWithOAuth` | Lovable wrapper preč |
+| zmazaný `src/integrations/lovable/index.ts` | jediný jeho používateľ bol Auth.tsx |
+| zmazaný `previewAuthStorage.ts` | mimo Lovable preview aj tak vracal `localStorage`, čo je default `supabase-js` |
+| `.env` → nový projekt | |
+| `package.json` bez `@lovable.dev/cloud-auth-js` a `lovable-tagger` | |
+| ponechaný len `package-lock.json` | |
+
+**Lockfily:** repozitár mal tri (`bun.lock`, `bun.lockb`, `package-lock.json`)
+a `package-lock.json` bol v rozpore s `package.json` — mal `cloud-auth-js 0.0.2`,
+kým `package.json` žiadal `^1.0.0` a `bun.lock` mal `1.0.1`. Na tom by `npm ci`
+na Verceli spadol. Tri lockfily zároveň robia voľbu balíčkovača nejednoznačnou.
+Nechal som `package-lock.json`, regenerovaný a konzistentný.
+
+**Detail v `handleGoogleSignIn`:** pôvodný kód vypínal spinner vždy na konci.
+Natívny `signInWithOAuth` ale pri úspechu odchádza na Google, takže by spinner
+problikol tesne pred presmerovaním. Vypína sa preto už len pri chybe.
+Pridané `prompt=select_account` — v barbershope sa na jednom zariadení
+striedajú ľudia a bez toho by Google ticho prihlásil posledný účet.
+
+### Overené, nie predpokladané
+
+- `npx tsc --noEmit` bez chyby, `npm run build` prejde
+- v `dist/` **nula** výskytov starého project refu a **nula** Lovable auth kódu
+- publishable kľúč otestovaný priamo proti novému projektu:
+
+  | Endpoint | Očakávanie | Realita |
+  |---|---|---|
+  | `services` | má čítať | 200, dáta |
+  | `employees_public` | má čítať | 200, dáta |
+  | `business_hours` | má čítať | 200, dáta |
+  | `employee_availability` | má čítať | 200, dáta |
+  | `customers` | nesmie vidieť cudzie | 200, prázdne (RLS) |
+  | `appointments` | nesmie vidieť cudzie | 200, prázdne (RLS) |
+  | `user_roles` | nesmie vidieť role | 200, prázdne (RLS) |
+  | `employees` | nesmie, ide cez view | 401, zamietnuté |
+
+- nastavenia Auth prečítané z `/auth/v1/settings`:
+  `google=true`, `email=true`, `disable_signup=false`,
+  **`mailer_autoconfirm=true`** — teda „Confirm email" je naozaj vypnuté
+
+Typy v `src/integrations/supabase/types.ts` som negeneroval nanovo zámerne:
+boli vygenerované z produkcie a audit dokázal, že stĺpce, enumy aj funkcie sú
+s produkciou bajt na bajt zhodné, takže musia sedieť aj na novú DB.
+
+---
+
+## 13. Zámerná odchýlka od produkcie
 
 `public.create_guest_booking()` má na Lovable EXECUTE aj pre `anon`
 a `authenticated`. Je to pozostatok default privileges — migrácia
@@ -227,12 +315,15 @@ Správanie identické, prístup tesnejší.
       `BOOKING_ACTION_HMAC_SECRET` je nový náhodný (starý sa neprenáša, viď
       `RUNBOOK.md` bod 1), `BREVO_API_KEY` je ten istý ako na starom projekte.
 
-- [ ] **Google OAuth** podľa `patches/01-google-oauth.md` + odstrániť
-      `@lovable.dev/cloud-auth-js` z frontendu.
-- [ ] **"Confirm email" musí zostať VYPNUTÉ.** Zapnuté rozbije registráciu:
-      `signUp()` nevráti session, vloženie do `customers` (`useAuth.ts:106`)
-      pobeží ako anon a RLS ho odmietne — zákazník uvidí „Registrácia úspešná",
-      ale záznam nevznikne.
+- [x] ~~**Google OAuth** + odstránenie `@lovable.dev/cloud-auth-js`~~ — hotové,
+      viď bod 12. Zostáva doplniť v Supabase → Authentication → URL Configuration
+      **Site URL** a **Redirect URLs** (porucikos.sk, www.porucikos.sk a doména
+      Vercel preview). To sa cez API overiť nedá, treba doklikať.
+- [x] ~~**"Confirm email" musí zostať VYPNUTÉ"**~~ — overené
+      (`mailer_autoconfirm=true`). Pozor do budúcna: zapnutie rozbije
+      registráciu — `signUp()` nevráti session, vloženie do `customers`
+      (`useAuth.ts:106`) pobeží ako anon a RLS ho odmietne; zákazník uvidí
+      „Registrácia úspešná", ale záznam nevznikne.
 - [ ] Dorobiť rozdiel dát v zmrazenom okne, potom zapnúť tie 2 cron úlohy.
 - [ ] **Staré odkazy po prepnutí.** 23 budúcich rezervácií čaká na potvrdenie
       (7. 9. – 1. 10.) a 346 potvrdených má v starých e-mailoch odkaz na
