@@ -35,12 +35,31 @@ databáza je zatiaľ prázdna (0 tabuliek, 0 účtov). Na produkcii sa nezmenilo
 
 ### 1. HMAC kľúč pre odkazy v e-mailoch
 
-E-maily obsahujú tlačidlá „Potvrdiť" / „Zrušiť". Odkazy sú podpísané cez
-`BOOKING_ACTION_HMAC_SECRET` a smerujú na **starý** project ref. Platia **30 dní**
-a práve teraz **30 rezervácií čaká na potvrdenie**.
+> **OPRAVA pôvodného predpokladu.** Najskôr som napísal, že kľúč sa musí
+> preniesť nezmenený. Nie je to pravda a je dobré vedieť prečo.
 
-- Do nového projektu prenes **ten istý** `BOOKING_ACTION_HMAC_SECRET`.
-- Starý projekt nechaj bežať ešte **mesiac** po prepnutí.
+E-maily obsahujú tlačidlá „Potvrdiť" / „Zrušiť", podpísané cez
+`BOOKING_ACTION_HMAC_SECRET`. Lenže adresa odkazu sa skladá z konštanty
+`PROJECT_REF`, ktorá je v `send-email/index.ts` napevno:
+
+```ts
+const ACTION_URL = `https://${PROJECT_REF}.supabase.co/functions/v1/handle-booking-action`;
+```
+
+Na starom projekte je tam `csteuzcbybwfwxmjmkjb`. **Všetky doteraz rozposlané
+odkazy teda mieria na starý projekt a na nový sa nikdy nedostanú.** Skopírovať
+tam starý kľúč by nič nevyriešilo.
+
+- Na nový projekt daj **nový náhodný** `BOOKING_ACTION_HMAC_SECRET`.
+  Jediná podmienka je, aby tú istú hodnotu videli `send-email` (podpisuje)
+  aj `handle-booking-action` (overuje) — obe sú na novom projekte.
+- Starý kľúč nikde nehľadaj. V Supabase sa hodnoty secretov po uložení už
+  nedajú prečítať, sú write-only.
+
+**Čo ale treba ošetriť:** staré odkazy po prepnutí stále fungujú — proti
+**starej** databáze. Barber potvrdí rezerváciu zo staršieho e-mailu, zapíše sa
+to do databázy, ktorú už nikto nečíta, a v ostrom systéme rezervácia ostane
+nepotvrdená. Postup je v `RUNBOOK.md` → Fáza 3, krok „staré odkazy".
 
 ### 2. JWT secret — všetci sa odhlásia
 

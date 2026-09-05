@@ -69,8 +69,10 @@ klasicky (vtedy: Supabase CLI, psql 17+, Docker Desktop, Node 18+).
 
 1. **Google prihlásenie** — používa ho 105 zo 180 účtov a dnes ide cez Lovable.
    Testovať na preview, nikdy nie rovno na produkcii. → `patches/01-google-oauth.md`
-2. **HMAC kľúč** — v e-mailoch ležia odkazy platné 30 dní; 30 rezervácií práve
-   čaká na potvrdenie. Kľúč sa musí preniesť **nezmenený**.
+2. **Staré odkazy v e-mailoch** — platia 30 dní a mieria na **starý** project
+   ref, lebo adresa je v `send-email` napevno. Po prepnutí teda zapisujú do
+   starej databázy. Nový projekt dostane nový kľúč; starý netreba hľadať
+   (aj tak sa nedá prečítať). → `RUNBOOK.md`, bod 1
 3. **Storage** — `pg_dump` súbory neberie. Bez kroku 30 zmiznú fotky barberov.
 4. **JWT secret** — po prepnutí sa všetkých 180 ľudí musí znovu prihlásiť.
    Barberom to treba povedať dopredu.

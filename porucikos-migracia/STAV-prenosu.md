@@ -160,9 +160,13 @@ Správanie identické, prístup tesnejší.
 
 ## Čo ešte zostáva
 
-- [ ] **Secrets pre edge funkcie:** `BOOKING_ACTION_HMAC_SECRET` (musí byť
-      **presne tá istá hodnota** ako na starom projekte — v e-mailoch ležia
-      odkazy platné 30 dní a 30 rezervácií čaká na potvrdenie) a `BREVO_API_KEY`.
+- [ ] **Secrets pre edge funkcie:**
+      `BOOKING_ACTION_HMAC_SECRET` — **nový náhodný reťazec**, napr.
+      `openssl rand -hex 32`. Starý netreba: odkazy v už rozposlaných e-mailoch
+      mieria na starý project ref (`PROJECT_REF` je v `send-email` napevno),
+      takže na nový projekt nikdy neprídu. Podrobne v `RUNBOOK.md`, bod 1.
+      `BREVO_API_KEY` — pokojne ten istý ako na starom projekte. Brevo kľúče
+      patria účtu, nie projektu, a denný limit je tiež na účet.
 - [ ] **Storage:** 13 súborov v 2 bucketoch (11,6 MB) prekopírovať cez dashboard.
       Bez toho nebude logo v e-mailoch ani fotky barberov.
 - [ ] **Google OAuth** podľa `patches/01-google-oauth.md` + odstrániť
@@ -172,4 +176,19 @@ Správanie identické, prístup tesnejší.
       pobeží ako anon a RLS ho odmietne — zákazník uvidí „Registrácia úspešná",
       ale záznam nevznikne.
 - [ ] Dorobiť rozdiel dát v zmrazenom okne, potom zapnúť tie 2 cron úlohy.
+- [ ] **Staré odkazy po prepnutí.** 23 budúcich rezervácií čaká na potvrdenie
+      (7. 9. – 1. 10.) a 346 potvrdených má v starých e-mailoch odkaz na
+      zrušenie. Všetky mieria na starý projekt. Kontrola, či niekto taký odkaz
+      použil, sa robí nad **starou** DB:
+
+      ```sql
+      SELECT id, status, updated_at FROM public.appointments
+      WHERE updated_at > '<cas-prepnutia>'::timestamptz ORDER BY updated_at;
+      ```
+
+      Čo tam pribudne, treba ručne premietnuť do novej DB. Pomáha aj toto:
+      pred prepnutím nechať barberov potvrdiť všetko čakajúce, a po prepnutí
+      poslať pre zvyšné `employee_new_booking` z nového projektu — ten typ
+      ako jediný nemá idempotenčnú poistku, takže barber dostane funkčné
+      odkazy na nový projekt.
 - [ ] Vercel env premenné, DNS na Cloudflare, nočná záloha cez GitHub Action.
