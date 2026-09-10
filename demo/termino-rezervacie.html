@@ -5,7 +5,7 @@
 
 <style>
 /* ============================================================
-   TERMINO — prezentácia rezervačného systému
+   TERMINO - prezentácia rezervačného systému
    Produktová značka je stála; ukážkové prevádzky majú vlastný akcent.
    ============================================================ */
 
@@ -174,38 +174,73 @@ table { border-collapse: collapse; width: 100%; }
 
 /* ============================================================
    PREZENTAČNÁ STRÁNKA
+   Rytmus sekcií sa zámerne mení. Žiadne "eyebrow" nad nadpismi,
+   žiadne vysvetľujúce odseky pod nimi, žiadne mriežky rovnakých kariet.
    ============================================================ */
 
 .topbar { position: sticky; top: 0; z-index: 40; background: var(--bg); border-bottom: 1px solid var(--line); }
-.topbar__in { max-width: var(--maxw); margin-inline: auto; padding: 12px var(--gutter); display: flex; align-items: center; gap: 18px; }
+.topbar__in { max-width: var(--maxw); margin-inline: auto; padding: 11px var(--gutter); display: flex; align-items: center; gap: 18px; height: 64px; }
 
 .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.logo__m { width: 32px; height: 32px; border-radius: 9px; background: var(--acc); color: var(--on-acc); display: grid; place-items: center; flex: none; }
-.logo__m svg { width: 18px; height: 18px; }
-.logo__t { font-family: var(--f-disp); font-weight: 700; font-size: 1.08rem; letter-spacing: -.03em; }
+.logo__m { width: 30px; height: 30px; border-radius: 9px; background: var(--acc); color: var(--on-acc); display: grid; place-items: center; flex: none; }
+.logo__m svg { width: 17px; height: 17px; }
+.logo__t { font-family: var(--f-disp); font-weight: 700; font-size: 1.06rem; letter-spacing: -.03em; }
 
 .topnav { margin-left: auto; display: flex; align-items: center; gap: 20px; }
-.topnav a { text-decoration: none; font-size: .9rem; color: var(--ink-2); }
+.topnav a { text-decoration: none; font-size: .89rem; color: var(--ink-2); }
 .topnav a:hover { color: var(--acc); }
 @media (max-width: 900px) { .topnav .hide-sm { display: none; } .topnav { gap: 10px; } }
 
+/* --- HERO: asymetrický split, žiadny eyebrow, žiadny prívesok pod tlačidlami --- */
 .hero { background: var(--brandink); color: var(--onbrand); position: relative; overflow: hidden; }
 .hero::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(88% 68% at 80% 6%, color-mix(in srgb, var(--acc) 24%, transparent) 0%, transparent 62%);
+  background: radial-gradient(78% 62% at 84% 4%, color-mix(in srgb, var(--acc) 22%, transparent) 0%, transparent 64%);
 }
-.hero__in { position: relative; z-index: 1; max-width: var(--maxw); margin-inline: auto; padding: clamp(44px, 6.5vw, 80px) var(--gutter) clamp(38px, 6vw, 68px); display: grid; grid-template-columns: minmax(0, 1.14fr) minmax(0, .86fr); gap: clamp(28px, 5vw, 54px); align-items: center; }
+.hero__in {
+  position: relative; z-index: 1; max-width: var(--maxw); margin-inline: auto;
+  padding: clamp(38px, 5.2vw, 68px) var(--gutter) clamp(40px, 5.5vw, 72px);
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr);
+  gap: clamp(26px, 4.5vw, 52px); align-items: center;
+}
 @media (max-width: 940px) { .hero__in { grid-template-columns: 1fr; } }
 
-.hero .eyebrow { color: color-mix(in srgb, var(--onbrand) 62%, transparent); }
-.hero h1 { font-size: clamp(2.2rem, 4.7vw, 3.4rem); margin-block: 14px 18px; }
-.hero h1 em { font-style: normal; color: var(--acc); }
-.hero__sub { color: color-mix(in srgb, var(--onbrand) 78%, transparent); font-size: 1.05rem; max-width: 52ch; }
+.hero h1 { font-size: clamp(2.5rem, 6.2vw, 4.3rem); line-height: .98; margin-bottom: 18px; max-width: 14ch; }
+.hero h1 b { font-weight: 700; color: var(--acc); }
+.hero__sub { color: color-mix(in srgb, var(--onbrand) 76%, transparent); font-size: 1.05rem; max-width: 44ch; }
 .hero__cta { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 26px; }
-.hero__marks { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.13); }
-.hero__mark { display: flex; align-items: center; gap: 8px; font-size: .86rem; color: color-mix(in srgb, var(--onbrand) 74%, transparent); }
-.hero__mark svg { width: 15px; height: 15px; color: var(--acc); flex: none; }
 
+/* --- sekcie: rytmus sa mení, nie každá má rovnaké okraje --- */
+section { scroll-margin-top: 70px; }
+.band { padding-block: clamp(42px, 5.4vw, 72px); }
+.band--paper { background: var(--surface); border-block: 1px solid var(--line); }
+.band--tight { padding-block: clamp(38px, 5vw, 60px); }
+
+.measure { max-width: 60ch; }
+.h-sec { font-size: clamp(1.75rem, 3.6vw, 2.7rem); margin-bottom: 26px; }
+.h-sec--wide { max-width: 18ch; }
+
+/* --- pozorovania: nerovnaké riadky oddelené vlasovou linkou, bez kariet --- */
+.obs { display: grid; gap: 0; max-width: 66ch; }
+.obs p { padding-block: 15px; border-top: 1px solid var(--line); font-size: 1.02rem; color: var(--ink-2); }
+.obs p:first-child { border-top: 0; padding-top: 0; }
+.obs p b { color: var(--ink); font-weight: 600; }
+
+/* --- argumenty: stĺpec s odsadením, ktoré sa strieda --- */
+.args { display: grid; gap: 0; }
+.arg { display: grid; grid-template-columns: minmax(0, 17rem) minmax(0, 52ch); gap: 8px 48px; padding-block: 28px; border-top: 1px solid var(--line); align-items: start; }
+.arg:first-child { border-top: 0; }
+.arg h3 { font-size: 1.3rem; line-height: 1.12; }
+.arg p { color: var(--ink-2); font-size: .98rem; }
+@media (min-width: 1080px) { .arg:nth-child(2) { padding-left: 3rem; } .arg:nth-child(3) { padding-left: 6rem; } }
+@media (max-width: 899px) { .arg { grid-template-columns: 1fr; gap: 6px; } }
+
+/* --- citát: celá šírka, tmavý pás, jedna veta --- */
+.quote { background: var(--brandink); color: var(--onbrand); padding-block: clamp(46px, 6vw, 76px); }
+.quote p { font-family: var(--f-disp); font-weight: 600; font-size: clamp(1.5rem, 3.6vw, 2.5rem); line-height: 1.14; letter-spacing: -.025em; max-width: 22ch; }
+.quote p span { color: var(--acc); }
+
+/* --- okno s ukážkou --- */
 .window { border-radius: var(--r-lg); overflow: hidden; background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-lg); }
 .window--onbrand { border-color: rgba(255,255,255,.14); }
 .window__bar { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
@@ -214,63 +249,63 @@ table { border-collapse: collapse; width: 100%; }
 .window__url { font-family: var(--f-data); font-size: .72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; margin-inline: auto; max-width: 72%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .window__body { padding: 16px; }
 
-section { scroll-margin-top: 72px; }
-.sec { padding-block: clamp(46px, 6.5vw, 82px); }
-.sec--alt { background: var(--surface); border-block: 1px solid var(--line); }
-.sechead { margin-bottom: 30px; max-width: 64ch; }
-.sechead h2 { font-size: clamp(1.6rem, 3.2vw, 2.3rem); margin-block: 10px 12px; }
-
-.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(252px, 1fr)); gap: 14px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 21px; display: flex; flex-direction: column; gap: 9px; transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease; }
-.sec--alt .card { background: var(--bg); }
-.card:hover { border-color: var(--acc-line); transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.card__i { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--acc-soft); color: var(--acc-deep); border: 1px solid var(--acc-line); }
-.card__i svg { width: 18px; height: 18px; }
-.card h3 { font-size: 1.02rem; }
-.card p { font-size: .89rem; color: var(--muted); }
-
-.verticals { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
-.vert {
-  text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
-  padding: 21px; cursor: pointer; display: flex; flex-direction: column; gap: 9px;
-  transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+/* --- odvetvia: prepínač, nie tri rovnaké karty --- */
+.vertbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.vertbtn {
+  border: 1px solid var(--line-strong); background: transparent; border-radius: 999px;
+  padding: 8px 17px; font-size: .92rem; font-weight: 500; cursor: pointer; color: var(--ink-2);
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease;
 }
-.sec--alt .vert { background: var(--bg); }
-.vert:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.vert[aria-pressed="true"] { border-color: var(--ten); box-shadow: 0 0 0 1px var(--ten); }
-.vert__sw { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: #fff; flex: none; }
-.vert__sw svg { width: 16px; height: 16px; }
-.vert h3 { font-size: 1.02rem; }
-.vert p { font-size: .88rem; color: var(--muted); }
-.vert__go { font-size: .84rem; font-weight: 600; color: var(--ten); margin-top: auto; padding-top: 6px; }
+.vertbtn:hover { border-color: var(--ten); color: var(--ten); }
+.vertbtn[aria-pressed="true"] { background: var(--ten); border-color: var(--ten); color: var(--on-ten); font-weight: 600; }
+.vertnote { max-width: 52ch; font-size: 1.05rem; color: var(--ink-2); border-left: 2px solid var(--ten); padding-left: 16px; min-height: 3.2em; }
 
-.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 14px; }
-.stepc { padding: 20px; border-left: 2px solid var(--acc-line); background: var(--surface); border-radius: 0 var(--r-md) var(--r-md) 0; }
-.sec--alt .stepc { background: var(--bg); }
-.stepc__n { font-family: var(--f-data); font-size: .74rem; color: var(--acc); letter-spacing: .1em; }
-.stepc h3 { font-size: 1rem; margin-block: 6px 6px; }
-.stepc p { font-size: .88rem; color: var(--muted); }
+/* --- fakty: dva stĺpce, vlasové linky, žiadne ikony --- */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 44px; max-width: 74ch; }
+.facts p { padding-block: 13px; border-top: 1px solid var(--line); font-size: .99rem; }
+.nots { display: grid; gap: 9px; max-width: 52ch; }
+.nots p { font-size: .99rem; color: var(--ink-2); padding-left: 20px; position: relative; }
+.nots p::before { content: ""; position: absolute; left: 0; top: .72em; width: 11px; height: 1px; background: var(--muted); }
 
-.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(248px, 1fr)); gap: 14px; }
-.plan { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; display: flex; flex-direction: column; gap: 12px; }
-.sec--alt .plan { background: var(--bg); }
-.plan--hi { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc); }
-.plan__badge { align-self: flex-start; font-family: var(--f-data); font-size: .66rem; letter-spacing: .13em; text-transform: uppercase; background: var(--acc-soft); color: var(--acc-deep); border: 1px solid var(--acc-line); border-radius: 999px; padding: 3px 9px; }
-.plan__p { font-family: var(--f-data); font-size: 2rem; font-weight: 500; letter-spacing: -.03em; }
-.plan__p span { font-family: var(--f-ui); font-size: .86rem; font-weight: 400; color: var(--muted); letter-spacing: 0; }
-.plan ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font-size: .89rem; color: var(--ink-2); }
-.plan li { display: flex; gap: 9px; align-items: flex-start; }
-.plan li svg { width: 15px; height: 15px; color: var(--acc); flex: none; margin-top: 4px; }
+/* --- autor --- */
+.author { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 15rem); gap: clamp(24px, 4vw, 56px); align-items: start; }
+@media (max-width: 860px) { .author { grid-template-columns: 1fr; } }
+.author p + p { margin-top: 12px; }
+.author p { font-size: 1.03rem; color: var(--ink-2); }
+.author p:first-child { font-size: 1.14rem; color: var(--ink); }
+.sig { border-left: 2px solid var(--acc); padding-left: 15px; }
+.sig b { display: block; font-family: var(--f-disp); font-size: 1.05rem; }
+.sig span { display: block; font-size: .87rem; color: var(--muted); }
 
-.note { border: 1px dashed var(--line-strong); border-radius: var(--r-md); padding: 12px 14px; font-size: .84rem; color: var(--muted); }
+/* --- cena: jedno číslo, zvyšok veta --- */
+.price { display: grid; grid-template-columns: auto minmax(0, 46ch); gap: clamp(22px, 4vw, 52px); align-items: start; }
+@media (max-width: 780px) { .price { grid-template-columns: 1fr; } }
+.price__n { font-family: var(--f-data); font-size: clamp(3rem, 8vw, 5.2rem); font-weight: 500; letter-spacing: -.05em; line-height: .9; color: var(--acc); }
+.price__n em { font-style: normal; font-size: .46em; margin-left: .1em; letter-spacing: 0; }
+.price__n small { display: block; font-family: var(--f-ui); font-size: .84rem; font-weight: 400; letter-spacing: 0; color: var(--muted); margin-top: 8px; }
+.price p { font-size: 1.03rem; color: var(--ink-2); }
+.price p + p { margin-top: 12px; }
+.price p b { color: var(--ink); font-weight: 600; }
 
-.foot { background: var(--brandink); color: var(--onbrand); padding-block: 42px 26px; }
-.foot .logo__t { color: var(--onbrand); }
-.footgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 26px; }
-.foot h4 { font-size: .94rem; margin-bottom: 10px; }
-.foot p, .foot a { font-size: .88rem; color: color-mix(in srgb, var(--onbrand) 64%, transparent); text-decoration: none; display: block; }
+/* --- otázky --- */
+.faq { max-width: 68ch; }
+.faq details { border-top: 1px solid var(--line); }
+.faq details:last-child { border-bottom: 1px solid var(--line); }
+.faq summary { cursor: pointer; padding-block: 16px; font-weight: 600; font-size: 1.02rem; list-style: none; display: flex; gap: 14px; align-items: baseline; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; margin-left: auto; font-family: var(--f-data); color: var(--muted); font-weight: 400; }
+.faq details[open] summary::after { content: "\2013"; }
+.faq details[open] summary { color: var(--acc); }
+.faq p { padding-bottom: 18px; color: var(--ink-2); max-width: 58ch; font-size: .99rem; }
+
+/* --- záver --- */
+.end { display: flex; flex-wrap: wrap; gap: 22px 40px; align-items: flex-end; }
+.end h2 { font-size: clamp(1.7rem, 4vw, 2.7rem); max-width: 16ch; }
+.end p { max-width: 40ch; color: var(--ink-2); }
+
+.foot { border-top: 1px solid var(--line); padding-block: 28px; display: flex; flex-wrap: wrap; gap: 10px 26px; font-size: .84rem; color: var(--muted); }
+.foot a { color: var(--muted); }
 .foot a:hover { color: var(--acc); }
-.footbar { margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.13); display: flex; flex-wrap: wrap; gap: 10px 20px; font-size: .8rem; color: color-mix(in srgb, var(--onbrand) 54%, transparent); }
 
 /* ============================================================
    UKÁŽKA REZERVÁCIE
@@ -299,6 +334,7 @@ section { scroll-margin-top: 72px; }
 .opt__s { font-size: .81rem; color: var(--muted); }
 .opt__r { margin-left: auto; text-align: right; flex: none; }
 .opt__r b { font-family: var(--f-data); font-weight: 500; font-size: .92rem; display: block; white-space: nowrap; }
+.opt__r b.word { font-family: var(--f-ui); font-size: .85rem; }
 .opt__r span { font-family: var(--f-data); font-size: .74rem; color: var(--muted); white-space: nowrap; }
 
 .ava { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-family: var(--f-disp); font-weight: 700; font-size: .82rem; background: var(--ten-soft); color: var(--ten-deep); border: 1px solid var(--ten-line); flex: none; }
@@ -534,10 +570,9 @@ section { scroll-margin-top: 72px; }
         <span class="logo__t">Termino</span>
       </a>
       <nav class="topnav">
-        <a href="#funkcie" class="hide-sm">Funkcie</a>
-        <a href="#odvetvia" class="hide-sm">Odvetvia</a>
         <a href="#ukazka" class="hide-sm">Ukážka</a>
         <a href="#cena" class="hide-sm">Cena</a>
+        <a href="#otazky" class="hide-sm">Otázky</a>
         <button type="button" class="iconbtn" id="themeToggle" aria-label="Prepnúť svetlý a tmavý režim"></button>
         <button type="button" class="btn btn--primary btn--sm" id="openAdmin">Admin panel</button>
       </nav>
@@ -547,14 +582,12 @@ section { scroll-margin-top: 72px; }
   <section class="hero" id="top">
     <div class="hero__in">
       <div>
-        <p class="eyebrow">Rezervačný systém pre prevádzky</p>
-        <h1>Termíny si klienti vyberú sami. Vy otvoríte <em>jeden kalendár</em>.</h1>
-        <p class="hero__sub">Online rezervácie, kalendár celej prevádzky, potvrdenia a pripomienky, štatistiky. Pre ambulancie, barbershopy aj salóny — s vaším logom, vašimi farbami a vaším názvoslovím.</p>
+        <h1>Klient si termín vyberie <b>sám</b>.</h1>
+        <p class="hero__sub">Web s rezervačným systémom pre ambulancie, barbershopy a salóny. Postavím ho aj nasadím.</p>
         <div class="hero__cta">
-          <button type="button" class="btn btn--primary" id="heroAdmin">Vstúpiť do admin panela</button>
+          <button type="button" class="btn btn--primary" id="heroAdmin">Otvoriť admin panel</button>
           <a href="#ukazka" class="btn btn--onbrand">Vyskúšať rezerváciu</a>
         </div>
-        <div class="hero__marks" id="heroMarks"></div>
       </div>
 
       <div class="window window--onbrand">
@@ -567,36 +600,29 @@ section { scroll-margin-top: 72px; }
     </div>
   </section>
 
-  <section class="sec" id="funkcie">
+  <section class="band">
     <div class="wrap">
-      <div class="sechead">
-        <p class="eyebrow">Funkcie</p>
-        <h2>Všetko, čo prevádzka okolo objednávania rieši</h2>
-        <p class="lede">Nie zoznam odškrtnutých políčok — sú to veci, ktoré inak niekto vybavuje telefónom, v zošite alebo v troch tabuľkách naraz.</p>
-      </div>
-      <div class="grid3" id="featGrid"></div>
+      <h2 class="h-sec h-sec--wide">Ako to vyzerá teraz</h2>
+      <div class="obs" id="obsList"></div>
     </div>
   </section>
 
-  <section class="sec sec--alt" id="odvetvia">
+  <section class="band band--paper">
     <div class="wrap">
-      <div class="sechead">
-        <p class="eyebrow">Odvetvia</p>
-        <h2>Jeden systém, tri rôzne prevádzky</h2>
-        <p class="lede">Vyberte odvetvie — ukážka rezervácie aj admin panel sa prepnú na jeho farby, úkony, personál a názvoslovie.</p>
-      </div>
-      <div class="verticals" id="vertGrid"></div>
+      <h2 class="h-sec">Prečo to robím takto</h2>
+      <div class="args" id="argList"></div>
     </div>
   </section>
 
-  <section class="sec" id="ukazka">
+  <section class="quote">
     <div class="wrap">
-      <div class="sechead">
-        <p class="eyebrow">Ukážka</p>
-        <h2>Takto sa objedná váš klient</h2>
-        <p class="lede">Živá ukážka, nie obrázok. Systém pozná trvanie úkonu, otváracie hodiny aj obsadenosť personálu — ponúkne len termíny, ktoré sa reálne zmestia.</p>
-      </div>
+      <p>Rezervačný systém nie je o technológii. Je o tom, aby <span>telefón prestal zvoniť</span>.</p>
+    </div>
+  </section>
 
+  <section class="band" id="ukazka">
+    <div class="wrap">
+      <h2 class="h-sec">Skúste si to</h2>
       <div class="window">
         <div class="window__bar">
           <span class="window__dots"><i></i><i></i><i></i></span>
@@ -607,74 +633,81 @@ section { scroll-margin-top: 72px; }
     </div>
   </section>
 
-  <section class="sec sec--alt">
+  <section class="band band--paper band--tight">
     <div class="wrap">
-      <div class="sechead">
-        <p class="eyebrow">Druhá strana</p>
-        <h2>A takto to vidíte vy</h2>
-        <p class="lede">Admin panel s kalendárom celej prevádzky, prehľadom rezervácií, databázou klientov a štatistikami. Otvorí sa na celú obrazovku a dá sa preklikať.</p>
+      <h2 class="h-sec">Tri prevádzky, jeden systém</h2>
+      <div class="vertbar" id="vertBar" role="group" aria-label="Vyberte odvetvie"></div>
+      <p class="vertnote" id="vertNote"></p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <h2 class="h-sec">Druhá strana</h2>
+      <p class="measure" style="margin-bottom:22px">Rovnaký deň, ako ho vidí obsluha. Kalendár po zamestnancoch, tabuľka rezervácií, karty klientov, štatistiky. Otvorí sa na celú obrazovku a dá sa preklikať.</p>
+      <button type="button" class="btn btn--primary" id="openAdmin2">Otvoriť admin panel</button>
+    </div>
+  </section>
+
+  <section class="band band--paper">
+    <div class="wrap">
+      <h2 class="h-sec">Čo to vie</h2>
+      <div class="facts" id="factList"></div>
+      <h2 class="h-sec" style="margin-top:52px">Čo to nevie</h2>
+      <div class="nots" id="notList"></div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap author">
+      <div>
+        <h2 class="h-sec">Kto to robí</h2>
+        <p>Robím weby s rezervačným systémom. Sám, od návrhu po nasadenie, takže sa nemáte s kým doťahovať o to, kto to má opraviť.</p>
+        <p>Prvý som postavil barbershopu v Nitre. Odvtedy sa systém mení podľa toho, čo ľudia za pultom naozaj potrebujú, nie podľa toho, čo vyzerá dobre na obrázku.</p>
+        <p>Nerobím to pre reťazce. Robím to pre prevádzky, kde majiteľ aj obsluhuje. A ak máte dvoch klientov denne, nekupujte si to, zošit vám stačí.</p>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-        <button type="button" class="btn btn--primary" id="openAdmin2">Otvoriť admin panel</button>
-        <span class="small">Ukážkové dáta. Nič sa neodosiela ani neukladá.</span>
+      <div class="sig">
+        <b id="authorName">Andrej Micek</b>
+        <span>Nitra</span>
       </div>
     </div>
   </section>
 
-  <section class="sec">
+  <section class="band band--paper" id="cena">
     <div class="wrap">
-      <div class="sechead">
-        <p class="eyebrow">Postup</p>
-        <h2>Od podpisu po prvú rezerváciu</h2>
+      <h2 class="h-sec">Koľko to stojí</h2>
+      <div class="price">
+        <div class="price__n">39<em>&euro;</em><small>mesačne za chod</small></div>
+        <div>
+          <p>Za <b>web a rezervačný systém sa platí raz</b>. Cena závisí od toho, koľko máte zamestnancov a úkonov, a poviem vám ju po prvom hovore. Žiadne balíčky, žiadne funkcie zamknuté za vyšším programom.</p>
+          <p>Potom 39 € mesačne. V tej sume je hosting, doména, zálohovanie, aktualizácie, odosielanie e-mailov a to, že keď niečo prestane fungovať, opravím to ja.</p>
+        </div>
       </div>
-      <div class="steps" id="stepGrid"></div>
     </div>
   </section>
 
-  <section class="sec sec--alt" id="cena">
+  <section class="band" id="otazky">
     <div class="wrap">
-      <div class="sechead">
-        <p class="eyebrow">Cena</p>
-        <h2>Mesačný paušál, bez viazanosti</h2>
-      </div>
-      <div class="plans" id="planGrid"></div>
-      <div class="note" style="margin-top:14px">Ukážkový cenník — čísla si pred stretnutím nahraďte vlastnými.</div>
+      <h2 class="h-sec">Otázky, ktoré dostávam</h2>
+      <div class="faq" id="faqList"></div>
     </div>
   </section>
 
-  <footer class="foot">
-    <div class="wrap">
-      <div class="footgrid">
-        <div>
-          <div class="logo" style="margin-bottom:11px">
-            <span class="logo__m" id="footMark"></span>
-            <span class="logo__t">Termino</span>
-          </div>
-          <p>Rezervačný systém pre prevádzky, ktoré objednávajú klientov na čas.</p>
-        </div>
-        <div>
-          <h4>Produkt</h4>
-          <a href="#funkcie">Funkcie</a>
-          <a href="#odvetvia">Odvetvia</a>
-          <a href="#ukazka">Ukážka rezervácie</a>
-          <a href="#cena">Cena</a>
-        </div>
-        <div>
-          <h4>Ukážka</h4>
-          <a href="#" id="footAdmin">Admin panel</a>
-          <a href="#ukazka">Rezervačný formulár</a>
-        </div>
-        <div>
-          <h4>Kontakt</h4>
-          <p>Doplňte svoje kontaktné údaje.</p>
-        </div>
-      </div>
-      <div class="footbar">
-        <span>© <span id="year"></span> Termino</span>
-        <span style="margin-left:auto">Prezentačná ukážka. Názvy prevádzok, mená personálu aj klientov sú vymyslené.</span>
-      </div>
+  <section class="band band--paper band--tight">
+    <div class="wrap end">
+      <h2>Chcete to vidieť na svojich úkonoch?</h2>
+      <p>Napíšte mi, čo robíte a koľko vás je. Pošlem vám ukážku s vaším cenníkom a vaším tímom.</p>
+      <a href="#top" class="btn btn--primary" id="endCta">Napísať</a>
     </div>
-  </footer>
+  </section>
+
+  <div class="wrap">
+    <footer class="foot">
+      <span>Termino, <span id="year"></span></span>
+      <span>Ukážkové prevádzky, mená personálu aj klientov sú vymyslené.</span>
+      <a href="#top" style="margin-left:auto">Späť hore</a>
+    </footer>
+  </div>
 </div>
 
 <!-- ============================================================
@@ -753,7 +786,7 @@ section { scroll-margin-top: 72px; }
   };
 
   /* ==========================================================
-     Ukážkové prevádzky — všetky názvy a mená sú vymyslené
+     Ukážkové prevádzky - všetky názvy a mená sú vymyslené
      ========================================================== */
 
   var TENANTS = {
@@ -764,7 +797,7 @@ section { scroll-margin-top: 72px; }
       vertLine: "Ordinačné hodiny cez poludnie, výkony hradené poisťovňou, objednaní pacienti prednostne.",
       words: { clientOne: "Pacient", clientPl: "Pacienti", serviceOne: "Výkon", servicePl: "Výkony", serviceAcc: "výkon", staffOne: "Lekár", staffAcc: "lekára", book: "Objednanie" },
       hours: { 1: [420, 840], 2: [420, 840], 3: [720, 1080], 4: [420, 840], 5: [420, 780], 6: null, 0: null },
-      hoursText: [["Pondelok", "07:00 – 14:00"], ["Utorok", "07:00 – 14:00"], ["Streda", "12:00 – 18:00"], ["Štvrtok", "07:00 – 14:00"], ["Piatok", "07:00 – 13:00"], ["Sobota", null], ["Nedeľa", null]],
+      hoursText: [["Pondelok", "07:00 - 14:00"], ["Utorok", "07:00 - 14:00"], ["Streda", "12:00 - 18:00"], ["Štvrtok", "07:00 - 14:00"], ["Piatok", "07:00 - 13:00"], ["Sobota", null], ["Nedeľa", null]],
       step: 10,
       services: [
         { id: "v1", name: "Preventívna prehliadka", dur: 30, price: 0, covered: true },
@@ -789,7 +822,7 @@ section { scroll-margin-top: 72px; }
       vertLine: "Rôzne úrovne barberov, rôzne ceny a rezervácie aj o polnoci.",
       words: { clientOne: "Klient", clientPl: "Klienti", serviceOne: "Služba", servicePl: "Služby", serviceAcc: "službu", staffOne: "Barber", staffAcc: "barbera", book: "Rezervácia" },
       hours: { 1: [540, 1140], 2: [540, 1140], 3: [540, 1140], 4: [540, 1140], 5: [540, 1140], 6: [540, 840], 0: null },
-      hoursText: [["Pondelok", "09:00 – 19:00"], ["Utorok", "09:00 – 19:00"], ["Streda", "09:00 – 19:00"], ["Štvrtok", "09:00 – 19:00"], ["Piatok", "09:00 – 19:00"], ["Sobota", "09:00 – 14:00"], ["Nedeľa", null]],
+      hoursText: [["Pondelok", "09:00 - 19:00"], ["Utorok", "09:00 - 19:00"], ["Streda", "09:00 - 19:00"], ["Štvrtok", "09:00 - 19:00"], ["Piatok", "09:00 - 19:00"], ["Sobota", "09:00 - 14:00"], ["Nedeľa", null]],
       step: 15,
       services: [
         { id: "v1", name: "Strih", dur: 45, price: 22 },
@@ -814,7 +847,7 @@ section { scroll-margin-top: 72px; }
       vertLine: "Dlhé procedúry, zálohy pri rezervácii a storno lehoty, ktoré stráži systém.",
       words: { clientOne: "Klient", clientPl: "Klienti", serviceOne: "Procedúra", servicePl: "Procedúry", serviceAcc: "procedúru", staffOne: "Terapeut", staffAcc: "terapeuta", book: "Rezervácia" },
       hours: { 1: null, 2: [600, 1200], 3: [600, 1200], 4: [600, 1200], 5: [600, 1200], 6: [540, 900], 0: null },
-      hoursText: [["Pondelok", null], ["Utorok", "10:00 – 20:00"], ["Streda", "10:00 – 20:00"], ["Štvrtok", "10:00 – 20:00"], ["Piatok", "10:00 – 20:00"], ["Sobota", "09:00 – 15:00"], ["Nedeľa", null]],
+      hoursText: [["Pondelok", null], ["Utorok", "10:00 - 20:00"], ["Streda", "10:00 - 20:00"], ["Štvrtok", "10:00 - 20:00"], ["Piatok", "10:00 - 20:00"], ["Sobota", "09:00 - 15:00"], ["Nedeľa", null]],
       step: 15,
       services: [
         { id: "v1", name: "Strih a styling", dur: 45, price: 35 },
@@ -835,35 +868,42 @@ section { scroll-margin-top: 72px; }
 
   var ORDER = ["klinika", "barber", "salon"];
 
-  var FEATURES = [
-    { i: "cal", t: "Online rezervácie 24/7", d: "Klient vidí len termíny, ktoré sa reálne zmestia. Systém počíta s trvaním úkonu, otváracími hodinami aj obsadenosťou." },
-    { i: "grid", t: "Kalendár celej prevádzky", d: "Deň po zamestnancoch, termíny, prestávky a neprítomnosti na jednej obrazovke. Bez papiera a bez dvojitých zápisov." },
-    { i: "bell", t: "Potvrdenia a pripomienky", d: "E-mail hneď po rezervácii, pripomienka deň vopred. Zrušenie jedným klikom z e-mailu uvoľní termín ostatným." },
-    { i: "users", t: "Viac zamestnancov, vlastné pravidlá", d: "Každý má svoje hodiny, svoj zoznam úkonov aj vlastné ceny. Klient vidí len to, čo daný človek naozaj robí." },
-    { i: "user", t: "Databáza klientov", d: "História návštev, poznámky, kontakt. Systém si všimne, keď jeden človek vznikne dvakrát, a ponúkne zlúčenie." },
-    { i: "chart", t: "Štatistiky a export", d: "Obsadenosť, tržby a najžiadanejšie úkony za deň, týždeň aj mesiac. Export do tabuľky za ľubovoľné obdobie." },
-    { i: "clock", t: "Otváracie hodiny a voľno", d: "Sviatky, skrátené dni, dovolenky a školenia. Systém ich rešpektuje pri každej rezervácii bez toho, aby ste naň mysleli." },
-    { i: "swap", t: "Vaša značka a názvoslovie", d: "Farby, logo aj pomenovania. Pacient, klient alebo hosť — podľa toho, ako hovoríte vy, nie ako to nazval programátor." },
-    { i: "shield", t: "GDPR a súhlasy", d: "Súhlas so spracovaním pri rezervácii, história zmien, vymazanie údajov na žiadosť. Bez právnych prekvapení." }
+  var OBSERVATIONS = [
+    "<b>Telefón zvoní počas zákroku.</b> Buď ho zdvihnete a klient v kresle čaká, alebo ho nezdvihnete a ten druhý si nájde niekoho iného.",
+    "Zošit pri pokladni pozná len ten, kto ho práve drží.",
+    "<b>Niekto nepríde.</b> Dozviete sa to o 14:15, keď mal byť o 14:00.",
+    "Otvárate v pondelok o deviatej. Ľudia sa rozhodujú v nedeľu večer o jedenástej.",
+    "Presunúť jeden termín znamená päť správ na Messengeri a jedna z nich sa stratí."
   ];
 
-  var STEPS = [
-    { n: "01", t: "Nastavíme prevádzku", d: "Zamestnanci, úkony, trvania, ceny a otváracie hodiny. Podklady stačia v tabuľke alebo z existujúceho cenníka." },
-    { n: "02", t: "Prepojíme s webom", d: "Rezervačný formulár sa vloží na váš web alebo dostane vlastnú adresu. Vzhľad sa prispôsobí značke." },
-    { n: "03", t: "Klienti sa objednávajú", d: "Bez telefonátov a bez čakania na otvárací čas. Potvrdenie aj pripomienka odchádzajú automaticky." },
-    { n: "04", t: "Vy otvoríte kalendár", d: "Ráno vidíte celý deň naraz. Presuny a zrušenia rieši systém, nie zošit pri pokladni." }
+  var ARGUMENTS = [
+    { t: "Systém pozná čas", d: "Strih trvá štyridsaťpäť minút, odber krvi pätnásť. Systém to vie a neponúkne termín, ktorý sa do zatváracích hodín nezmestí. Nikto si nerezervuje o 18:45, keď zatvárate o siedmej." },
+    { t: "Zrušenie je jeden klik", d: "V potvrdzovacom e-maile je odkaz. Kto ho stlačí, uvoľní termín ostatným v tej istej sekunde. Nemusí volať a vy nemusíte nič prepisovať." },
+    { t: "Jeden kalendár, jedna pravda", d: "Tri kreslá, tri rozvrhy, jedna obrazovka. Kto má dovolenku, kto má prestávku, kto má o jedenástej farbenie na dve hodiny. Ráno to otvoríte a viete, ako vyzerá deň." }
   ];
 
-  var PLANS = [
-    { name: "Štart", price: "29", per: "€ / mesiac", who: "Jeden zamestnanec", items: ["Online rezervácie 24/7", "Kalendár a prehľad dňa", "E-mailové potvrdenia", "Databáza klientov"] },
-    { badge: "Najčastejšie", name: "Prevádzka", price: "59", per: "€ / mesiac", who: "Do piatich zamestnancov", items: ["Všetko zo Štartu", "SMS pripomienky", "Štatistiky a export", "Dovolenky a neprítomnosti", "Vlastné farby a logo"], hi: true },
-    { name: "Sieť", price: "129", per: "€ / mesiac", who: "Viac pobočiek, bez limitu ľudí", items: ["Všetko z Prevádzky", "Viac pobočiek pod jedným účtom", "Roly a oprávnenia", "Prioritná podpora"] }
+  var FACTS = [
+    "Rezervácie dvadsaťštyri hodín denne.",
+    "Potvrdenie e-mailom hneď, pripomienka deň vopred.",
+    "Každý zamestnanec vlastné hodiny, úkony aj ceny.",
+    "História návštev pri každom klientovi.",
+    "Dovolenky, sviatky a skrátené dni.",
+    "Export do tabuľky za ľubovoľné obdobie."
   ];
 
-  var MARKS = [
-    { i: "clock", t: "Nasadenie do piatich dní" },
-    { i: "swap", t: "Bez viazanosti" },
-    { i: "shield", t: "Dáta na serveroch v EÚ" }
+  var NOTS = [
+    "Neprijíma platby. Platí sa na mieste, ako doteraz.",
+    "Nenapojí sa na registračnú pokladňu.",
+    "Nenahrádza zdravotnícky informačný systém.",
+    "Nie je to mobilná aplikácia. Je to web, ktorý funguje aj v telefóne."
+  ];
+
+  var FAQ = [
+    { q: "Starší klienti sa online neobjednajú.", a: "Väčšina nie. Preto termín zapíšete rukou priamo v kalendári za pätnásť sekúnd a vyzerá rovnako ako ten online. Systém nemá nahradiť telefón, má ho odbremeniť." },
+    { q: "Čo keď si niekto rezervuje a nepríde?", a: "Deň vopred mu príde pripomienka, čo vyrieši väčšinu absencií. Zvyšok vidíte v karte klienta ako počet neúčastí, takže viete, komu už termín radšej nedržať." },
+    { q: "Komu patria dáta?", a: "Vám. Kedykoľvek si ich vyexportujete do tabuľky. Ak sa raz rozhodneme skončiť, dostanete ich a nemusíte o ne prosiť." },
+    { q: "Čo sa stane, keď prestanem platiť?", a: "Web aj systém prestanú bežať a dáta vám vyexportujem. Žiadna viazanosť, žiadna výpovedná lehota na mesiace dopredu." },
+    { q: "Môžem si termín zapísať aj sám?", a: "Áno. Kliknete do voľného miesta v kalendári a zapíšete meno. Online rezervácia je len ďalší vstup do toho istého kalendára." }
   ];
 
   /* ==========================================================
@@ -926,7 +966,7 @@ section { scroll-margin-top: 72px; }
       var ds = iso(day);
       var past = off < 0;
 
-      // deň sa od dňa líši — inak graf obsadenosti vyzerá ako pravítko
+      // deň sa od dňa líši - inak graf obsadenosti vyzerá ako pravítko
       var wd = day.getDay();
       var shape = (wd === 1 || wd === 5) ? 1.1 : (wd === 3 ? 0.88 : 1);
       var pBook = Math.max(0.3, Math.min(0.88, (0.42 + 0.4 * rnd()) * shape));
@@ -1031,60 +1071,50 @@ section { scroll-margin-top: 72px; }
 
   function renderSite() {
     $("#logoMark").innerHTML = I.logo;
-    $("#footMark").innerHTML = I.logo;
     $("#adLogo").innerHTML = I.logo;
     $("#themeToggle").innerHTML = I.moon;
     $("#adTheme").innerHTML = I.moon;
     $("#year").textContent = new Date().getFullYear();
 
-    var hm = $("#heroMarks"); hm.innerHTML = "";
-    MARKS.forEach(function (m) { hm.appendChild(el("div", "hero__mark", I[m.i] + "<span>" + esc(m.t) + "</span>")); });
+    var obs = $("#obsList"); obs.innerHTML = "";
+    OBSERVATIONS.forEach(function (o) { obs.appendChild(el("p", null, o)); });
 
-    var fg = $("#featGrid"); fg.innerHTML = "";
-    FEATURES.forEach(function (f) {
-      var c = el("div", "card");
-      c.appendChild(el("div", "card__i", I[f.i]));
-      c.appendChild(el("h3", null, esc(f.t)));
-      c.appendChild(el("p", null, esc(f.d)));
-      fg.appendChild(c);
+    var ar = $("#argList"); ar.innerHTML = "";
+    ARGUMENTS.forEach(function (a) {
+      var d = el("div", "arg");
+      d.appendChild(el("h3", null, esc(a.t)));
+      d.appendChild(el("p", null, esc(a.d)));
+      ar.appendChild(d);
     });
 
-    var sg = $("#stepGrid"); sg.innerHTML = "";
-    STEPS.forEach(function (s) {
-      var c = el("div", "stepc");
-      c.appendChild(el("div", "stepc__n", s.n));
-      c.appendChild(el("h3", null, esc(s.t)));
-      c.appendChild(el("p", null, esc(s.d)));
-      sg.appendChild(c);
-    });
+    var fl = $("#factList"); fl.innerHTML = "";
+    FACTS.forEach(function (f) { fl.appendChild(el("p", null, esc(f))); });
 
-    var pg = $("#planGrid"); pg.innerHTML = "";
-    PLANS.forEach(function (p) {
-      var c = el("div", "plan" + (p.hi ? " plan--hi" : ""));
-      if (p.badge) c.appendChild(el("span", "plan__badge", esc(p.badge)));
-      c.appendChild(el("h3", null, esc(p.name)));
-      c.appendChild(el("div", "plan__p", esc(p.price) + " <span>" + esc(p.per) + "</span>"));
-      c.appendChild(el("p", "small", esc(p.who)));
-      var ul = el("ul");
-      p.items.forEach(function (it) { ul.appendChild(el("li", null, I.check + "<span>" + esc(it) + "</span>")); });
-      c.appendChild(ul);
-      pg.appendChild(c);
+    var nl = $("#notList"); nl.innerHTML = "";
+    NOTS.forEach(function (f) { nl.appendChild(el("p", null, esc(f))); });
+
+    var fq = $("#faqList"); fq.innerHTML = "";
+    FAQ.forEach(function (f) {
+      var d = el("details");
+      var sm = el("summary", null, esc(f.q));
+      d.appendChild(sm);
+      d.appendChild(el("p", null, esc(f.a)));
+      fq.appendChild(d);
     });
   }
 
   function renderVerticals() {
-    var vg = $("#vertGrid"); vg.innerHTML = "";
+    var bar = $("#vertBar");
+    bar.innerHTML = "";
     ORDER.forEach(function (k) {
       var t = TENANTS[k], on = S.tenant === k;
-      var b = el("button", "vert");
+      var b = el("button", "vertbtn", esc(t.vertical));
       b.type = "button";
       b.setAttribute("aria-pressed", on ? "true" : "false");
-      b.innerHTML = '<span class="vert__sw" style="background:' + t.color + '">' + I[t.icon] + "</span>" +
-        "<h3>" + esc(t.vertical) + "</h3><p>" + esc(t.vertLine) + "</p>" +
-        '<span class="vert__go">' + (on ? "Zobrazené v ukážke" : "Prepnúť ukážku →") + "</span>";
       b.addEventListener("click", function () { setTenant(k); });
-      vg.appendChild(b);
+      bar.appendChild(b);
     });
+    $("#vertNote").textContent = T().vertLine;
   }
 
   /* ==========================================================
@@ -1139,8 +1169,8 @@ section { scroll-margin-top: 72px; }
         var o = el("button", "opt");
         o.type = "button";
         o.innerHTML = '<span class="opt__w"><span class="opt__t">' + esc(s.name) + '</span><span class="opt__s">' +
-          durTxt(s.dur) + (s.deposit ? " · záloha " + eur(s.deposit) : "") + '</span></span>' +
-          '<span class="opt__r"><b>' + (s.covered ? "hradené" : eur(s.price)) + "</b>" + (s.covered ? "<span>poisťovňou</span>" : "") + "</span>";
+          durTxt(s.dur) + (s.deposit ? ", záloha " + eur(s.deposit) : "") + '</span></span>' +
+          '<span class="opt__r"><b' + (s.covered ? ' class="word"' : "") + ">" + (s.covered ? "hradené" : eur(s.price)) + "</b>" + (s.covered ? "<span>poisťovňou</span>" : "") + "</span>";
         o.addEventListener("click", function () { S.bk.service = s; S.bk.staff = null; S.bk.date = null; S.bk.time = null; renderBooking(); });
         main.appendChild(o);
       });
@@ -1228,12 +1258,12 @@ section { scroll-margin-top: 72px; }
     if (b.service) { srow(w.serviceOne, b.service.name); srow("Trvanie", durTxt(b.service.dur)); }
     if (b.staff) srow(w.staffOne, b.staff.short);
     if (b.date) srow("Dátum", longDate(new Date(b.date + "T00:00:00")));
-    if (b.time != null) srow("Čas", hhmm(b.time) + " – " + hhmm(b.time + b.service.dur));
+    if (b.time != null) srow("Čas", hhmm(b.time) + " - " + hhmm(b.time + b.service.dur));
     if (!b.service) side.appendChild(el("p", "small", "Vyberte " + w.serviceAcc + " a zhrnutie sa doplní."));
 
     var tot = el("div", "bkside__tot");
     tot.appendChild(el("span", "small", b.service && b.service.covered ? "Hradí poisťovňa" : "Spolu"));
-    tot.appendChild(el("b", null, b.service ? (b.service.covered ? "0 €" : eur(b.service.price)) : "—"));
+    tot.appendChild(el("b", null, b.service ? (b.service.covered ? "0 €" : eur(b.service.price)) : "-"));
     side.appendChild(tot);
     grid.appendChild(side);
 
@@ -1245,9 +1275,14 @@ section { scroll-margin-top: 72px; }
   function renderHeroPreview() {
     var t = T(), host = $("#heroPreview");
     host.innerHTML = "";
-    var d = nextOpenDay(t), ds = iso(d);
     var s0 = t.services[0], st0 = t.staff[0];
-    var slots = freeSlots(t, ds, st0.id, s0.dur).slice(0, 6);
+    var d = nextOpenDay(t), ds = iso(d), slots = [];
+    for (var i = 0; i < 10; i++) {
+      var cand = addDays(TODAY, i);
+      if (!t.hours[cand.getDay()]) continue;
+      var f = freeSlots(t, iso(cand), st0.id, s0.dur);
+      if (f.length >= 4) { d = cand; ds = iso(cand); slots = f.slice(0, 6); break; }
+    }
 
     var head = el("div");
     head.style.cssText = "display:flex;align-items:center;gap:10px;margin-bottom:12px";
@@ -1257,11 +1292,11 @@ section { scroll-margin-top: 72px; }
 
     var o = el("div", "opt");
     o.setAttribute("aria-pressed", "true");
-    o.innerHTML = '<span class="opt__w"><span class="opt__t">' + esc(s0.name) + '</span><span class="opt__s">' + durTxt(s0.dur) + " · " + esc(st0.short) +
-      '</span></span><span class="opt__r"><b>' + (s0.covered ? "hradené" : eur(s0.price)) + "</b></span>";
+    o.innerHTML = '<span class="opt__w"><span class="opt__t">' + esc(s0.name) + '</span><span class="opt__s">' + durTxt(s0.dur) + ", " + esc(st0.short) +
+      '</span></span><span class="opt__r"><b' + (s0.covered ? ' class="word"' : "") + ">" + (s0.covered ? "hradené" : eur(s0.price)) + "</b></span>";
     host.appendChild(o);
 
-    host.appendChild(el("p", "small", longDate(d) + " — voľné časy"));
+    host.appendChild(el("p", "small", slots.length ? longDate(d) + ", voľné časy" : "Voľné termíny nájdete v rezervácii nižšie."));
     var tg = el("div", "times");
     slots.forEach(function (m, i) {
       var b = el("div", "time");
@@ -1462,7 +1497,7 @@ section { scroll-margin-top: 72px; }
         var s = svc(t, a.service);
         var r = el("div", "linerow");
         r.innerHTML = '<div style="min-width:0;flex:1"><b>' + esc(a.customer) + '</b><div class="small">' +
-          esc(s ? s.name : "") + " · " + shortDate(new Date(a.date + "T00:00:00")) + " " + hhmm(a.start) + "</div></div>";
+          esc(s ? s.name : "") + ", " + shortDate(new Date(a.date + "T00:00:00")) + " o " + hhmm(a.start) + "</div></div>";
         var ok = el("button", "btn btn--primary btn--sm", "Potvrdiť");
         ok.type = "button";
         ok.addEventListener("click", function () { a.status = "confirmed"; toast("Termín potvrdený, klientovi odišiel e-mail"); viewPrehlad(); renderAdminNav(); });
@@ -1508,7 +1543,7 @@ section { scroll-margin-top: 72px; }
       ctr.appendChild(b);
     });
 
-    var p = panel(longDate(cur) + (h ? " · " + hhmm(h[0]) + " – " + hhmm(h[1]) : " · zatvorené"), ctr);
+    var p = panel(longDate(cur) + (h ? ", " + hhmm(h[0]) + " - " + hhmm(h[1]) : ", zatvorené"), ctr);
     p.__b.classList.add("pnl__b--flush");
 
     if (!h) {
@@ -1550,10 +1585,10 @@ section { scroll-margin-top: 72px; }
         ev.type = "button";
         ev.style.top = top + "px";
         ev.style.height = Math.max(height - 3, 15) + "px";
-        ev.innerHTML = "<b>" + esc(a.type === "off" ? a.label : a.customer) + "</b><span>" + hhmm(a.start) + "–" + hhmm(a.start + a.dur) + (s ? " · " + esc(s.name) : "") + "</span>";
-        ev.title = a.type === "off" ? a.label : a.customer + " · " + (s ? s.name : "") + " · " + hhmm(a.start) + "–" + hhmm(a.start + a.dur);
+        ev.innerHTML = "<b>" + esc(a.type === "off" ? a.label : a.customer) + "</b><span>" + hhmm(a.start) + "-" + hhmm(a.start + a.dur) + (s ? ", " + esc(s.name) : "") + "</span>";
+        ev.title = a.type === "off" ? a.label : a.customer + ", " + (s ? s.name : "") + ", " + hhmm(a.start) + "-" + hhmm(a.start + a.dur);
         if (a.type === "appt") ev.addEventListener("click", function () {
-          toast(a.customer + " · " + (s ? s.name : "") + " · " + hhmm(a.start) + "–" + hhmm(a.start + a.dur));
+          toast(a.customer + ", " + (s ? s.name : "") + ", " + hhmm(a.start) + "-" + hhmm(a.start + a.dur));
         });
         col.appendChild(ev);
       });
@@ -1619,7 +1654,7 @@ section { scroll-margin-top: 72px; }
         tr.innerHTML = '<td class="num">' + shortDate(new Date(a.date + "T00:00:00")) + '</td><td class="num">' + hhmm(a.start) +
           "</td><td>" + esc(a.customer) + "</td><td>" + esc(s ? s.name : "") + "</td><td>" + esc(pr ? pr.short : "") +
           '</td><td><span class="chip chip--info"><i></i>' + esc(a.channel) + '</span></td><td class="num r">' +
-          (a.price ? eur(a.price) : "—") + "</td><td>" + statusChip(a.status) + "</td>";
+          (a.price ? eur(a.price) : "-") + "</td><td>" + statusChip(a.status) + "</td>";
         var td = el("td");
         if (a.status === "pending") {
           var ok = el("button", "btn btn--primary btn--sm", "Potvrdiť");
@@ -1670,9 +1705,9 @@ section { scroll-margin-top: 72px; }
       var tr = el("tr");
       tr.innerHTML = '<td><span class="who"><span class="ava">' + initials(c.name) + "</span>" + esc(c.name) + "</span></td>" +
         '<td class="num r">' + c.visits + "</td>" +
-        '<td class="num">' + (c.last ? shortDate(new Date(c.last + "T00:00:00")) : "—") + "</td>" +
-        '<td class="num">' + (c.next ? shortDate(new Date(c.next + "T00:00:00")) : "—") + "</td>" +
-        '<td class="num r">' + (c.spent ? eur(c.spent) : "—") + "</td>" +
+        '<td class="num">' + (c.last ? shortDate(new Date(c.last + "T00:00:00")) : "-") + "</td>" +
+        '<td class="num">' + (c.next ? shortDate(new Date(c.next + "T00:00:00")) : "-") + "</td>" +
+        '<td class="num r">' + (c.spent ? eur(c.spent) : "-") + "</td>" +
         "<td>" + (c.noshow ? '<span class="chip chip--bad"><i></i>' + c.noshow + "× neprišiel</span>" : (c.visits >= 3 ? '<span class="chip chip--ok"><i></i>stály</span>' : "")) + "</td>";
       tby.appendChild(tr);
     });
@@ -1750,7 +1785,7 @@ section { scroll-margin-top: 72px; }
     var maxPct = Math.max(40, Math.max.apply(null, days.map(function (x) { return x.pct; })));
 
     var peak = days.reduce(function (a, x) { return x.pct > a.pct ? x : a; }, days[0]);
-    var p1 = panel("Obsadenosť za posledných 14 dní", el("span", "small", "najviac " + peak.pct + " % · " + shortDate(peak.d)));
+    var p1 = panel("Obsadenosť za posledných 14 dní", el("span", "small", "najviac " + peak.pct + " % " + shortDate(peak.d)));
     var ch = el("div", "chart");
     var plot = el("div", "chart__plot");
     var tip = el("div", "chart__tip");
@@ -1863,10 +1898,10 @@ section { scroll-margin-top: 72px; }
       line.appendChild(sw);
       var tt = el("div", "hrow__t");
       if (r[1]) {
-        var parts = r[1].split(" – ");
+        var parts = r[1].split(" - ");
         var i1 = el("input"); i1.value = parts[0]; i1.id = "h" + t.key + idx + "a"; i1.setAttribute("aria-label", r[0] + " otvorené od");
         var i2 = el("input"); i2.value = parts[1]; i2.id = "h" + t.key + idx + "b"; i2.setAttribute("aria-label", r[0] + " otvorené do");
-        tt.appendChild(i1); tt.appendChild(el("span", "small", "–")); tt.appendChild(i2);
+        tt.appendChild(i1); tt.appendChild(el("span", "small", "-")); tt.appendChild(i2);
       } else {
         tt.appendChild(el("span", "small", "Zatvorené"));
       }
@@ -1992,7 +2027,6 @@ section { scroll-margin-top: 72px; }
   $("#openAdmin").addEventListener("click", openAdmin);
   $("#openAdmin2").addEventListener("click", openAdmin);
   $("#heroAdmin").addEventListener("click", openAdmin);
-  $("#footAdmin").addEventListener("click", function (e) { e.preventDefault(); openAdmin(); });
   $("#closeAdmin").addEventListener("click", closeAdmin);
   $("#closeAdmin2").addEventListener("click", closeAdmin);
   $("#adTenant").addEventListener("change", function () { setTenant(this.value); });
