@@ -22,6 +22,48 @@ AUTHOR = "Ing. Andrej Miček"
 # (svetlý akcent, tmavší odtieň, výplň, linka, text na akcente) x (svetlý, tmavý režim)
 ACCENTS = {'barber': ('#7A5A2B', '#5C4320', '#F4EDE1', '#DFCCA9', '#FFFFFF', '#CFAC72', '#E3C696', '#2A2317', '#453922', '#191204'), 'klinika': ('#1F5FA8', '#17477E', '#E6EEF8', '#BAD1EC', '#FFFFFF', '#79ADE8', '#9CC6F2', '#16283C', '#254160', '#08131F'), 'salon': ('#8B4F6B', '#6B3B52', '#F6EAF0', '#E2C2D2', '#FFFFFF', '#D093AC', '#E4B4C6', '#2A1C24', '#452E39', '#1B1016')}
 
+
+# Každý segment má vlastné písmo nadpisov a vlastný motion profil.
+# Ambulancia: presná severská groteska. Barbershop: ťažká, tesná.
+# Vizáž: vysokokontrastná renesančná antikva, jediné miesto, kde je pätka na mieste.
+TYPOGRAPHY = {
+    "klinika": {
+        "google": "Schibsted+Grotesk:wght@500;600;700",
+        "stack": '"Schibsted Grotesk", "Segoe UI", system-ui, sans-serif',
+        "css": """
+/* --- profil: ambulancia --- */
+h1, h2, h3, h4 { font-weight: 700; letter-spacing: -.021em; }
+.hero h1 { font-size: clamp(2.2rem, 4.5vw, 3.3rem); }
+""",
+    },
+    "barber": {
+        "google": "Archivo:wght@600;700;800",
+        "stack": '"Archivo", "Helvetica Neue", system-ui, sans-serif',
+        "css": """
+/* --- profil: barbershop --- */
+h1, h2, h3, h4 { font-weight: 800; letter-spacing: -.035em; }
+.hero h1 { font-size: clamp(2.5rem, 6.4vw, 4.5rem); line-height: .94; }
+.h-sec { font-size: clamp(1.8rem, 3.8vw, 2.85rem); }
+.quote p { font-weight: 800; letter-spacing: -.038em; }
+.logo__t { letter-spacing: -.045em; }
+""",
+    },
+    "salon": {
+        "google": "Cormorant+Garamond:wght@500;600;700",
+        "stack": '"Cormorant Garamond", "Iowan Old Style", Georgia, serif',
+        "css": """
+/* --- profil: vizáž --- */
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: -.005em; }
+.hero h1 { font-size: clamp(2.8rem, 6.6vw, 4.8rem); line-height: 1.02; max-width: 15ch; }
+.h-sec { font-size: clamp(2.1rem, 4.4vw, 3.3rem); }
+.quote p { font-size: clamp(1.8rem, 4.2vw, 3rem); line-height: 1.1; letter-spacing: -.005em; }
+.arg h3 { font-size: 1.5rem; }
+.logo__t { font-size: 1.2rem; }
+.plan__badge, .eyebrow { font-family: var(--f-data); }
+""",
+    },
+}
+
 # ============================================================
 # SEGMENTY
 # ============================================================
@@ -33,6 +75,7 @@ SEGMENTS = [
         "out": "termino-barbershop.html",
         "title": "Termino pre barbershop",
         "key": "barber",
+        "motion": "sharp",
         "domain": "barbershop-kotva",
 
         "tenant": {
@@ -137,6 +180,7 @@ SEGMENTS = [
         "out": "termino-ambulancia.html",
         "title": "Termino pre ambulanciu",
         "key": "klinika",
+        "motion": "calm",
         "domain": "ambulancia-jasen",
 
         "tenant": {
@@ -241,6 +285,7 @@ SEGMENTS = [
         "out": "termino-vizaz.html",
         "title": "Termino pre vizáž",
         "key": "salon",
+        "motion": "soft",
         "domain": "studio-vlna",
 
         "tenant": {
@@ -396,6 +441,14 @@ def render(seg):
              '    $("#bookUrl").textContent = ({ klinika: "ambulancia-jasen", barber: "barbershop-kotva", salon: "studio-vlna" })[key] + ".sk/rezervacia";',
              f'    $("#bookUrl").textContent = "{seg["domain"]}.sk/rezervacia";')
     s = once(s, '  setTenant("klinika");', f'  setTenant({json.dumps(seg["key"], ensure_ascii=False)});')
+
+    # --- písmo: každé odvetvie svoje ---
+    ty = TYPOGRAPHY[seg["key"]]
+    s = once(s, "family=Familjen+Grotesk:wght@500;600;700", "family=" + ty["google"])
+    s = once(s, '  --f-disp: "Familjen Grotesk", "Trebuchet MS", system-ui, sans-serif;',
+             "  --f-disp: " + ty["stack"] + ";")
+    s = once(s, "@media (prefers-reduced-motion: reduce) {",
+             ty["css"].strip() + "\n\n@media (prefers-reduced-motion: reduce) {")
 
     # --- farba stránky: jeden akcent, farba odvetvia ---
     a = ACCENTS[seg["key"]]

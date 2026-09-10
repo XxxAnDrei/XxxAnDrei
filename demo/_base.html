@@ -120,6 +120,12 @@
 
 * { box-sizing: border-box; }
 
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+::selection { background: var(--acc); color: var(--on-acc); }
+
 body {
   background: var(--bg);
   color: var(--ink);

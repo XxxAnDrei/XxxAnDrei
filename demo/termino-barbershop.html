@@ -1,7 +1,7 @@
 <title>Termino pre barbershop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 
 <style>
 /* ============================================================
@@ -40,7 +40,7 @@
 
   --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 26px;
 
-  --f-disp: "Familjen Grotesk", "Trebuchet MS", system-ui, sans-serif;
+  --f-disp: "Archivo", "Helvetica Neue", system-ui, sans-serif;
   --f-ui:   "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
@@ -119,6 +119,12 @@
 :root[data-theme="dark"][data-tenant="salon"]   { --ten:#D093AC; --ten-deep:#E4B4C6; --ten-soft:#2A1C24; --ten-line:#452E39; --on-ten:#1B1016; }
 
 * { box-sizing: border-box; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+::selection { background: var(--acc); color: var(--on-acc); }
 
 body {
   background: var(--bg);
@@ -552,6 +558,13 @@ section { scroll-margin-top: 70px; }
 .toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 .emptybox { padding: 26px; text-align: center; color: var(--muted); font-size: .89rem; }
+
+/* --- profil: barbershop --- */
+h1, h2, h3, h4 { font-weight: 800; letter-spacing: -.035em; }
+.hero h1 { font-size: clamp(2.5rem, 6.4vw, 4.5rem); line-height: .94; }
+.h-sec { font-size: clamp(1.8rem, 3.8vw, 2.85rem); }
+.quote p { font-weight: 800; letter-spacing: -.038em; }
+.logo__t { letter-spacing: -.045em; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
