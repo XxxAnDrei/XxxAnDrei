@@ -1,0 +1,2424 @@
+<title>Termino Rezervácie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* ============================================================
+   TERMINO — white-label rezervačný systém
+   Neutrálne jadro + vymeniteľná značka (data-brand)
+   Svetlý aj tmavý režim (data-theme + prefers-color-scheme)
+   ============================================================ */
+
+:root {
+  /* --- neutrálne jadro: SVETLÝ režim --- */
+  --bg:            #F6F7F6;
+  --surface:       #FFFFFF;
+  --surface-2:     #F0F2F1;
+  --surface-3:     #E8ECEA;
+  --ink:           #141A19;
+  --ink-2:         #3D4947;
+  --muted:         #667471;
+  --line:          #E2E7E5;
+  --line-strong:   #CBD4D1;
+  --on-accent:     #FFFFFF;
+
+  --ok:            #1C6E45;
+  --ok-soft:       #E3F1EA;
+  --warn:          #8A5D0E;
+  --warn-soft:     #F7EEDB;
+  --crit:          #9E2F2F;
+  --crit-soft:     #F7E7E7;
+
+  --shadow-sm: 0 1px 2px rgba(20,26,25,.06);
+  --shadow-md: 0 1px 2px rgba(20,26,25,.05), 0 10px 28px -16px rgba(20,26,25,.28);
+  --shadow-lg: 0 2px 4px rgba(20,26,25,.05), 0 24px 56px -28px rgba(20,26,25,.32);
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 26px;
+
+  --font-display: "Familjen Grotesk", "Trebuchet MS", system-ui, sans-serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --maxw: 1180px;
+  --gutter: clamp(16px, 4vw, 44px);
+
+  /* akcent (prepíše ho [data-brand]) */
+  --accent:        #0F7A82;
+  --accent-deep:   #0A5C62;
+  --accent-soft:   #E4F1F2;
+  --accent-line:   #B8DBDD;
+}
+
+/* --- akcenty jednotlivých odvetví: SVETLÝ režim --- */
+:root[data-brand="med"]    { --accent:#0F7A82; --accent-deep:#0A5C62; --accent-soft:#E4F1F2; --accent-line:#B4D9DC; --on-accent:#FFFFFF; }
+:root[data-brand="barber"] { --accent:#54722E; --accent-deep:#3E5622; --accent-soft:#EDF2E3; --accent-line:#CBDCAE; --on-accent:#FFFFFF; }
+:root[data-brand="salon"]  { --accent:#8B4F6B; --accent-deep:#6B3B52; --accent-soft:#F6EAF0; --accent-line:#E2C2D2; --on-accent:#FFFFFF; }
+
+/* --- neutrálne jadro: TMAVÝ režim (systémová preferencia) --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:          #0E1211;
+    --surface:     #161B1A;
+    --surface-2:   #1C2321;
+    --surface-3:   #232B29;
+    --ink:         #EDF1EF;
+    --ink-2:       #C2CCC9;
+    --muted:       #8C9A97;
+    --line:        #262E2C;
+    --line-strong: #36413E;
+    --on-accent:   #0E1211;
+
+    --ok:          #56C08A;
+    --ok-soft:     #122C20;
+    --warn:        #DCB25C;
+    --warn-soft:   #2E2513;
+    --crit:        #ED8585;
+    --crit-soft:   #331A1A;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-md: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
+    --shadow-lg: 0 2px 4px rgba(0,0,0,.4), 0 24px 56px -28px rgba(0,0,0,.8);
+  }
+  :root:not([data-theme="light"])[data-brand="med"]    { --accent:#48BCC4; --accent-deep:#6FD3DA; --accent-soft:#12302F; --accent-line:#1F4C4C; --on-accent:#08201F; }
+  :root:not([data-theme="light"])[data-brand="barber"] { --accent:#94B95D; --accent-deep:#AECE7E; --accent-soft:#1C2716; --accent-line:#334224; --on-accent:#101609; }
+  :root:not([data-theme="light"])[data-brand="salon"]  { --accent:#D093AC; --accent-deep:#E2B0C4; --accent-soft:#2B1D25; --accent-line:#452F3A; --on-accent:#1C1016; }
+}
+
+/* --- neutrálne jadro: TMAVÝ režim (explicitná voľba) --- */
+:root[data-theme="dark"] {
+  --bg:          #0E1211;
+  --surface:     #161B1A;
+  --surface-2:   #1C2321;
+  --surface-3:   #232B29;
+  --ink:         #EDF1EF;
+  --ink-2:       #C2CCC9;
+  --muted:       #8C9A97;
+  --line:        #262E2C;
+  --line-strong: #36413E;
+  --on-accent:   #0E1211;
+
+  --ok:          #56C08A;
+  --ok-soft:     #122C20;
+  --warn:        #DCB25C;
+  --warn-soft:   #2E2513;
+  --crit:        #ED8585;
+  --crit-soft:   #331A1A;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-md: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
+  --shadow-lg: 0 2px 4px rgba(0,0,0,.4), 0 24px 56px -28px rgba(0,0,0,.8);
+}
+:root[data-theme="dark"][data-brand="med"]    { --accent:#48BCC4; --accent-deep:#6FD3DA; --accent-soft:#12302F; --accent-line:#1F4C4C; --on-accent:#08201F; }
+:root[data-theme="dark"][data-brand="barber"] { --accent:#94B95D; --accent-deep:#AECE7E; --accent-soft:#1C2716; --accent-line:#334224; --on-accent:#101609; }
+:root[data-theme="dark"][data-brand="salon"]  { --accent:#D093AC; --accent-deep:#E2B0C4; --accent-soft:#2B1D25; --accent-line:#452F3A; --on-accent:#1C1016; }
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .45s ease, color .45s ease;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+p { margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.num  { font-family: var(--font-data); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+
+.eyebrow {
+  font-family: var(--font-data);
+  font-size: .72rem;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.lede {
+  color: var(--ink-2);
+  font-size: 1.03rem;
+  max-width: 62ch;
+}
+
+/* ============================================================
+   DEMO LIŠTA — prepínač odvetvia
+   ============================================================ */
+
+.demobar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  transition: background-color .45s ease, border-color .45s ease;
+}
+
+.demobar__in {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding: 10px var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.demotag {
+  font-family: var(--font-data);
+  font-size: .66rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.demobar__label {
+  font-size: .82rem;
+  color: var(--muted);
+  margin-right: -4px;
+}
+
+.switcher {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.switcher button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ink-2);
+  transition: background-color .25s ease, color .25s ease;
+  white-space: nowrap;
+}
+
+.switcher button .dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--sw-dot, var(--muted));
+  flex: none;
+}
+
+.switcher button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.demobar__right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+.iconbtn {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  cursor: pointer;
+  color: var(--ink-2);
+  transition: border-color .2s ease, color .2s ease;
+}
+.iconbtn:hover { border-color: var(--line-strong); color: var(--ink); }
+
+/* ============================================================
+   HLAVIČKA KLIENTSKEHO WEBU
+   ============================================================ */
+
+.sitehead {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  transition: background-color .45s ease, border-color .45s ease;
+}
+
+.sitehead__in {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding: 16px var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.brand > div { min-width: 0; }
+
+.brand__mark {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  flex: none;
+  display: grid; place-items: center;
+  background: var(--accent);
+  color: var(--on-accent);
+  transition: background-color .45s ease;
+}
+.brand__mark svg { width: 24px; height: 24px; display: block; }
+
+.brand__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.06rem;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brand__kind {
+  font-family: var(--font-data);
+  font-size: .66rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sitenav {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.sitenav a {
+  text-decoration: none;
+  font-size: .9rem;
+  color: var(--ink-2);
+  transition: color .2s ease;
+}
+.sitenav a:hover { color: var(--accent); }
+
+@media (max-width: 860px) { .sitenav .hide-sm { display: none; } }
+@media (max-width: 560px) { .demobar__label { display: none; } .switcher button { padding: 6px 10px; font-size: .8rem; } }
+
+/* ============================================================
+   TLAČIDLÁ
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 11px 20px;
+  font-size: .93rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform .18s cubic-bezier(.2,.8,.3,1), background-color .22s ease, border-color .22s ease, color .22s ease;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn--primary { background: var(--accent); color: var(--on-accent); }
+.btn--primary:hover { background: var(--accent-deep); }
+
+.btn--ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn--sm { padding: 8px 15px; font-size: .85rem; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(120% 90% at 88% -20%, var(--accent-soft) 0%, transparent 62%),
+    var(--surface);
+  transition: background-color .45s ease;
+}
+
+.hero__in {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding: clamp(44px, 7vw, 78px) var(--gutter) clamp(40px, 6vw, 64px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  gap: clamp(28px, 5vw, 60px);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .hero__in { grid-template-columns: 1fr; }
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 5.6vw, 4.05rem);
+  margin-block: 14px 18px;
+}
+
+.hero__claim { color: var(--accent); }
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.hero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.hero__fact { display: flex; align-items: center; gap: 9px; font-size: .87rem; color: var(--ink-2); }
+.hero__fact svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+
+/* karta „ďalší voľný termín“ */
+.nextslot {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.nextslot__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.livedot {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-data);
+  font-size: .66rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--muted);
+}
+.livedot i {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--ok);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
+  animation: pulse 2.6s infinite;
+}
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.nextslot__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 8px;
+}
+
+.slotchip {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+.slotchip:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-2px); }
+.slotchip__day { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.slotchip__time { font-family: var(--font-data); font-size: 1.02rem; font-weight: 500; margin-top: 2px; }
+
+/* ============================================================
+   SEKCIE
+   ============================================================ */
+
+section { scroll-margin-top: 76px; }
+
+.sec { padding-block: clamp(46px, 7vw, 82px); }
+.sec--alt { background: var(--surface); border-block: 1px solid var(--line); transition: background-color .45s ease; }
+
+.sechead { margin-bottom: 28px; max-width: 66ch; }
+.sechead h2 { font-size: clamp(1.6rem, 3.2vw, 2.3rem); margin-block: 10px 12px; }
+
+/* --- cenník / zoznam služieb --- */
+
+.pricegroup + .pricegroup { margin-top: 32px; }
+
+.pricegroup__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-strong);
+}
+.pricegroup__head h3 { font-size: 1.05rem; letter-spacing: .01em; }
+.pricegroup__head span { font-size: .82rem; color: var(--muted); }
+
+.pricerow {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto auto;
+  align-items: baseline;
+  gap: 8px 18px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pricerow__name { font-weight: 500; }
+.pricerow__desc { grid-column: 1 / -1; font-size: .85rem; color: var(--muted); margin-top: -6px; }
+.pricerow__dur { font-family: var(--font-data); font-size: .84rem; color: var(--muted); white-space: nowrap; }
+.pricerow__price { font-family: var(--font-data); font-weight: 500; white-space: nowrap; }
+.pricerow__price.is-covered { font-family: var(--font-ui); font-size: .82rem; font-weight: 500; color: var(--ok); }
+
+/* --- tím --- */
+
+.team {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+  gap: 14px;
+}
+
+.person {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+.person:hover { border-color: var(--accent-line); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+.avatar {
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: -.02em;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  border: 1px solid var(--accent-line);
+  flex: none;
+}
+.person__name { font-weight: 600; line-height: 1.25; }
+.person__role { font-size: .84rem; color: var(--muted); }
+
+.tagrow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 6px; }
+.tag {
+  font-family: var(--font-data);
+  font-size: .68rem;
+  letter-spacing: .05em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+}
+
+/* ============================================================
+   REZERVAČNÝ TOK
+   ============================================================ */
+
+.booking {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 312px;
+  gap: 26px;
+  align-items: start;
+}
+@media (max-width: 980px) { .booking { grid-template-columns: 1fr; } }
+
+.step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 0 16px;
+}
+
+.step__rail { display: flex; flex-direction: column; align-items: center; }
+
+.step__num {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--font-data);
+  font-size: .84rem;
+  font-weight: 500;
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease;
+  flex: none;
+}
+.step.is-active .step__num { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.step.is-done   .step__num { background: var(--accent-soft); color: var(--accent-deep); border-color: var(--accent-line); }
+.step__num svg { width: 15px; height: 15px; }
+
+.step__line { width: 1px; flex: 1; background: var(--line); margin-top: 6px; min-height: 12px; }
+.step:last-child .step__line { display: none; }
+
+.step__body { padding-bottom: 26px; min-width: 0; }
+.step__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.06rem;
+  letter-spacing: -.015em;
+  color: var(--muted);
+  transition: color .3s ease;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+}
+.step.is-active .step__title, .step.is-done .step__title { color: var(--ink); }
+.step__pick { font-family: var(--font-ui); font-size: .86rem; font-weight: 500; color: var(--accent); }
+.step__content { margin-top: 12px; }
+.step:not(.is-active):not(.is-done) .step__content { display: none; }
+
+/* voliteľné dlaždice */
+.tiles { display: grid; gap: 8px; }
+.tiles--3 { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.tiles--2 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+
+.tile {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 13px 15px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+.tile:hover { border-color: var(--accent-line); transform: translateY(-2px); }
+.tile[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.tile__t { display: block; font-weight: 600; font-size: .95rem; line-height: 1.3; }
+.tile__s { display: block; font-size: .82rem; color: var(--muted); }
+.tile__meta { font-family: var(--font-data); font-size: .82rem; color: var(--ink-2); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 2px 12px; }
+.tile__meta span { white-space: nowrap; }
+
+.tile--person { flex-direction: row; align-items: center; gap: 12px; }
+.tile--person > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.tile--person .avatar { width: 38px; height: 38px; border-radius: 11px; font-size: .88rem; }
+
+/* dátumový pás */
+.dates {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x proximity;
+}
+.datechip {
+  flex: none;
+  width: 62px;
+  scroll-snap-align: start;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--r-md);
+  padding: 9px 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s ease, background-color .2s ease;
+}
+.datechip:hover:not([disabled]) { border-color: var(--accent-line); }
+.datechip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.datechip[disabled] { opacity: .38; cursor: not-allowed; }
+.datechip__dow { font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.datechip__d { font-family: var(--font-data); font-size: 1.12rem; font-weight: 500; line-height: 1.25; }
+.datechip__mo { font-size: .68rem; color: var(--muted); }
+
+/* časové sloty */
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 7px; }
+.slot {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  padding: 9px 4px;
+  font-family: var(--font-data);
+  font-size: .92rem;
+  cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease, color .18s ease;
+}
+.slot:hover { border-color: var(--accent); color: var(--accent); }
+.slot[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+.slotpart { margin-bottom: 14px; }
+.slotpart__h {
+  font-family: var(--font-data);
+  font-size: .7rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+
+.empty {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  padding: 16px;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+/* formulár */
+.form { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 13px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field--full { grid-column: 1 / -1; }
+.field label { font-size: .82rem; font-weight: 500; color: var(--ink-2); }
+.field input, .field select, .field textarea {
+  font-family: var(--font-ui);
+  font-size: .95rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  width: 100%;
+  transition: border-color .2s ease;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 74px; }
+.field__hint { font-size: .78rem; color: var(--muted); }
+.field.is-bad input, .field.is-bad select { border-color: var(--crit); }
+.field__err { font-size: .78rem; color: var(--crit); }
+
+.check { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 10px; font-size: .86rem; color: var(--ink-2); }
+.check input { margin-top: 3px; accent-color: var(--accent); flex: none; width: 16px; height: 16px; }
+
+/* zhrnutie */
+.summary {
+  position: sticky;
+  top: 76px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+.summary__head { padding: 16px 18px 12px; border-bottom: 1px solid var(--line); }
+.summary__head h3 { font-size: 1rem; }
+.summary__body { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+
+.srow { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; font-size: .9rem; }
+.srow dt { color: var(--muted); flex: none; }
+.srow dd { margin: 0; text-align: right; font-weight: 500; min-width: 0; }
+
+.summary__total {
+  border-top: 1px solid var(--line);
+  padding: 14px 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.summary__total span { font-size: .84rem; color: var(--muted); }
+.summary__total strong { font-family: var(--font-data); font-size: 1.42rem; font-weight: 500; letter-spacing: -.02em; }
+.summary__foot { padding: 0 18px 18px; display: grid; gap: 8px; }
+
+/* potvrdenie */
+.confirm {
+  background: var(--surface);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-xl);
+  padding: clamp(22px, 4vw, 34px);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  gap: 16px;
+  max-width: 620px;
+}
+.confirm__badge {
+  width: 46px; height: 46px; border-radius: 14px;
+  background: var(--accent); color: var(--on-accent);
+  display: grid; place-items: center;
+}
+.confirm__badge svg { width: 25px; height: 25px; }
+.confirm h3 { font-size: 1.5rem; }
+.confirm__code {
+  font-family: var(--font-data);
+  font-size: 1.02rem;
+  letter-spacing: .06em;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  display: inline-block;
+  justify-self: start;
+}
+.confirm__list { display: grid; gap: 8px; margin: 0; }
+
+/* ============================================================
+   PREVÁDZKOVÝ PANEL
+   ============================================================ */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.panel__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.panel__bar h3 { font-size: .98rem; }
+.panel__date { font-family: var(--font-data); font-size: .86rem; color: var(--ink-2); }
+.panel__bar .btn { margin-left: auto; }
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  border-bottom: 1px solid var(--line);
+}
+.kpi { padding: 15px 18px; border-right: 1px solid var(--line); }
+.kpi:last-child { border-right: 0; }
+.kpi__l { font-size: .78rem; color: var(--muted); }
+.kpi__v {
+  font-family: var(--font-data);
+  font-size: 1.62rem;
+  font-weight: 500;
+  letter-spacing: -.03em;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+.kpi__d { font-size: .76rem; color: var(--muted); }
+
+/* obsadenosť — jednoduchý merač, nie graf */
+.load { display: grid; gap: 9px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.loadrow { display: grid; grid-template-columns: 116px minmax(0,1fr) 46px; align-items: center; gap: 12px; font-size: .85rem; }
+.loadrow__n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.loadbar { height: 7px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.loadbar i { display: block; height: 100%; border-radius: 999px; background: var(--accent); width: 0; transition: width .9s cubic-bezier(.2,.8,.3,1); }
+.loadrow__v { font-family: var(--font-data); font-size: .84rem; text-align: right; color: var(--ink-2); }
+
+/* denná mriežka */
+.board { overflow-x: auto; }
+.board__in { min-width: 620px; display: grid; }
+.board__head { display: grid; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 2; }
+.board__head div { padding: 10px 8px; font-size: .84rem; font-weight: 600; border-right: 1px solid var(--line); }
+.board__head div:first-child { font-weight: 400; color: var(--muted); font-size: .74rem; }
+.board__head div:last-child { border-right: 0; }
+
+.board__grid { display: grid; position: relative; }
+.board__times { border-right: 1px solid var(--line); }
+.board__time {
+  height: 34px;
+  font-family: var(--font-data);
+  font-size: .72rem;
+  color: var(--muted);
+  padding: 2px 8px;
+  border-bottom: 1px dashed var(--line);
+}
+.board__col { border-right: 1px solid var(--line); position: relative; }
+.board__col:last-child { border-right: 0; }
+.board__cell { height: 34px; border-bottom: 1px dashed var(--line); }
+
+.appt {
+  position: absolute;
+  left: 4px; right: 4px;
+  border-radius: 7px;
+  padding: 4px 7px;
+  font-size: .74rem;
+  line-height: 1.25;
+  overflow: hidden;
+  border: 1px solid;
+  cursor: default;
+}
+.appt strong { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.appt span { font-family: var(--font-data); font-size: .68rem; opacity: .85; }
+.appt--tight { padding: 2px 7px; font-size: .7rem; }
+.appt--tight span { display: none; }
+.appt--wait strong::after { content: " · čaká"; font-weight: 400; opacity: .8; }
+
+.appt--done    { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-deep); }
+.appt--wait    { background: var(--warn-soft);   border-color: color-mix(in srgb, var(--warn) 40%, transparent); color: var(--warn); }
+.appt--new     { background: var(--accent);      border-color: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-md); }
+.appt--off     { background: repeating-linear-gradient(-45deg, var(--surface-2), var(--surface-2) 5px, var(--surface-3) 5px, var(--surface-3) 10px); border-color: var(--line); color: var(--muted); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 12px 18px; border-top: 1px solid var(--line); font-size: .8rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 11px; height: 11px; border-radius: 3px; border: 1px solid; flex: none; }
+.legend .l-done { background: var(--accent-soft); border-color: var(--accent-line); }
+.legend .l-wait { background: var(--warn-soft); border-color: var(--warn); }
+.legend .l-new  { background: var(--accent); border-color: var(--accent); }
+.legend .l-off  { background: var(--surface-3); border-color: var(--line-strong); }
+
+/* ============================================================
+   FUNKCIE + PÄTA
+   ============================================================ */
+
+.feats { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.feat {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.feat__i { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-deep); border: 1px solid var(--accent-line); }
+.feat__i svg { width: 18px; height: 18px; }
+.feat h3 { font-size: 1rem; }
+.feat p { font-size: .89rem; color: var(--muted); }
+
+.sitefoot { background: var(--surface); border-top: 1px solid var(--line); padding-block: 40px 26px; }
+.footgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 26px; }
+.footcol h4 { font-size: .95rem; margin-bottom: 10px; }
+.footcol p, .footcol a { font-size: .89rem; color: var(--muted); text-decoration: none; display: block; }
+.footcol a:hover { color: var(--accent); }
+.hours { display: grid; gap: 4px; }
+.hourrow { display: flex; justify-content: space-between; gap: 14px; font-size: .87rem; }
+.hourrow span:first-child { color: var(--muted); }
+.hourrow span:last-child { font-family: var(--font-data); }
+.hourrow.is-closed span:last-child { color: var(--muted); font-family: var(--font-ui); font-size: .84rem; }
+
+.footbar {
+  margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center;
+  font-size: .82rem; color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+</style>
+
+<!-- ============================================================
+     DEMO LIŠTA
+     ============================================================ -->
+<div class="demobar">
+  <div class="demobar__in">
+    <span class="demotag">Demo</span>
+    <span class="demobar__label">Odvetvie:</span>
+    <div class="switcher" id="switcher" role="group" aria-label="Prepnúť odvetvie">
+      <button type="button" data-brand="med"    aria-pressed="true"  style="--sw-dot:#0F7A82"><i class="dot"></i>Ambulancia</button>
+      <button type="button" data-brand="barber" aria-pressed="false" style="--sw-dot:#54722E"><i class="dot"></i>Barbershop</button>
+      <button type="button" data-brand="salon"  aria-pressed="false" style="--sw-dot:#8B4F6B"><i class="dot"></i>Salón</button>
+    </div>
+    <div class="demobar__right">
+      <button type="button" class="iconbtn" id="themeToggle" aria-label="Prepnúť svetlý a tmavý režim">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     HLAVIČKA KLIENTSKEHO WEBU
+     ============================================================ -->
+<header class="sitehead">
+  <div class="sitehead__in">
+    <div class="brand">
+      <div class="brand__mark" id="brandMark"></div>
+      <div>
+        <div class="brand__name" id="brandName">Ambulancia Hrušková</div>
+        <div class="brand__kind" id="brandKind">Všeobecný lekár · Nitra</div>
+      </div>
+    </div>
+    <nav class="sitenav">
+      <a href="#sluzby" class="hide-sm" id="navServices">Vyšetrenia</a>
+      <a href="#tim" class="hide-sm" id="navTeam">Lekári</a>
+      <a href="#kontakt" class="hide-sm">Kontakt</a>
+      <a href="#rezervacia" class="btn btn--primary btn--sm" id="navCta">Objednať sa</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero" id="uvod">
+  <div class="hero__in">
+    <div>
+      <p class="eyebrow" id="heroEyebrow">Online objednávanie</p>
+      <h1 id="heroTitle">Termín si vyberiete sami. <span class="hero__claim" id="heroClaim">Bez čakania na telefón.</span></h1>
+      <p class="lede" id="heroLede">Pozrite si voľné termíny v reálnom čase, objednajte sa za pol minúty a potvrdenie dostanete e-mailom aj SMS-kou.</p>
+      <div class="hero__cta">
+        <a href="#rezervacia" class="btn btn--primary" id="heroCta">Objednať sa online</a>
+        <a href="#sluzby" class="btn btn--ghost" id="heroCta2">Zoznam vyšetrení</a>
+      </div>
+      <div class="hero__facts" id="heroFacts"></div>
+    </div>
+
+    <aside class="nextslot" aria-labelledby="nextslotH">
+      <div class="nextslot__head">
+        <h2 id="nextslotH" style="font-size:1rem">Najbližšie voľné</h2>
+        <span class="livedot"><i></i>naživo</span>
+      </div>
+      <div class="nextslot__grid" id="nextSlots"></div>
+      <p style="font-size:.8rem;color:var(--muted)" id="nextSlotsNote"></p>
+    </aside>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLUŽBY / CENNÍK
+     ============================================================ -->
+<section class="sec" id="sluzby">
+  <div class="wrap">
+    <div class="sechead">
+      <p class="eyebrow" id="secServicesEyebrow">Cenník</p>
+      <h2 id="secServicesTitle">Čo u nás vybavíte</h2>
+      <p class="lede" id="secServicesLede"></p>
+    </div>
+    <div id="priceList"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TÍM
+     ============================================================ -->
+<section class="sec sec--alt" id="tim">
+  <div class="wrap">
+    <div class="sechead">
+      <p class="eyebrow" id="secTeamEyebrow">Tím</p>
+      <h2 id="secTeamTitle">Kto sa vám bude venovať</h2>
+    </div>
+    <div class="team" id="teamList"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     REZERVÁCIA
+     ============================================================ -->
+<section class="sec" id="rezervacia">
+  <div class="wrap">
+    <div class="sechead">
+      <p class="eyebrow">Rezervácia</p>
+      <h2 id="secBookTitle">Objednajte sa v šiestich krokoch</h2>
+      <p class="lede" id="secBookLede">Systém pozná trvanie každého úkonu, otváracie hodiny aj obsadenosť personálu — ponúkne len termíny, ktoré sa reálne zmestia.</p>
+    </div>
+
+    <div class="booking">
+      <div id="stepper"></div>
+
+      <aside class="summary" aria-labelledby="summaryH">
+        <div class="summary__head"><h3 id="summaryH">Vaša rezervácia</h3></div>
+        <dl class="summary__body" id="summaryBody"></dl>
+        <div class="summary__total">
+          <span id="summaryTotalLabel">Spolu</span>
+          <strong id="summaryTotal">—</strong>
+        </div>
+        <div class="summary__foot">
+          <button type="button" class="btn btn--primary" id="submitBtn" disabled>Potvrdiť rezerváciu</button>
+          <button type="button" class="btn btn--ghost btn--sm" id="resetBtn">Začať odznova</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PREVÁDZKOVÝ PANEL
+     ============================================================ -->
+<section class="sec sec--alt" id="prevadzka">
+  <div class="wrap">
+    <div class="sechead">
+      <p class="eyebrow">Druhá strana</p>
+      <h2>Pohľad prevádzky</h2>
+      <p class="lede" id="secPanelLede">To isté objednanie, ako ho vidí personál. Rezervácia z formulára vyššie sa objaví v mriežke okamžite.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel__bar">
+        <h3>Denný rozvrh</h3>
+        <span class="panel__date" id="panelDate">—</span>
+        <button type="button" class="btn btn--ghost btn--sm" id="panelToday">Skočiť na dnes</button>
+      </div>
+
+      <div class="kpis" id="kpis"></div>
+      <div class="load" id="loadRows"></div>
+
+      <div class="board">
+        <div class="board__in" id="board"></div>
+      </div>
+
+      <div class="legend">
+        <span><i class="l-done"></i>Potvrdené</span>
+        <span><i class="l-wait"></i>Čaká na potvrdenie</span>
+        <span><i class="l-new"></i>Nová rezervácia (vaša)</span>
+        <span><i class="l-off"></i>Neprítomnosť / prestávka</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FUNKCIE
+     ============================================================ -->
+<section class="sec" id="funkcie">
+  <div class="wrap">
+    <div class="sechead">
+      <p class="eyebrow">Systém</p>
+      <h2>Čo beží pod webom</h2>
+      <p class="lede">Rovnaké jadro pre ambulanciu, barbershop aj salón. Mení sa značka, názvoslovie a pravidlá — nie systém.</p>
+    </div>
+    <div class="feats" id="feats"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PÄTA
+     ============================================================ -->
+<footer class="sitefoot" id="kontakt">
+  <div class="wrap">
+    <div class="footgrid">
+      <div class="footcol">
+        <div class="brand" style="margin-bottom:12px">
+          <div class="brand__mark" id="footMark"></div>
+          <div>
+            <div class="brand__name" id="footName">—</div>
+            <div class="brand__kind" id="footKind">—</div>
+          </div>
+        </div>
+        <p id="footBlurb"></p>
+      </div>
+      <div class="footcol">
+        <h4>Kontakt</h4>
+        <p id="footAddr"></p>
+        <a href="#" id="footPhone"></a>
+        <a href="#" id="footMail"></a>
+      </div>
+      <div class="footcol">
+        <h4 id="footHoursH">Otváracie hodiny</h4>
+        <div class="hours" id="footHours"></div>
+      </div>
+      <div class="footcol">
+        <h4>Rezervácie</h4>
+        <a href="#rezervacia" id="footCta">Objednať sa online</a>
+        <a href="#sluzby">Cenník</a>
+        <a href="#tim">Tím</a>
+      </div>
+    </div>
+    <div class="footbar">
+      <span id="footCopy">© 2026</span>
+      <span style="margin-left:auto">Ukážka rezervačného systému — dáta sú vzorové, žiadny e-mail sa neodosiela.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ==========================================================
+     LOGÁ — jedna geometrická sústava, tri symboly
+     ========================================================== */
+  var MARKS = {
+    med: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v6M12 14v6"/><path d="M4 12h3l2-3 2 6 2-4 1.6 1H20"/></svg>',
+    barber: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M8.4 15.6 19 4M15.6 15.6 5 4"/></svg>',
+    salon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18c0-7 5-12 16-13-1 11-6 15-13 15H4Z"/><path d="M4 20c3-5 6-7 10-9"/></svg>'
+  };
+
+  var ICON = {
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-2 8-2 8h16s-2-1-2-8"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6l-8-3Z"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2.2 2A17 17 0 0 1 3 5.2 2 2 0 0 1 5 3Z"/></svg>',
+    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+    users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3.2 3.2 0 0 1 0 5M17.5 14.6A6 6 0 0 1 21 20"/></svg>',
+    chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+    swap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h12l-3-3M20 16H8l3 3"/></svg>'
+  };
+
+  /* ==========================================================
+     ODVETVIA — dáta, názvoslovie, pravidlá
+     Barbershop čerpá zo skutočného cenníka Poručíkos.
+     ========================================================== */
+
+  var BRANDS = {
+
+    med: {
+      key: "med",
+      name: "Ambulancia Hrušková",
+      kind: "Všeobecný lekár · Nitra",
+      blurb: "Všeobecná ambulancia pre dospelých. Objednaný pacient má prednosť, akútne stavy riešime bez objednania.",
+      addr: "Farská 12, 949 01 Nitra",
+      phone: "+421 37 652 41 90",
+      mail: "ambulancia@hruskova.sk",
+      words: {
+        client: "pacient", clientCap: "Pacient",
+        service: "vyšetrenie", serviceAcc: "vyšetrenie", serviceCap: "Vyšetrenie", servicePl: "Vyšetrenia",
+        staff: "lekár", staffAcc: "lekára", staffCap: "Lekár", staffPl: "Lekári",
+        cta: "Objednať sa", ctaLong: "Objednať sa online",
+        book: "Objednanie", bookVerb: "Potvrdiť objednanie",
+        priceLabel: "Cenník a úhrada"
+      },
+      hero: {
+        eyebrow: "Online objednávanie",
+        title: "Termín si vyberiete sami.",
+        claim: "Bez čakania na telefón.",
+        lede: "Voľné termíny vidíte v reálnom čase. Objednanie trvá pol minúty, potvrdenie príde e-mailom aj SMS-kou a deň vopred pripomienku.",
+        cta2: "Zoznam vyšetrení",
+        facts: [
+          { i: "clock", t: "Objednaní pacienti idú prednostne" },
+          { i: "bell", t: "SMS pripomienka 24 h vopred" },
+          { i: "shield", t: "Údaje spracované podľa GDPR" }
+        ]
+      },
+      servicesLede: "Väčšina výkonov je hradená zdravotnou poisťovňou. Pri výkonoch na vlastnú žiadosť platí cenník nižšie.",
+      hours: { 1: [420, 840], 2: [420, 840], 3: [720, 1080], 4: [420, 840], 5: [420, 780], 6: null, 0: null },
+      hoursText: [
+        ["Pondelok, utorok, štvrtok", "07:00 – 14:00"],
+        ["Streda", "12:00 – 18:00"],
+        ["Piatok", "07:00 – 13:00"],
+        ["Sobota, nedeľa", null]
+      ],
+      slotStep: 10,
+      currency: "€",
+      categories: [
+        { id: "prevencia", name: "Prevencia", desc: "Prehliadky a odbery" },
+        { id: "vysetrenia", name: "Vyšetrenia", desc: "Cielené a kontrolné" },
+        { id: "admin", name: "Administratíva", desc: "Potvrdenia a výpisy" }
+      ],
+      services: [
+        { id: "m1", cat: "prevencia", name: "Preventívna prehliadka", desc: "Komplexná prehliadka vrátane EKG a odberu", dur: 30, price: 0, covered: true, staff: ["eva", "peter"] },
+        { id: "m2", cat: "prevencia", name: "Odber krvi", desc: "Nalačno, výsledky do 48 hodín", dur: 15, price: 0, covered: true, staff: ["lucia"] },
+        { id: "m3", cat: "prevencia", name: "Očkovanie", desc: "Chrípka, kliešťová encefalitída, tetanus", dur: 15, price: 15, covered: false, staff: ["eva", "peter", "lucia"] },
+        { id: "m4", cat: "vysetrenia", name: "Konzultácia výsledkov", desc: "Prebratie laboratórnych nálezov", dur: 15, price: 0, covered: true, staff: ["eva", "peter"] },
+        { id: "m5", cat: "vysetrenia", name: "EKG vyšetrenie", desc: "Záznam a vyhodnotenie na mieste", dur: 20, price: 0, covered: true, staff: ["lucia", "eva"] },
+        { id: "m6", cat: "vysetrenia", name: "Predoperačné vyšetrenie", desc: "Na vlastnú žiadosť alebo pred zákrokom", dur: 30, price: 35, covered: false, staff: ["eva", "peter"] },
+        { id: "m7", cat: "admin", name: "Potvrdenie o zdravotnej spôsobilosti", desc: "Vodičský preukaz, zbrojný preukaz, práca", dur: 20, price: 25, covered: false, staff: ["eva", "peter"] },
+        { id: "m8", cat: "admin", name: "Výpis zo zdravotnej dokumentácie", desc: "Vyhotovenie do 5 pracovných dní", dur: 10, price: 20, covered: false, staff: ["lucia"] }
+      ],
+      addons: [],
+      staff: [
+        { id: "eva", name: "MUDr. Eva Hrušková", short: "Dr. Hrušková", role: "Všeobecná lekárka", tags: ["Vedúca ambulancie", "20 rokov praxe"] },
+        { id: "peter", name: "MUDr. Peter Vlk", short: "Dr. Vlk", role: "Všeobecný lekár", tags: ["Zástup", "Utorok a štvrtok"] },
+        { id: "lucia", name: "Mgr. Lucia Danková", short: "Sestra Danková", role: "Zdravotná sestra", tags: ["Odbery", "EKG", "Očkovanie"] }
+      ],
+      extraField: {
+        id: "poistovna", label: "Zdravotná poisťovňa", type: "select",
+        options: ["Všeobecná zdravotná poisťovňa", "Dôvera", "Union", "Poistenec v zahraničí"],
+        hint: "Na vyšetrenie si prineste preukaz poistenca."
+      },
+      confirmNote: "Príďte 10 minút pred termínom. Ak sa nemôžete dostaviť, zrušte objednanie cez odkaz v e-maile — termín sa hneď uvoľní ďalšiemu pacientovi.",
+      kpiLabels: ["Objednaní pacienti", "Obsadenosť dňa", "Priemerný čas výkonu", "Neprišli (30 dní)"],
+      feats: [
+        { i: "cal", t: "Termíny podľa reálneho trvania", d: "Systém pozná dĺžku každého výkonu a nikdy neponúkne termín, ktorý sa do ordinačných hodín nezmestí." },
+        { i: "bell", t: "Pripomienky e-mailom a SMS", d: "Potvrdenie hneď, pripomienka 24 hodín vopred. Menej neohlásených absencií." },
+        { i: "users", t: "Viac lekárov, jeden rozvrh", d: "Každý má vlastné hodiny, dovolenky a zoznam výkonov. Pacient vidí len to, čo je naozaj voľné." },
+        { i: "chart", t: "Prehľad prevádzky", d: "Obsadenosť, počty objednaní a absencie za deň, týždeň aj mesiac." },
+        { i: "lock", t: "GDPR a súhlasy", d: "Súhlas so spracovaním, história zmien, mazanie údajov na žiadosť pacienta." },
+        { i: "swap", t: "Vlastná značka", d: "Farby, logo a názvoslovie sa nastavia na mieru — systém pod tým ostáva rovnaký." }
+      ]
+    },
+
+    barber: {
+      key: "barber",
+      name: "Poručíkos Barbershop",
+      kind: "Pánske holičstvo · Nitra",
+      blurb: "Miesto, kam neprídeš len po strih, ale aj vyčistiť hlavu. Uvoľnená atmosféra a humor ostrejší jak britva.",
+      addr: "Svätoplukovo námestie 126/1, 949 01 Nitra",
+      phone: "+421 908 627 648",
+      mail: "info@porucikos.sk",
+      words: {
+        client: "klient", clientCap: "Klient",
+        service: "služba", serviceAcc: "službu", serviceCap: "Služba", servicePl: "Služby",
+        staff: "barber", staffAcc: "barbera", staffCap: "Barber", staffPl: "Barberi",
+        cta: "Rezervovať", ctaLong: "Rezervovať termín",
+        book: "Rezervácia", bookVerb: "Potvrdiť rezerváciu",
+        priceLabel: "Cenník"
+      },
+      hero: {
+        eyebrow: "Rezervácie 24/7",
+        title: "Perfektný zostrih.",
+        claim: "Vždy.",
+        lede: "Vyber si barbera, službu a termín. Bez telefonátov, bez čakania v kresle na niekoho iného.",
+        cta2: "Cenník služieb",
+        facts: [
+          { i: "clock", t: "Rezervácia za 30 sekúnd" },
+          { i: "bell", t: "Pripomienka deň vopred" },
+          { i: "users", t: "Päť barberov, tri úrovne" }
+        ]
+      },
+      servicesLede: "Ceny sa líšia podľa úrovne barbera. Každá cena zahŕňa umytie, vysušenie a styling, ak nie je uvedené inak.",
+      hours: { 1: [540, 1140], 2: [540, 1140], 3: [540, 1140], 4: [540, 1140], 5: [540, 1140], 6: [540, 840], 0: null },
+      hoursText: [
+        ["Pondelok – piatok", "09:00 – 19:00"],
+        ["Sobota", "09:00 – 14:00"],
+        ["Nedeľa", null]
+      ],
+      slotStep: 15,
+      currency: "€",
+      categories: [
+        { id: "vlasy", name: "Vlasy", desc: "Strih a styling" },
+        { id: "brada", name: "Brada", desc: "Úprava a farbenie" },
+        { id: "komplet", name: "Komplet", desc: "Strih spolu s bradou" }
+      ],
+      services: [
+        { id: "b1", cat: "vlasy", name: "Strih", desc: "Strih, umytie, vysušenie, styling", dur: 45, price: 20, staff: ["porucik", "samo", "daniil"] },
+        { id: "b2", cat: "vlasy", name: "Strih na jednu dĺžku", desc: "Strih do hola alebo na jednu dĺžku, umytie, vysušenie", dur: 30, price: 13, staff: ["porucik", "samo", "daniil"] },
+        { id: "b3", cat: "vlasy", name: "Detský strih (od 5 rokov)", desc: "Strih pre najmenších, bez zbytočného stresu", dur: 45, price: 20, staff: ["porucik", "samo", "daniil"] },
+        { id: "b4", cat: "vlasy", name: "Strih u Adama", desc: "Štandardný strih, semi-pro úroveň", dur: 45, price: 17, staff: ["adam"] },
+        { id: "b5", cat: "vlasy", name: "Strih u Dimu", desc: "Strih, umytie, vysušenie, styling — new talent", dur: 45, price: 15, staff: ["dima"] },
+        { id: "b6", cat: "brada", name: "Upravenie brady", desc: "Úprava brady a fúzov, hot towel", dur: 20, price: 15, staff: ["porucik", "samo", "daniil"] },
+        { id: "b7", cat: "brada", name: "Farbenie a upravenie brady", desc: "Farbenie a kompletná úprava brady", dur: 60, price: 25, staff: ["porucik", "samo", "daniil"] },
+        { id: "b8", cat: "brada", name: "Úprava brady u Adama", desc: "Úprava brady a fúzov, semi-pro úroveň", dur: 30, price: 13, staff: ["adam"] },
+        { id: "b9", cat: "brada", name: "Upravenie brady u Dimu", desc: "Úprava brady a fúzov — new talent", dur: 20, price: 10, staff: ["dima"] },
+        { id: "b10", cat: "komplet", name: "Strih + brada", desc: "Strih, úprava brady a fúzov, umytie, vysušenie, styling", dur: 60, price: 30, staff: ["porucik", "samo", "daniil"] },
+        { id: "b11", cat: "komplet", name: "Strih na jednu dĺžku + brada", desc: "Strih do hola alebo na jednu dĺžku s úpravou brady", dur: 45, price: 22, staff: ["porucik", "samo", "daniil"] },
+        { id: "b12", cat: "komplet", name: "Strih + brada + farbenie brady", desc: "Kompletný servis vrátane farbenia a odstránenia chĺpkov z nosa", dur: 80, price: 38, staff: ["porucik", "samo", "daniil"] },
+        { id: "b13", cat: "komplet", name: "Strih + brada u Adama", desc: "Strih a úprava brady, semi-pro úroveň", dur: 90, price: 27, staff: ["adam"] },
+        { id: "b14", cat: "komplet", name: "Strih + brada u Dimu", desc: "Strih, úprava brady, umytie, vysušenie — new talent", dur: 90, price: 20, staff: ["dima"] }
+      ],
+      addons: [
+        { id: "nos", name: "Vytrhanie chĺpkov z nosa", dur: 10, price: 5 }
+      ],
+      staff: [
+        { id: "porucik", name: "Poručík", short: "Poručík", role: "Majiteľ a hlavný barber", tags: ["Profi"] },
+        { id: "samo", name: "Samo", short: "Samo", role: "Barber", tags: ["Profi"] },
+        { id: "daniil", name: "Daniil", short: "Daniil", role: "Barber", tags: ["Profi"] },
+        { id: "adam", name: "Adam Pavlovič", short: "Adam", role: "Barber", tags: ["Semi-pro"] },
+        { id: "dima", name: "Dima", short: "Dima", role: "Barber", tags: ["New talent"] }
+      ],
+      extraField: null,
+      confirmNote: "Ak sa nestíhaš dostaviť, zruš rezerváciu cez odkaz v e-maile aspoň dve hodiny vopred — termín sa hneď uvoľní ďalšiemu.",
+      kpiLabels: ["Rezervácie na deň", "Obsadenosť dňa", "Priemerná návšteva", "Tržba (odhad)"],
+      feats: [
+        { i: "cal", t: "Termíny podľa reálneho trvania", d: "Strih 45 minút, brada 20. Systém neponúkne termín, ktorý sa do zatváracích hodín nezmestí." },
+        { i: "bell", t: "Pripomienky e-mailom a SMS", d: "Potvrdenie hneď po rezervácii, pripomienka deň vopred. Menej prázdnych kresiel." },
+        { i: "users", t: "Barberi na úrovniach", d: "Profi, semi-pro a new talent majú vlastné ceny aj vlastný rozvrh. Klient vidí len to, čo daný barber robí." },
+        { i: "chart", t: "Prehľad prevádzky", d: "Obsadenosť, tržby a najžiadanejšie služby za deň, týždeň aj mesiac." },
+        { i: "lock", t: "GDPR a súhlasy", d: "Súhlas so spracovaním, história zmien, mazanie údajov na žiadosť klienta." },
+        { i: "swap", t: "Vlastná značka", d: "Farby, logo a názvoslovie sa nastavia na mieru — systém pod tým ostáva rovnaký." }
+      ]
+    },
+
+    salon: {
+      key: "salon",
+      name: "Štúdio Vlna",
+      kind: "Kaderníctvo a kozmetika · Nitra",
+      blurb: "Kaderníctvo, kozmetika a masáže pod jednou strechou. Tichý priestor, na ktorý si vyhradíte čas len pre seba.",
+      addr: "Kupecká 8, 949 01 Nitra",
+      phone: "+421 911 240 118",
+      mail: "ahoj@studiovlna.sk",
+      words: {
+        client: "klient", clientCap: "Klient",
+        service: "procedúra", serviceAcc: "procedúru", serviceCap: "Procedúra", servicePl: "Procedúry",
+        staff: "terapeut", staffAcc: "terapeuta", staffCap: "Terapeut", staffPl: "Tím",
+        cta: "Rezervovať", ctaLong: "Rezervovať termín",
+        book: "Rezervácia", bookVerb: "Potvrdiť rezerváciu",
+        priceLabel: "Cenník"
+      },
+      hero: {
+        eyebrow: "Rezervácie 24/7",
+        title: "Čas len pre seba.",
+        claim: "Rezervovaný na minútu presne.",
+        lede: "Vyberte si procedúru aj terapeuta a rezervujte termín kedykoľvek — aj o polnoci, keď máte konečne pokoj.",
+        cta2: "Cenník procedúr",
+        facts: [
+          { i: "clock", t: "Rezervácia za 30 sekúnd" },
+          { i: "bell", t: "Pripomienka deň vopred" },
+          { i: "shield", t: "Pri dlhých procedúrach záloha 20 €" }
+        ]
+      },
+      servicesLede: "Pri procedúrach nad 90 minút vyberáme zálohu 20 €, ktorá sa odpočíta z ceny. Zrušenie je bezplatné do 24 hodín pred termínom.",
+      hours: { 1: null, 2: [600, 1200], 3: [600, 1200], 4: [600, 1200], 5: [600, 1200], 6: [540, 900], 0: null },
+      hoursText: [
+        ["Pondelok", null],
+        ["Utorok – piatok", "10:00 – 20:00"],
+        ["Sobota", "09:00 – 15:00"],
+        ["Nedeľa", null]
+      ],
+      slotStep: 15,
+      currency: "€",
+      categories: [
+        { id: "vlasy", name: "Vlasy", desc: "Strih, farba, styling" },
+        { id: "tvar", name: "Tvár a telo", desc: "Kozmetika a masáže" },
+        { id: "ruky", name: "Ruky a nohy", desc: "Manikúra a pedikúra" }
+      ],
+      services: [
+        { id: "s1", cat: "vlasy", name: "Strih a styling", desc: "Konzultácia, umytie, strih, fúkaná", dur: 45, price: 35, staff: ["nina", "karolina"] },
+        { id: "s2", cat: "vlasy", name: "Farbenie a strih", desc: "Farba na celú dĺžku, strih, styling", dur: 120, price: 85, staff: ["nina", "karolina"], deposit: 20 },
+        { id: "s3", cat: "vlasy", name: "Melír a tónovanie", desc: "Melír, tónovanie, ošetrenie, styling", dur: 150, price: 110, staff: ["nina"], deposit: 20 },
+        { id: "s4", cat: "tvar", name: "Kozmetické ošetrenie pleti", desc: "Hĺbkové čistenie, masáž tváre, maska", dur: 60, price: 45, staff: ["tereza"] },
+        { id: "s5", cat: "tvar", name: "Masáž chrbta a šije", desc: "Uvoľňujúca masáž, teplé oleje", dur: 30, price: 28, staff: ["tereza"] },
+        { id: "s6", cat: "tvar", name: "Úprava obočia a mihalníc", desc: "Tvarovanie, farbenie, laminácia", dur: 45, price: 32, staff: ["tereza", "karolina"] },
+        { id: "s7", cat: "ruky", name: "Manikúra s gél lakom", desc: "Úprava nechtov, gél lak, olejček", dur: 60, price: 30, staff: ["karolina"] },
+        { id: "s8", cat: "ruky", name: "Pedikúra", desc: "Kúpeľ, úprava nechtov, ošetrenie chodidiel", dur: 60, price: 34, staff: ["karolina"] }
+      ],
+      addons: [
+        { id: "maska", name: "Regeneračná maska na vlasy", dur: 15, price: 12 },
+        { id: "ruky", name: "Parafínový zábal na ruky", dur: 15, price: 9 }
+      ],
+      staff: [
+        { id: "nina", name: "Nina Bartošová", short: "Nina", role: "Kaderníčka, koloristka", tags: ["Farby", "Melír"] },
+        { id: "karolina", name: "Karolína Šebová", short: "Karolína", role: "Kaderníčka, nechtová dizajnérka", tags: ["Strihy", "Nechty"] },
+        { id: "tereza", name: "Tereza Halušková", short: "Tereza", role: "Kozmetička, masérka", tags: ["Pleť", "Masáže"] }
+      ],
+      extraField: null,
+      confirmNote: "Zrušenie je bezplatné do 24 hodín pred termínom. Pri neskoršom zrušení sa záloha nevracia.",
+      kpiLabels: ["Rezervácie na deň", "Obsadenosť dňa", "Priemerná návšteva", "Tržba (odhad)"],
+      feats: [
+        { i: "cal", t: "Termíny podľa reálneho trvania", d: "Melír 150 minút, masáž 30. Systém ponúkne len termíny, ktoré sa reálne zmestia do dňa." },
+        { i: "bell", t: "Pripomienky e-mailom a SMS", d: "Potvrdenie hneď, pripomienka deň vopred. Výrazne menej zabudnutých termínov." },
+        { i: "users", t: "Každý terapeut vlastný rozvrh", d: "Vlastné hodiny, voľná, aj zoznam procedúr, ktoré robí. Klient vidí len skutočne voľné termíny." },
+        { i: "chart", t: "Prehľad prevádzky", d: "Obsadenosť, tržby a najžiadanejšie procedúry za deň, týždeň aj mesiac." },
+        { i: "lock", t: "Zálohy a storno pravidlá", d: "Pri dlhých procedúrach vyberá systém zálohu a stráži storno lehotu automaticky." },
+        { i: "swap", t: "Vlastná značka", d: "Farby, logo a názvoslovie sa nastavia na mieru — systém pod tým ostáva rovnaký." }
+      ]
+    }
+  };
+
+  /* ==========================================================
+     Pomocné funkcie
+     ========================================================== */
+
+  var DOW = ["Ne", "Po", "Ut", "St", "Št", "Pi", "So"];
+  var MON = ["jan", "feb", "mar", "apr", "máj", "jún", "júl", "aug", "sep", "okt", "nov", "dec"];
+  var MON_LONG = ["januára", "februára", "marca", "apríla", "mája", "júna", "júla", "augusta", "septembra", "októbra", "novembra", "decembra"];
+
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function hhmm(mins) { return pad(Math.floor(mins / 60)) + ":" + pad(mins % 60); }
+  function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function durText(m) {
+    if (m < 60) return m + " min";
+    var h = Math.floor(m / 60), r = m % 60;
+    return r ? h + " h " + r + " min" : h + " h";
+  }
+  function money(v, cur) { return v + " " + (cur || "€"); }
+
+  // deterministický generátor — rovnaký deň dá vždy rovnaký rozvrh
+  function seeded(str) {
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return function () {
+      h += 0x6D2B79F5;
+      var t = h;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  var LOAD_TARGET = 0.62;
+
+  /* ==========================================================
+     Stav
+     ========================================================== */
+
+  var state = {
+    brand: "med",
+    cat: null,
+    service: null,
+    addons: [],
+    staff: null,
+    date: null,
+    time: null,
+    contact: {},
+    booking: null,
+    panelDate: null
+  };
+
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var hasGsap = typeof window.gsap !== "undefined";
+  if (hasGsap && typeof window.ScrollTrigger !== "undefined") gsap.registerPlugin(ScrollTrigger);
+
+  function B() { return BRANDS[state.brand]; }
+
+  /* ==========================================================
+     Rozvrh a dostupnosť
+     ========================================================== */
+
+  function hoursFor(brand, d) { return brand.hours[d.getDay()] || null; }
+
+  function staffById(brand, id) {
+    for (var i = 0; i < brand.staff.length; i++) if (brand.staff[i].id === id) return brand.staff[i];
+    return null;
+  }
+
+  // Obsadené bloky daného člena tímu v daný deň — stabilné pre dvojicu deň+osoba
+  function busyBlocks(brand, dateStr, staffId) {
+    var d = new Date(dateStr + "T00:00:00");
+    var h = hoursFor(brand, d);
+    if (!h) return [];
+    var r = seeded(brand.key + "|" + dateStr + "|" + staffId);
+    var step = brand.slotStep;
+    var pool = brand.services.filter(function (s) { return s.staff.indexOf(staffId) >= 0; });
+    if (!pool.length) pool = brand.services;
+
+    var blocks = [];
+    var t = h[0] + Math.floor(r() * 3) * step;
+
+    // jedna prestávka uprostred dňa
+    var lunch = h[0] + Math.floor((h[1] - h[0]) * (0.42 + r() * 0.18) / step) * step;
+
+    while (t < h[1] - step) {
+      if (t < lunch && lunch < t + 30 && r() < 0.7) {
+        blocks.push({ start: lunch, end: lunch + 30, type: "off", label: "Prestávka" });
+        t = lunch + 30;
+        continue;
+      }
+      if (r() < LOAD_TARGET) {
+        var svc = pool[Math.floor(r() * pool.length)];
+        if (t + svc.dur <= h[1]) {
+          blocks.push({
+            start: t, end: t + svc.dur, type: r() < 0.78 ? "done" : "wait",
+            label: svc.name, who: staffId
+          });
+          t += svc.dur + Math.floor(r() * 3) * step;
+        } else break;
+      } else {
+        t += step * (1 + Math.floor(r() * 3));
+      }
+    }
+    return blocks;
+  }
+
+  function allBlocks(brand, dateStr, staffId) {
+    var blocks = busyBlocks(brand, dateStr, staffId).slice();
+    if (state.booking && state.booking.brand === brand.key && state.booking.date === dateStr && state.booking.staffId === staffId) {
+      blocks.push({
+        start: state.booking.start, end: state.booking.start + state.booking.dur,
+        type: "new", label: state.booking.serviceName, who: staffId
+      });
+    }
+    return blocks;
+  }
+
+  function freeSlots(brand, dateStr, staffId, dur) {
+    var d = new Date(dateStr + "T00:00:00");
+    var h = hoursFor(brand, d);
+    if (!h) return [];
+    var blocks = allBlocks(brand, dateStr, staffId);
+    var step = brand.slotStep;
+    var now = new Date();
+    var isToday = iso(now) === dateStr;
+    var cutoff = isToday ? now.getHours() * 60 + now.getMinutes() + 45 : -1;
+
+    var out = [];
+    for (var t = h[0]; t + dur <= h[1]; t += step) {
+      if (t < cutoff) continue;
+      var ok = true;
+      for (var i = 0; i < blocks.length; i++) {
+        if (t < blocks[i].end && t + dur > blocks[i].start) { ok = false; break; }
+      }
+      if (ok) out.push(t);
+    }
+    return out;
+  }
+
+  // najbližšie voľné termíny naprieč celým tímom (pre kartu v hero)
+  function nextFree(brand, count) {
+    var out = [];
+    var day = new Date();
+    for (var k = 0; k < 21 && out.length < count; k++) {
+      var ds = iso(day);
+      if (hoursFor(brand, day)) {
+        var found = [];
+        for (var i = 0; i < brand.staff.length; i++) {
+          var s = freeSlots(brand, ds, brand.staff[i].id, 30);
+          for (var j = 0; j < s.length; j++) found.push(s[j]);
+        }
+        found.sort(function (a, b) { return a - b; });
+        var seen = {};
+        for (var m = 0; m < found.length && out.length < count; m++) {
+          if (seen[found[m]]) continue;
+          seen[found[m]] = 1;
+          out.push({ date: new Date(day), time: found[m] });
+        }
+      }
+      day = new Date(day.getTime() + 86400000);
+    }
+    return out;
+  }
+
+  function firstOpenDay(brand) {
+    var d = new Date();
+    for (var i = 0; i < 14; i++) {
+      if (hoursFor(brand, d)) return d;
+      d = new Date(d.getTime() + 86400000);
+    }
+    return new Date();
+  }
+
+  /* ==========================================================
+     Render — statické časti webu
+     ========================================================== */
+
+  function renderChrome() {
+    var b = B(), w = b.words;
+
+    document.documentElement.setAttribute("data-brand", b.key);
+
+    $("#brandMark").innerHTML = MARKS[b.key];
+    $("#footMark").innerHTML = MARKS[b.key];
+    $("#brandName").textContent = b.name;
+    $("#brandKind").textContent = b.kind;
+    $("#footName").textContent = b.name;
+    $("#footKind").textContent = b.kind;
+    $("#footBlurb").textContent = b.blurb;
+
+    $("#navServices").textContent = w.servicePl;
+    $("#navTeam").textContent = w.staffPl;
+    $("#navCta").textContent = w.cta;
+
+    $("#heroEyebrow").textContent = b.hero.eyebrow;
+    $("#heroTitle").innerHTML = esc(b.hero.title) + ' <span class="hero__claim">' + esc(b.hero.claim) + "</span>";
+    $("#heroLede").textContent = b.hero.lede;
+    $("#heroCta").textContent = w.ctaLong;
+    $("#heroCta2").textContent = b.hero.cta2;
+
+    var facts = $("#heroFacts");
+    facts.innerHTML = "";
+    b.hero.facts.forEach(function (f) {
+      facts.appendChild(el("div", "hero__fact", ICON[f.i] + "<span>" + esc(f.t) + "</span>"));
+    });
+
+    $("#secServicesEyebrow").textContent = w.priceLabel;
+    $("#secServicesTitle").textContent = "Čo u nás vybavíte";
+    $("#secServicesLede").textContent = b.servicesLede;
+    $("#secTeamEyebrow").textContent = "Tím";
+    $("#secTeamTitle").textContent = "Kto sa vám bude venovať";
+    $("#secBookTitle").textContent = b.extraField ? "Objednajte sa v šiestich krokoch" : "Rezervujte si termín v šiestich krokoch";
+    $("#summaryH").textContent = "Vaše " + (b.key === "med" ? "objednanie" : "rezervácia");
+    $("#submitBtn").textContent = w.bookVerb;
+    $("#footCta").textContent = w.ctaLong;
+    $("#footPhone").textContent = b.phone;
+    $("#footPhone").href = "tel:" + b.phone.replace(/\s/g, "");
+    $("#footMail").textContent = b.mail;
+    $("#footMail").href = "mailto:" + b.mail;
+    $("#footAddr").textContent = b.addr;
+    $("#footCopy").textContent = "© " + new Date().getFullYear() + " " + b.name;
+
+    var hrs = $("#footHours");
+    hrs.innerHTML = "";
+    b.hoursText.forEach(function (row) {
+      var r = el("div", "hourrow" + (row[1] ? "" : " is-closed"));
+      r.appendChild(el("span", null, esc(row[0])));
+      r.appendChild(el("span", null, row[1] ? esc(row[1]) : "Zatvorené"));
+      hrs.appendChild(r);
+    });
+
+    var fe = $("#feats");
+    fe.innerHTML = "";
+    b.feats.forEach(function (f) {
+      var c = el("div", "feat");
+      c.appendChild(el("div", "feat__i", ICON[f.i]));
+      c.appendChild(el("h3", null, esc(f.t)));
+      c.appendChild(el("p", null, esc(f.d)));
+      fe.appendChild(c);
+    });
+  }
+
+  function renderNextSlots() {
+    var b = B();
+    var box = $("#nextSlots");
+    box.innerHTML = "";
+    var list = nextFree(b, 6);
+    list.forEach(function (s) {
+      var btn = el("button", "slotchip");
+      btn.type = "button";
+      btn.innerHTML = '<div class="slotchip__day">' + DOW[s.date.getDay()] + " " + s.date.getDate() + ". " + MON[s.date.getMonth()] +
+        '</div><div class="slotchip__time">' + hhmm(s.time) + "</div>";
+      btn.addEventListener("click", function () {
+        document.getElementById("rezervacia").scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+      });
+      box.appendChild(btn);
+    });
+    $("#nextSlotsNote").textContent = list.length
+      ? "Termíny naprieč celým tímom. Kliknutím prejdete na " + (b.key === "med" ? "objednanie" : "rezerváciu") + "."
+      : "Momentálne nie sú voľné termíny.";
+  }
+
+  function renderPrices() {
+    var b = B();
+    var box = $("#priceList");
+    box.innerHTML = "";
+
+    b.categories.forEach(function (cat) {
+      var items = b.services.filter(function (s) { return s.cat === cat.id; });
+      if (!items.length) return;
+
+      var g = el("div", "pricegroup");
+      var h = el("div", "pricegroup__head");
+      h.appendChild(el("h3", null, esc(cat.name)));
+      h.appendChild(el("span", null, esc(cat.desc)));
+      g.appendChild(h);
+
+      items.forEach(function (s) {
+        var row = el("div", "pricerow");
+        row.appendChild(el("div", "pricerow__name", esc(s.name)));
+        row.appendChild(el("div", "pricerow__dur", durText(s.dur)));
+        if (s.covered) {
+          row.appendChild(el("div", "pricerow__price is-covered", "hradené poisťovňou"));
+        } else {
+          row.appendChild(el("div", "pricerow__price", money(s.price, b.currency)));
+        }
+        row.appendChild(el("div", "pricerow__desc", esc(s.desc) + (s.deposit ? " · záloha " + money(s.deposit, b.currency) : "")));
+        g.appendChild(row);
+      });
+
+      box.appendChild(g);
+    });
+
+    if (b.addons.length) {
+      var g2 = el("div", "pricegroup");
+      var h2 = el("div", "pricegroup__head");
+      h2.appendChild(el("h3", null, "Doplnky"));
+      h2.appendChild(el("span", null, "Pridáte ich pri rezervácii"));
+      g2.appendChild(h2);
+      b.addons.forEach(function (a) {
+        var row = el("div", "pricerow");
+        row.appendChild(el("div", "pricerow__name", esc(a.name)));
+        row.appendChild(el("div", "pricerow__dur", durText(a.dur)));
+        row.appendChild(el("div", "pricerow__price", money(a.price, b.currency)));
+        g2.appendChild(row);
+      });
+      box.appendChild(g2);
+    }
+  }
+
+  function initials(name) {
+    var parts = name.replace(/^(MUDr\.|Mgr\.|Ing\.|Bc\.)\s*/i, "").trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function renderTeam() {
+    var b = B();
+    var box = $("#teamList");
+    box.innerHTML = "";
+    b.staff.forEach(function (p) {
+      var c = el("div", "person");
+      c.appendChild(el("div", "avatar", initials(p.name)));
+      c.appendChild(el("div", "person__name", esc(p.name)));
+      c.appendChild(el("div", "person__role", esc(p.role)));
+      var tr = el("div", "tagrow");
+      p.tags.forEach(function (t) { tr.appendChild(el("span", "tag", esc(t))); });
+      c.appendChild(tr);
+      box.appendChild(c);
+    });
+  }
+
+  /* ==========================================================
+     Render — rezervačný tok
+     ========================================================== */
+
+  function stepShell(n, title, pick, activeIdx) {
+    var wrapEl = el("div", "step");
+    if (n - 1 < activeIdx) wrapEl.classList.add("is-done");
+    if (n - 1 === activeIdx) wrapEl.classList.add("is-active");
+
+    var rail = el("div", "step__rail");
+    rail.appendChild(el("div", "step__num", n - 1 < activeIdx ? ICON.check : String(n)));
+    rail.appendChild(el("div", "step__line"));
+    wrapEl.appendChild(rail);
+
+    var body = el("div", "step__body");
+    var t = el("div", "step__title", esc(title));
+    if (pick) t.appendChild(el("span", "step__pick", esc(pick)));
+    body.appendChild(t);
+    var content = el("div", "step__content");
+    body.appendChild(content);
+    wrapEl.appendChild(body);
+    wrapEl.__content = content;
+    return wrapEl;
+  }
+
+  function currentStepIndex() {
+    if (!state.cat) return 0;
+    if (!state.service) return 1;
+    if (!state.staff) return 2;
+    if (!state.date) return 3;
+    if (!state.time) return 4;
+    return 5;
+  }
+
+  function renderStepper(animate) {
+    var b = B(), w = b.words;
+    var host = $("#stepper");
+    host.innerHTML = "";
+    var idx = currentStepIndex();
+
+    // 1 — kategória
+    var s1 = stepShell(1, "Vyberte oblasť", state.cat ? catName(state.cat) : null, idx);
+    var t1 = el("div", "tiles tiles--3");
+    b.categories.forEach(function (c) {
+      var btn = el("button", "tile");
+      btn.type = "button";
+      btn.setAttribute("aria-pressed", state.cat === c.id ? "true" : "false");
+      btn.innerHTML = '<span class="tile__t">' + esc(c.name) + '</span><span class="tile__s">' + esc(c.desc) + "</span>";
+      btn.addEventListener("click", function () {
+        state.cat = c.id; state.service = null; state.addons = []; state.staff = null; state.date = null; state.time = null;
+        renderStepper(true); renderSummary();
+      });
+      t1.appendChild(btn);
+    });
+    s1.__content.appendChild(t1);
+    host.appendChild(s1);
+
+    // 2 — služba
+    var s2 = stepShell(2, "Vyberte " + w.serviceAcc, state.service ? state.service.name : null, idx);
+    if (state.cat) {
+      var t2 = el("div", "tiles tiles--2");
+      b.services.filter(function (s) { return s.cat === state.cat; }).forEach(function (s) {
+        var btn = el("button", "tile");
+        btn.type = "button";
+        btn.setAttribute("aria-pressed", state.service && state.service.id === s.id ? "true" : "false");
+        var priceTxt = s.covered ? "hradené poisťovňou" : money(s.price, b.currency);
+        btn.innerHTML = '<span class="tile__t">' + esc(s.name) + '</span><span class="tile__s">' + esc(s.desc) +
+          '</span><span class="tile__meta"><span>' + durText(s.dur) + "</span><span>" + esc(priceTxt) + "</span></span>";
+        btn.addEventListener("click", function () {
+          state.service = s; state.addons = []; state.staff = null; state.date = null; state.time = null;
+          renderStepper(true); renderSummary();
+        });
+        t2.appendChild(btn);
+      });
+      s2.__content.appendChild(t2);
+
+      if (b.addons.length) {
+        var addBox = el("div", null, '<p class="eyebrow" style="margin:16px 0 8px">Doplnky (nepovinné)</p>');
+        var t2b = el("div", "tiles tiles--2");
+        b.addons.forEach(function (a) {
+          var on = state.addons.indexOf(a.id) >= 0;
+          var btn = el("button", "tile");
+          btn.type = "button";
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+          btn.innerHTML = '<span class="tile__t">' + esc(a.name) + '</span><span class="tile__meta"><span>+' +
+            durText(a.dur) + "</span><span>+" + money(a.price, b.currency) + "</span></span>";
+          btn.addEventListener("click", function () {
+            var i = state.addons.indexOf(a.id);
+            if (i >= 0) state.addons.splice(i, 1); else state.addons.push(a.id);
+            state.time = null;
+            renderStepper(false); renderSummary();
+          });
+          t2b.appendChild(btn);
+        });
+        addBox.appendChild(t2b);
+        s2.__content.appendChild(addBox);
+      }
+    }
+    host.appendChild(s2);
+
+    // 3 — personál
+    var s3 = stepShell(3, "Vyberte " + w.staffAcc, state.staff ? state.staff.short : null, idx);
+    if (state.service) {
+      var t3 = el("div", "tiles tiles--2");
+      state.service.staff.forEach(function (sid) {
+        var p = staffById(b, sid);
+        if (!p) return;
+        var btn = el("button", "tile tile--person");
+        btn.type = "button";
+        btn.setAttribute("aria-pressed", state.staff && state.staff.id === p.id ? "true" : "false");
+        btn.innerHTML = '<span class="avatar">' + initials(p.name) + '</span><span><span class="tile__t">' +
+          esc(p.name) + '</span><span class="tile__s">' + esc(p.role) + "</span></span>";
+        btn.addEventListener("click", function () {
+          state.staff = p; state.date = null; state.time = null;
+          renderStepper(true); renderSummary(); renderPanel();
+        });
+        t3.appendChild(btn);
+      });
+      s3.__content.appendChild(t3);
+    }
+    host.appendChild(s3);
+
+    // 4 — dátum
+    var s4 = stepShell(4, "Vyberte dátum", state.date ? longDate(new Date(state.date + "T00:00:00")) : null, idx);
+    if (state.staff) {
+      var dates = el("div", "dates");
+      var day = new Date();
+      for (var k = 0; k < 21; k++) {
+        (function (d) {
+          var ds = iso(d);
+          var open = !!hoursFor(b, d);
+          var free = open ? freeSlots(b, ds, state.staff.id, totalDur()).length : 0;
+          var btn = el("button", "datechip");
+          btn.type = "button";
+          if (!open || !free) btn.disabled = true;
+          btn.setAttribute("aria-pressed", state.date === ds ? "true" : "false");
+          btn.innerHTML = '<div class="datechip__dow">' + DOW[d.getDay()] + '</div><div class="datechip__d">' +
+            d.getDate() + '</div><div class="datechip__mo">' + MON[d.getMonth()] + "</div>";
+          btn.title = open ? (free ? free + " voľných termínov" : "Obsadené") : "Zatvorené";
+          btn.addEventListener("click", function () {
+            state.date = ds; state.time = null; state.panelDate = ds;
+            renderStepper(true); renderSummary(); renderPanel();
+          });
+          dates.appendChild(btn);
+        })(day);
+        day = new Date(day.getTime() + 86400000);
+      }
+      s4.__content.appendChild(dates);
+    }
+    host.appendChild(s4);
+
+    // 5 — čas
+    var s5 = stepShell(5, "Vyberte čas", state.time != null ? hhmm(state.time) : null, idx);
+    if (state.date && state.staff) {
+      var slots = freeSlots(b, state.date, state.staff.id, totalDur());
+      if (!slots.length) {
+        s5.__content.appendChild(el("div", "empty", "V tento deň už nie je voľný termín na " + durText(totalDur()) + ". Skúste iný dátum alebo iného " + esc(b.words.staffAcc) + "."));
+      } else {
+        var parts = [
+          { h: "Doobeda", from: 0, to: 720 },
+          { h: "Poobede", from: 720, to: 1020 },
+          { h: "Podvečer", from: 1020, to: 1440 }
+        ];
+        parts.forEach(function (p) {
+          var inPart = slots.filter(function (t) { return t >= p.from && t < p.to; });
+          if (!inPart.length) return;
+          var box = el("div", "slotpart");
+          box.appendChild(el("div", "slotpart__h", p.h));
+          var grid = el("div", "slots");
+          inPart.forEach(function (t) {
+            var btn = el("button", "slot");
+            btn.type = "button";
+            btn.textContent = hhmm(t);
+            btn.setAttribute("aria-pressed", state.time === t ? "true" : "false");
+            btn.addEventListener("click", function () {
+              state.time = t;
+              renderStepper(true); renderSummary();
+            });
+            grid.appendChild(btn);
+          });
+          box.appendChild(grid);
+          s5.__content.appendChild(box);
+        });
+      }
+    }
+    host.appendChild(s5);
+
+    // 6 — kontakt
+    var s6 = stepShell(6, "Vaše údaje", null, idx);
+    if (state.time != null) {
+      s6.__content.appendChild(contactForm());
+    }
+    host.appendChild(s6);
+
+    if (animate && hasGsap && !reduced) {
+      var active = host.querySelector(".step.is-active .step__content");
+      if (active) gsap.from(active, { y: 10, autoAlpha: 0, duration: .38, ease: "power2.out" });
+      var chips = host.querySelectorAll(".step.is-active .slot, .step.is-active .datechip, .step.is-active .tile");
+      if (chips.length) gsap.from(chips, { y: 8, autoAlpha: 0, duration: .3, stagger: .015, ease: "power2.out" });
+    }
+  }
+
+  function catName(id) {
+    var b = B();
+    for (var i = 0; i < b.categories.length; i++) if (b.categories[i].id === id) return b.categories[i].name;
+    return "";
+  }
+
+  function longDate(d) {
+    return DOW[d.getDay()] + " " + d.getDate() + ". " + MON_LONG[d.getMonth()];
+  }
+
+  function totalDur() {
+    if (!state.service) return 30;
+    var b = B();
+    var t = state.service.dur;
+    state.addons.forEach(function (id) {
+      b.addons.forEach(function (a) { if (a.id === id) t += a.dur; });
+    });
+    return t;
+  }
+
+  function totalPrice() {
+    if (!state.service) return null;
+    var b = B();
+    if (state.service.covered) return 0;
+    var t = state.service.price;
+    state.addons.forEach(function (id) {
+      b.addons.forEach(function (a) { if (a.id === id) t += a.price; });
+    });
+    return t;
+  }
+
+  function contactForm() {
+    var b = B();
+    var f = el("div", "form");
+
+    function field(id, label, type, ph, full, hint) {
+      var d = el("div", "field" + (full ? " field--full" : ""));
+      var l = el("label", null, esc(label));
+      l.setAttribute("for", id);
+      d.appendChild(l);
+      var input = el(type === "textarea" ? "textarea" : "input");
+      input.id = id;
+      if (type !== "textarea") input.type = type;
+      input.placeholder = ph || "";
+      input.value = state.contact[id] || "";
+      input.addEventListener("input", function () {
+        state.contact[id] = input.value;
+        d.classList.remove("is-bad");
+        var e = d.querySelector(".field__err"); if (e) e.remove();
+        validate();
+      });
+      d.appendChild(input);
+      if (hint) d.appendChild(el("div", "field__hint", esc(hint)));
+      f.appendChild(d);
+      return d;
+    }
+
+    field("meno", "Meno a priezvisko", "text", "Ján Novák");
+    field("tel", "Telefón", "tel", "+421 9xx xxx xxx");
+    field("email", "E-mail", "email", "jan.novak@email.sk", true);
+
+    if (b.extraField) {
+      var ef = b.extraField;
+      var d = el("div", "field field--full");
+      var l = el("label", null, esc(ef.label));
+      l.setAttribute("for", ef.id);
+      d.appendChild(l);
+      var sel = el("select");
+      sel.id = ef.id;
+      ef.options.forEach(function (o) {
+        var op = el("option", null, esc(o));
+        op.value = o;
+        if (state.contact[ef.id] === o) op.selected = true;
+        sel.appendChild(op);
+      });
+      state.contact[ef.id] = state.contact[ef.id] || ef.options[0];
+      sel.addEventListener("change", function () { state.contact[ef.id] = sel.value; });
+      d.appendChild(sel);
+      if (ef.hint) d.appendChild(el("div", "field__hint", esc(ef.hint)));
+      f.appendChild(d);
+    }
+
+    field("pozn", "Poznámka (nepovinné)", "textarea", b.key === "med" ? "Napríklad dôvod návštevy alebo lieky, ktoré užívate" : "Čokoľvek, čo by sme mali vedieť vopred", true);
+
+    var chk = el("label", "check");
+    var cb = el("input");
+    cb.type = "checkbox";
+    cb.id = "gdpr";
+    cb.checked = !!state.contact.gdpr;
+    cb.addEventListener("change", function () { state.contact.gdpr = cb.checked; validate(); });
+    chk.appendChild(cb);
+    chk.appendChild(el("span", null, "Súhlasím so spracovaním osobných údajov na účel " + (b.key === "med" ? "objednania na vyšetrenie" : "rezervácie termínu") + " podľa GDPR."));
+    f.appendChild(chk);
+
+    return f;
+  }
+
+  /* ==========================================================
+     Zhrnutie
+     ========================================================== */
+
+  function renderSummary() {
+    var b = B();
+    var box = $("#summaryBody");
+    box.innerHTML = "";
+
+    function row(k, v) {
+      var d = el("div", "srow");
+      d.appendChild(el("dt", null, esc(k)));
+      d.appendChild(el("dd", null, esc(v)));
+      box.appendChild(d);
+    }
+
+    if (!state.service && !state.cat) {
+      box.appendChild(el("p", "field__hint", "Zatiaľ nič nevybrané. Začnite prvým krokom vľavo."));
+    }
+    if (state.cat) row("Oblasť", catName(state.cat));
+    if (state.service) {
+      row(b.words.serviceCap, state.service.name);
+      state.addons.forEach(function (id) {
+        b.addons.forEach(function (a) { if (a.id === id) row("Doplnok", a.name); });
+      });
+      row("Trvanie", durText(totalDur()));
+    }
+    if (state.staff) row(b.words.staffCap, state.staff.name);
+    if (state.date) row("Dátum", longDate(new Date(state.date + "T00:00:00")));
+    if (state.time != null) row("Čas", hhmm(state.time) + " – " + hhmm(state.time + totalDur()));
+
+    var tp = totalPrice();
+    var totalEl = $("#summaryTotal");
+    if (tp === null) totalEl.textContent = "—";
+    else if (state.service && state.service.covered) {
+      totalEl.textContent = "0 €";
+      totalEl.style.fontSize = "1.42rem";
+    } else totalEl.textContent = money(tp, b.currency);
+
+    $("#summaryTotalLabel").textContent = state.service && state.service.covered ? "Hradí poisťovňa" : "Spolu";
+
+    validate();
+  }
+
+  function validate() {
+    var ok = !!(state.service && state.staff && state.date && state.time != null);
+    var c = state.contact;
+    ok = ok && !!(c.meno && c.meno.trim().length > 2) && !!(c.tel && c.tel.replace(/\D/g, "").length >= 9) &&
+      !!(c.email && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c.email)) && !!c.gdpr;
+    $("#submitBtn").disabled = !ok;
+    return ok;
+  }
+
+  function submit() {
+    if (!validate()) return;
+    var b = B();
+    var d = new Date(state.date + "T00:00:00");
+    var code = "RZ-" + pad(d.getDate()) + pad(d.getMonth() + 1) + "-" + String(1000 + Math.floor(Math.random() * 8999));
+
+    state.booking = {
+      brand: b.key, code: code, date: state.date, start: state.time, dur: totalDur(),
+      staffId: state.staff.id, staffName: state.staff.name, serviceName: state.service.name,
+      price: totalPrice(), covered: !!state.service.covered, name: state.contact.meno
+    };
+    state.panelDate = state.date;
+
+    renderConfirm();
+    renderPanel();
+    renderNextSlots();
+  }
+
+  function renderConfirm() {
+    var b = B();
+    var bk = state.booking;
+    var host = $("#stepper");
+    host.innerHTML = "";
+
+    var c = el("div", "confirm");
+    c.appendChild(el("div", "confirm__badge", ICON.check));
+    c.appendChild(el("h3", null, b.key === "med" ? "Objednanie potvrdené" : "Rezervácia potvrdená"));
+    c.appendChild(el("p", "lede", (bk.name ? bk.name.split(" ")[0] + ", t" : "T") + "ešíme sa na vás " +
+      longDate(new Date(bk.date + "T00:00:00")) + " o " + hhmm(bk.start) + "."));
+    c.appendChild(el("div", "confirm__code", "Číslo: " + bk.code));
+
+    var list = el("dl", "confirm__list");
+    function r(k, v) {
+      var d = el("div", "srow");
+      d.appendChild(el("dt", null, esc(k)));
+      d.appendChild(el("dd", null, esc(v)));
+      list.appendChild(d);
+    }
+    r(b.words.serviceCap, bk.serviceName);
+    r(b.words.staffCap, bk.staffName);
+    r("Kedy", longDate(new Date(bk.date + "T00:00:00")) + ", " + hhmm(bk.start) + " – " + hhmm(bk.start + bk.dur));
+    r("Kde", b.addr);
+    r(bk.covered ? "Úhrada" : "Cena", bk.covered ? "Hradí zdravotná poisťovňa" : money(bk.price, b.currency));
+    c.appendChild(list);
+
+    c.appendChild(el("p", "field__hint", b.confirmNote));
+    c.appendChild(el("p", "field__hint", "V ukážke sa e-mail ani SMS neodosiela. V ostrej prevádzke príde potvrdenie okamžite a pripomienka deň vopred."));
+
+    var again = el("button", "btn btn--ghost btn--sm", "Vyskúšať znova");
+    again.type = "button";
+    again.style.justifySelf = "start";
+    again.addEventListener("click", resetAll);
+    c.appendChild(again);
+
+    host.appendChild(c);
+
+    $("#submitBtn").disabled = true;
+    $("#summaryBody").innerHTML = "";
+    $("#summaryBody").appendChild(el("p", "field__hint", "Hotovo. Termín nájdete v mriežke prevádzky nižšie — je zvýraznený."));
+
+    if (hasGsap && !reduced) {
+      gsap.from(c, { y: 14, autoAlpha: 0, duration: .5, ease: "power3.out" });
+      gsap.from(c.querySelector(".confirm__badge"), { scale: .5, rotate: -12, duration: .55, delay: .1, ease: "back.out(2)" });
+    }
+    c.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+  }
+
+  function resetAll() {
+    state.cat = null; state.service = null; state.addons = []; state.staff = null;
+    state.date = null; state.time = null; state.booking = null;
+    state.contact = {};
+    state.panelDate = iso(firstOpenDay(B()));
+    renderStepper(true); renderSummary(); renderPanel();
+  }
+
+  /* ==========================================================
+     Prevádzkový panel
+     ========================================================== */
+
+  function renderPanel() {
+    var b = B();
+    var ds = state.panelDate || iso(firstOpenDay(b));
+    var d = new Date(ds + "T00:00:00");
+    var h = hoursFor(b, d);
+
+    $("#panelDate").textContent = longDate(d) + (h ? " · " + hhmm(h[0]) + " – " + hhmm(h[1]) : " · zatvorené");
+
+    var board = $("#board");
+    board.innerHTML = "";
+
+    if (!h) {
+      board.appendChild(el("div", "empty", "V tento deň je zatvorené."));
+      $("#kpis").innerHTML = "";
+      $("#loadRows").innerHTML = "";
+      return;
+    }
+
+    var cols = b.staff;
+    var tpl = "88px repeat(" + cols.length + ", minmax(112px, 1fr))";
+
+    var head = el("div", "board__head");
+    head.style.gridTemplateColumns = tpl;
+    head.appendChild(el("div", null, "Čas"));
+    cols.forEach(function (p) { head.appendChild(el("div", null, esc(p.short))); });
+    board.appendChild(head);
+
+    var grid = el("div", "board__grid");
+    grid.style.gridTemplateColumns = tpl;
+
+    var rowMin = 30;
+    var rows = Math.ceil((h[1] - h[0]) / rowMin);
+    var pxPerMin = 34 / rowMin;
+
+    var times = el("div", "board__times");
+    for (var i = 0; i < rows; i++) times.appendChild(el("div", "board__time", hhmm(h[0] + i * rowMin)));
+    grid.appendChild(times);
+
+    var loads = [];
+
+    cols.forEach(function (p) {
+      var col = el("div", "board__col");
+      for (var i = 0; i < rows; i++) col.appendChild(el("div", "board__cell"));
+
+      var blocks = allBlocks(b, ds, p.id);
+      var busyMin = 0;
+
+      blocks.forEach(function (bl) {
+        if (bl.end <= h[0] || bl.start >= h[1]) return;
+        var top = (Math.max(bl.start, h[0]) - h[0]) * pxPerMin;
+        var height = (Math.min(bl.end, h[1]) - Math.max(bl.start, h[0])) * pxPerMin;
+        if (bl.type !== "off") busyMin += Math.min(bl.end, h[1]) - Math.max(bl.start, h[0]);
+
+        var a = el("div", "appt appt--" + bl.type + (height < 30 ? " appt--tight" : ""));
+        a.style.top = top + "px";
+        a.style.height = Math.max(height - 3, 16) + "px";
+        var label = bl.type === "off" ? bl.label : bl.label;
+        a.innerHTML = "<strong>" + esc(label) + "</strong><span>" + hhmm(bl.start) + "–" + hhmm(bl.end) + "</span>";
+        if (bl.type === "wait") a.title = "Čaká na potvrdenie";
+        if (bl.type === "new") a.title = "Nová rezervácia z formulára";
+        col.appendChild(a);
+      });
+
+      loads.push({ name: p.short, pct: Math.round(busyMin / (h[1] - h[0]) * 100), count: blocks.filter(function (x) { return x.type !== "off"; }).length });
+      grid.appendChild(col);
+    });
+
+    board.appendChild(grid);
+
+    // KPI
+    var totalAppts = loads.reduce(function (a, x) { return a + x.count; }, 0);
+    var avgLoad = Math.round(loads.reduce(function (a, x) { return a + x.pct; }, 0) / loads.length);
+    var minutes = 0, revenue = 0, n = 0;
+    cols.forEach(function (p) {
+      allBlocks(b, ds, p.id).forEach(function (bl) {
+        if (bl.type === "off") return;
+        minutes += bl.end - bl.start;
+        n++;
+        var svc = null;
+        for (var i = 0; i < b.services.length; i++) if (b.services[i].name === bl.label) svc = b.services[i];
+        if (svc && !svc.covered) revenue += svc.price;
+      });
+    });
+    var avgVisit = n ? Math.round(minutes / n) : 0;
+
+    var kpiVals = b.key === "med"
+      ? [String(totalAppts), avgLoad + " %", avgVisit + " min", "4 %"]
+      : [String(totalAppts), avgLoad + " %", avgVisit + " min", revenue + " €"];
+    var kpiDescs = b.key === "med"
+      ? ["v tento deň", "z ordinačných hodín", "naprieč výkonmi", "priemer za 30 dní"]
+      : ["v tento deň", "z otváracích hodín", "naprieč službami", "bez doplnkov"];
+
+    var kbox = $("#kpis");
+    kbox.innerHTML = "";
+    b.kpiLabels.forEach(function (lab, i) {
+      var k = el("div", "kpi");
+      k.appendChild(el("div", "kpi__l", esc(lab)));
+      var v = el("div", "kpi__v", esc(kpiVals[i]));
+      k.appendChild(v);
+      k.appendChild(el("div", "kpi__d", esc(kpiDescs[i])));
+      kbox.appendChild(k);
+    });
+
+    // obsadenosť
+    var lbox = $("#loadRows");
+    lbox.innerHTML = "";
+    loads.forEach(function (l) {
+      var r = el("div", "loadrow");
+      r.appendChild(el("div", "loadrow__n", esc(l.name)));
+      var bar = el("div", "loadbar", "<i></i>");
+      r.appendChild(bar);
+      r.appendChild(el("div", "loadrow__v", l.pct + " %"));
+      lbox.appendChild(r);
+      requestAnimationFrame(function () { bar.firstChild.style.width = Math.min(l.pct, 100) + "%"; });
+    });
+
+    if (hasGsap && !reduced) {
+      gsap.from(board.querySelectorAll(".appt"), { autoAlpha: 0, y: 6, duration: .3, stagger: .008, ease: "power2.out" });
+      countUp(kbox.querySelectorAll(".kpi__v"));
+    }
+  }
+
+  function countUp(nodes) {
+    Array.prototype.forEach.call(nodes, function (node) {
+      var txt = node.textContent;
+      var m = txt.match(/^(\d+)(.*)$/);
+      if (!m) return;
+      var target = parseInt(m[1], 10);
+      var suffix = m[2];
+      var obj = { v: 0 };
+      gsap.to(obj, {
+        v: target, duration: .8, ease: "power2.out",
+        onUpdate: function () { node.textContent = Math.round(obj.v) + suffix; }
+      });
+    });
+  }
+
+  /* ==========================================================
+     Prepínanie značky a témy
+     ========================================================== */
+
+  function applyBrand(key, animate) {
+    state.brand = key;
+    state.cat = null; state.service = null; state.addons = []; state.staff = null;
+    state.date = null; state.time = null; state.booking = null; state.contact = {};
+    state.panelDate = iso(firstOpenDay(BRANDS[key]));
+
+    renderChrome();
+    renderNextSlots();
+    renderPrices();
+    renderTeam();
+    renderStepper(false);
+    renderSummary();
+    renderPanel();
+
+    Array.prototype.forEach.call(document.querySelectorAll("#switcher button"), function (btn) {
+      btn.setAttribute("aria-pressed", btn.dataset.brand === key ? "true" : "false");
+    });
+
+    if (animate && hasGsap && !reduced) {
+      gsap.fromTo(".hero, .sitehead, .sitefoot, section",
+        { autoAlpha: .35 }, { autoAlpha: 1, duration: .45, ease: "power2.out", stagger: .02, clearProps: "opacity,visibility" });
+      gsap.fromTo(".brand__mark", { scale: .7, rotate: -10 }, { scale: 1, rotate: 0, duration: .5, ease: "back.out(2)" });
+    }
+    if (window.ScrollTrigger) ScrollTrigger.refresh();
+  }
+
+  function initTheme() {
+    var stored = null;
+    try { stored = localStorage.getItem("termino-theme"); } catch (e) { }
+    if (stored === "dark" || stored === "light") document.documentElement.setAttribute("data-theme", stored);
+
+    $("#themeToggle").addEventListener("click", function () {
+      var cur = document.documentElement.getAttribute("data-theme");
+      if (!cur) {
+        cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      var next = cur === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("termino-theme", next); } catch (e) { }
+    });
+  }
+
+  /* ==========================================================
+     Pohyb pri scrollovaní — funkčný, nie ozdobný
+     ========================================================== */
+
+  function initMotion() {
+    if (!hasGsap || reduced || !window.ScrollTrigger) return;
+
+    gsap.from(".hero__in > div > *", {
+      y: 18, autoAlpha: 0, duration: .6, stagger: .07, ease: "power3.out"
+    });
+    gsap.from(".nextslot", { y: 22, autoAlpha: 0, duration: .7, delay: .15, ease: "power3.out" });
+
+    document.querySelectorAll(".sechead").forEach(function (h) {
+      gsap.from(h.children, {
+        scrollTrigger: { trigger: h, start: "top 86%" },
+        y: 14, autoAlpha: 0, duration: .5, stagger: .06, ease: "power2.out"
+      });
+    });
+
+    gsap.from(".feat", {
+      scrollTrigger: { trigger: "#funkcie", start: "top 78%" },
+      y: 16, autoAlpha: 0, duration: .5, stagger: .06, ease: "power2.out"
+    });
+
+    // jemný paralax na farebnom závoji hero sekcie
+    gsap.to(".hero", {
+      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
+      backgroundPositionY: "22%", ease: "none"
+    });
+  }
+
+  /* ==========================================================
+     Štart
+     ========================================================== */
+
+  document.querySelectorAll("#switcher button").forEach(function (btn) {
+    btn.addEventListener("click", function () { applyBrand(btn.dataset.brand, true); });
+  });
+  $("#submitBtn").addEventListener("click", submit);
+  $("#resetBtn").addEventListener("click", resetAll);
+  $("#panelToday").addEventListener("click", function () {
+    state.panelDate = iso(firstOpenDay(B()));
+    renderPanel();
+  });
+
+  initTheme();
+  applyBrand("med", false);
+  initMotion();
+})();
+</script>
