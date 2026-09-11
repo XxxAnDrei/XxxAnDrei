@@ -442,6 +442,10 @@ def render(seg):
              f'    $("#bookUrl").textContent = "{seg["domain"]}.sk/rezervacia";')
     s = once(s, '  setTenant("klinika");', f'  setTenant({json.dumps(seg["key"], ensure_ascii=False)});')
 
+    # --- motion profil odvetvia ---
+    s = once(s, "  initMotion(null, reduced);",
+             '  initMotion(' + json.dumps(seg["motion"]) + ', reduced);')
+
     # --- písmo: každé odvetvie svoje ---
     ty = TYPOGRAPHY[seg["key"]]
     s = once(s, "family=Familjen+Grotesk:wght@500;600;700", "family=" + ty["google"])
