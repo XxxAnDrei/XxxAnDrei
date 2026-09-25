@@ -1,0 +1,7 @@
+# Súkromné dáta: nikdy necommitovať do tohto verejného repozitára
+leads/private/
+prospects/
+# Lokálne výstupy skriptov
+node_modules/
+audits/
+private/

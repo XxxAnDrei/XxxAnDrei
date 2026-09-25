@@ -1,0 +1,15 @@
+{
+  "name": "studio-hq",
+  "private": true,
+  "type": "module",
+  "description": "Lead research, web audits and demo tooling for the studio. Leads and prospects stay out of git.",
+  "scripts": {
+    "places": "node scripts/places-search.mjs",
+    "audit": "node scripts/audit-site.mjs",
+    "merge": "python3 scripts/merge-leads.py"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "playwright": "1.56.1"
+  }
+}
