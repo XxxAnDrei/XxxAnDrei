@@ -7,7 +7,7 @@
     // aktivačný odkaz; až po jeho potvrdení chodia odpovede. Po aktivácii sa dá
     // e-mail v URL nahradiť náhodným reťazcom, ktorý FormSubmit pošle v tom e-maile.
     endpoint: 'https://formsubmit.co/ajax/micek.andrej1@gmail.com',
-    storageKey: 'datebloom-v1',
+    storageKey: 'datebloom-v2',
     timeZone: 'Europe/Bratislava',
     totalSteps: 6,
     // o koľko minút dopredu najskôr môže byť rande, ak je vybraný dnešok
@@ -16,23 +16,21 @@
     dateDurationHours: 2,
   };
 
-  const SLOT_GROUPS = [
-    { label: 'Obed', times: ['11:30', '12:00', '12:30', '13:00'] },
-    { label: 'Popoludnie', times: ['15:00', '16:00', '17:00'] },
-    { label: 'Večer', times: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30'] },
+  const TIME_GROUPS = [
+    { label: 'Obed', from: '11:00', to: '14:00' },
+    { label: 'Popoludnie', from: '14:30', to: '17:30' },
+    { label: 'Večer', from: '18:00', to: '22:00' },
   ];
 
   const FOODS = [
-    { id: 'italian', emoji: '🍝', name: 'Talianska', desc: 'pizza, cestoviny' },
-    { id: 'sushi', emoji: '🍣', name: 'Sushi', desc: 'japonská klasika' },
-    { id: 'burger', emoji: '🍔', name: 'Burger', desc: 'poctivý a šťavnatý' },
-    { id: 'steak', emoji: '🥩', name: 'Steak', desc: 'na veľký hlad' },
-    { id: 'asian', emoji: '🍜', name: 'Ázijská', desc: 'ramen, pad thai' },
-    { id: 'mexican', emoji: '🌮', name: 'Mexická', desc: 'tacos, burrito' },
-    { id: 'indian', emoji: '🍛', name: 'Indická', desc: 'kari, naan' },
-    { id: 'healthy', emoji: '🥗', name: 'Niečo ľahké', desc: 'šaláty, bowl' },
-    { id: 'slovak', emoji: '🥟', name: 'Domáca', desc: 'halušky, rezeň' },
-    { id: 'surprise', emoji: '🎲', name: 'Prekvap ma', desc: 'nechám to na teba' },
+    { id: 'pizza', emoji: '🍕', name: 'Pizza' },
+    { id: 'sushi', emoji: '🍣', name: 'Sushi' },
+    { id: 'burger', emoji: '🍔', name: 'Burger' },
+    { id: 'pasta', emoji: '🍝', name: 'Cestoviny' },
+    { id: 'tacos', emoji: '🌮', name: 'Tacos' },
+    { id: 'ramen', emoji: '🍜', name: 'Ramen' },
+    { id: 'steak', emoji: '🥩', name: 'Steak' },
+    { id: 'surprise', emoji: '🎲', name: 'Prekvap ma' },
   ];
 
   const HINTS = [
@@ -55,6 +53,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rand = (min, max) => min + Math.random() * (max - min);
   const pad2 = (n) => String(n).padStart(2, '0');
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   const fromISO = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -62,15 +61,31 @@
   const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
   const todayISO = () => toISO(new Date());
   const toMinutes = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+  const fromMinutes = (min) => `${pad2(Math.floor(min / 60))}:${pad2(min % 60)}`;
   const nowMinutes = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+  const daysFromToday = (iso) => Math.round((fromISO(iso) - startOfToday()) / 86400000);
 
   const fmtLong = new Intl.DateTimeFormat('sk-SK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const fmtNoYear = new Intl.DateTimeFormat('sk-SK', { weekday: 'long', day: 'numeric', month: 'long' });
+  const fmtDayMonth = new Intl.DateTimeFormat('sk-SK', { day: 'numeric', month: 'long' });
   const fmtMonth = new Intl.DateTimeFormat('sk-SK', { month: 'long', year: 'numeric' });
   const fmtWeekday = new Intl.DateTimeFormat('sk-SK', { weekday: 'long' });
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const longDate = (iso) => fmtLong.format(fromISO(iso));
   const shortDate = (iso) => { const d = fromISO(iso); return `${d.getDate()}. ${d.getMonth() + 1}.`; };
+  const friendlyDate = (iso) => {
+    const d = fromISO(iso);
+    return d.getFullYear() === new Date().getFullYear() ? fmtNoYear.format(d) : fmtLong.format(d);
+  };
+  // „dnes“, „zajtra“, „v sobotu“, „vo štvrtok“, alebo „3. októbra“
+  const ON_DAY = ['v nedeľu', 'v pondelok', 'v utorok', 'v stredu', 'vo štvrtok', 'v piatok', 'v sobotu'];
+  function whenPhrase(iso) {
+    const diff = daysFromToday(iso);
+    if (diff === 0) return 'dnes';
+    if (diff === 1) return 'zajtra';
+    if (diff > 1 && diff < 7) return ON_DAY[fromISO(iso).getDay()];
+    return fmtDayMonth.format(fromISO(iso));
+  }
 
   function formatDuration(ms) {
     const s = Math.max(1, Math.round(ms / 1000));
@@ -80,10 +95,18 @@
     return `${Math.floor(m / 60)} h ${m % 60} min`;
   }
 
+  const TIME_SLOTS = TIME_GROUPS.map((g) => {
+    const times = [];
+    for (let t = toMinutes(g.from); t <= toMinutes(g.to); t += 30) times.push(fromMinutes(t));
+    return { label: g.label, times };
+  });
+  const ALL_TIMES = TIME_SLOTS.flatMap((g) => g.times);
+  const foodById = (id) => FOODS.find((f) => f.id === id);
+
   // ---------------------------------------------------------------- state
   const defaults = () => ({
-    step: 1, date: null, time: null, timeCustom: false, food: null, note: '',
-    noAttempts: 0, yesAt: null, submitted: false, submittedAt: null,
+    step: 1, date: null, time: null, food: null, note: '', noteSent: false,
+    noAttempts: 0, yesAt: null, thinkMs: null, submitted: false, submittedAt: null,
   });
 
   function load() {
@@ -108,26 +131,24 @@
 
   // ---------------------------------------------------------------- availability
   function slotOk(dateISO, hhmm) {
-    if (!dateISO || !hhmm) return false;
-    if (dateISO !== todayISO()) return true;
+    if (!hhmm) return false;
+    if (!dateISO || dateISO !== todayISO()) return true;
     return toMinutes(hhmm) >= nowMinutes() + CONFIG.leadMinutes;
   }
-  const allSlots = () => SLOT_GROUPS.flatMap((g) => g.times);
   function dayOk(dateISO) {
     const d = fromISO(dateISO);
     const today = startOfToday();
     if (d < today || d > addDays(today, CONFIG.maxDaysAhead)) return false;
-    if (dateISO === todayISO()) return allSlots().some((t) => slotOk(dateISO, t));
+    if (dateISO === todayISO()) return ALL_TIMES.some((t) => slotOk(dateISO, t));
     return true;
   }
+  const whenOk = () => !!(state.date && dayOk(state.date) && slotOk(state.date, state.time));
 
-  function maxReachable() {
-    if (state.submitted) return 6;
-    if (!state.yesAt) return 1;
-    if (!state.date || !dayOk(state.date)) return 2;
-    if (!state.time || !slotOk(state.date, state.time)) return 3;
-    if (!state.food) return 4;
-    return 5;
+  // Odoslané: už len kroky 5–6. Inak sa nedá preskočiť nič, čo ešte nie je vyplnené.
+  function clampStep(step) {
+    if (state.submitted) return Math.min(6, Math.max(5, step));
+    const max = !state.yesAt ? 1 : !whenOk() ? 3 : 4;
+    return Math.max(1, Math.min(step, max));
   }
 
   // ---------------------------------------------------------------- navigation
@@ -135,18 +156,18 @@
   const steps = $$('.step', card);
 
   function goTo(step, { push = true, focus = true } = {}) {
-    step = Math.max(1, Math.min(step, maxReachable()));
-    if (state.submitted) step = 6;
+    step = clampStep(step);
     state.step = step;
     save();
 
     card.dataset.current = String(step);
-    steps.forEach((el) => { el.hidden = Number(el.dataset.step) !== step; el.classList.toggle('is-active', !el.hidden); });
+    steps.forEach((el) => { el.hidden = Number(el.dataset.step) !== step; });
     $('#stepNum').textContent = step;
     $('#progressFill').style.width = `${(step / CONFIG.totalSteps) * 100}%`;
 
     render(step);
     if (push) history.pushState({ step }, '');
+    else history.replaceState({ step }, '');
 
     if (focus) {
       const heading = $(`.step[data-step="${step}"] .title`);
@@ -158,28 +179,24 @@
 
   window.addEventListener('popstate', (e) => {
     const target = e.state && e.state.step;
-    if (state.submitted) { history.pushState({ step: 6 }, ''); return; }
     if (target) goTo(target, { push: false });
   });
 
   card.addEventListener('click', (e) => {
     const back = e.target.closest('[data-back]');
     const next = e.target.closest('[data-next]');
-    const edit = e.target.closest('[data-goto]');
     if (back) goTo(state.step - 1);
     if (next && !next.disabled) goTo(state.step + 1);
-    if (edit) goTo(Number(edit.dataset.goto));
   });
 
   function render(step) {
-    if (step === 2) renderDates();
-    if (step === 3) renderTimes();
+    if (step === 3) renderWhen();
     if (step === 4) renderFoods();
-    if (step === 5) renderSummary();
-    if (step === 6) renderDone();
+    if (step === 5) renderPickup();
+    if (step === 6) renderDetail();
   }
 
-  // ---------------------------------------------------------------- step 1: ÁNO
+  // ---------------------------------------------------------------- 1: ÁNO
   const yesBtn = $('#yesBtn');
   yesBtn.addEventListener('click', (e) => {
     if (yesBtn.dataset.busy) return;
@@ -188,7 +205,7 @@
     save();
     const r = yesBtn.getBoundingClientRect();
     burst(e.clientX || r.left + r.width / 2, e.clientY || r.top + r.height / 2, 26);
-    setTimeout(() => { delete yesBtn.dataset.busy; goTo(2); }, reducedMotion ? 0 : 650);
+    setTimeout(() => { delete yesBtn.dataset.busy; goTo(2); confetti(); }, reducedMotion ? 0 : 650);
   });
 
   // ---------------------------------------------------------------- step 1: NIE (neklikateľné)
@@ -371,8 +388,57 @@
     return { reset };
   })();
 
-  // ---------------------------------------------------------------- step 2: deň
-  let viewMonth = null; // Date: prvý deň zobrazeného mesiaca
+  // ---------------------------------------------------------------- 3: kedy (deň + čas)
+  const dateField = $('#dateField');
+  const datePop = $('#datePop');
+  const timeSelect = $('#timeSelect');
+  const whenError = $('#whenError');
+  let viewMonth = null; // prvý deň zobrazeného mesiaca
+
+  function showWhenError(msg) {
+    whenError.textContent = msg || '';
+    whenError.hidden = !msg;
+  }
+
+  function renderWhen() {
+    const dv = $('#dateValue');
+    const hasDate = state.date && dayOk(state.date);
+    if (!hasDate) state.date = null;
+    dv.textContent = hasDate ? friendlyDate(state.date) : 'vyber deň';
+    dv.classList.toggle('is-empty', !hasDate);
+
+    if (state.time && !slotOk(state.date, state.time)) state.time = null;
+    let html = `<option value="" disabled ${state.time ? '' : 'selected'}>vyber čas</option>`;
+    TIME_SLOTS.forEach((g) => {
+      const opts = g.times.filter((t) => slotOk(state.date, t));
+      if (!opts.length) return; // dnes už prešlo
+      html += `<optgroup label="${g.label}">${opts.map((t) => `<option value="${t}" ${state.time === t ? 'selected' : ''}>${t}</option>`).join('')}</optgroup>`;
+    });
+    timeSelect.innerHTML = html;
+    timeSelect.classList.toggle('is-empty', !state.time);
+
+    $('#next3').disabled = !whenOk();
+    save();
+  }
+
+  function setPop(open) {
+    datePop.hidden = !open;
+    dateField.setAttribute('aria-expanded', String(open));
+    if (open) {
+      const base = state.date ? fromISO(state.date) : startOfToday();
+      viewMonth = new Date(base.getFullYear(), base.getMonth(), 1);
+      renderQuickDates();
+      renderCalendar();
+    }
+  }
+  dateField.addEventListener('click', () => setPop(datePop.hidden));
+  document.addEventListener('click', (e) => {
+    // e.target môže byť už odpojený (kalendár sa pri listovaní prekreslí)
+    if (!datePop.hidden && e.target.isConnected && !e.target.closest('.field-wrap')) setPop(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !datePop.hidden) { setPop(false); dateField.focus(); }
+  });
 
   function quickDateOptions() {
     const today = startOfToday();
@@ -386,37 +452,18 @@
     push(addDays(today, 1), 'Zajtra');
     for (let i = 2; i <= 8 && out.length < 5; i++) {
       const d = addDays(today, i);
-      const dow = d.getDay();
-      if (dow === 5 || dow === 6 || dow === 0) push(d, `${cap(fmtWeekday.format(d))} ${d.getDate()}. ${d.getMonth() + 1}.`);
+      if ([5, 6, 0].includes(d.getDay())) push(d, `${cap(fmtWeekday.format(d))} ${d.getDate()}. ${d.getMonth() + 1}.`);
     }
     return out.slice(0, 5);
   }
 
-  function renderDates() {
-    const quick = $('#quickDates');
-    quick.innerHTML = '';
-    quickDateOptions().forEach((o) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'chip';
-      b.textContent = o.label;
-      b.setAttribute('aria-pressed', String(state.date === o.iso));
-      b.addEventListener('click', () => pickDate(o.iso));
-      quick.appendChild(b);
-    });
-
-    if (!viewMonth) {
-      const base = state.date ? fromISO(state.date) : startOfToday();
-      viewMonth = new Date(base.getFullYear(), base.getMonth(), 1);
-    }
-    renderCalendar();
-
-    $('#pickedDate').textContent = state.date && dayOk(state.date) ? `${longDate(state.date)} ✓` : '';
-    $('#next2').disabled = !(state.date && dayOk(state.date));
+  function renderQuickDates() {
+    $('#quickDates').innerHTML = quickDateOptions()
+      .map((o) => `<button type="button" class="chip" data-date="${o.iso}" aria-pressed="${state.date === o.iso}">${o.label}</button>`)
+      .join('');
   }
 
   function renderCalendar() {
-    const cal = $('#calendar');
     const today = startOfToday();
     const first = new Date(today.getFullYear(), today.getMonth(), 1);
     const last = addDays(today, CONFIG.maxDaysAhead);
@@ -438,17 +485,15 @@
     for (let day = 1; day <= daysInMonth; day++) {
       const d = new Date(y, m, day);
       const iso = toISO(d);
-      const ok = dayOk(iso);
       const cls = ['cal-day'];
       if (d.getDay() === 0 || d.getDay() === 6) cls.push('is-weekend');
       if (iso === tISO) cls.push('is-today');
-      html += `<button type="button" class="${cls.join(' ')}" data-date="${iso}" aria-pressed="${state.date === iso}" aria-label="${fmtLong.format(d)}" ${ok ? '' : 'disabled'}>${day}</button>`;
+      html += `<button type="button" class="${cls.join(' ')}" data-date="${iso}" aria-pressed="${state.date === iso}" aria-label="${fmtLong.format(d)}" ${dayOk(iso) ? '' : 'disabled'}>${day}</button>`;
     }
-    html += '</div>';
-    cal.innerHTML = html;
+    $('#calendar').innerHTML = `${html}</div>`;
   }
 
-  $('#calendar').addEventListener('click', (e) => {
+  datePop.addEventListener('click', (e) => {
     const nav = e.target.closest('[data-cal]');
     const day = e.target.closest('[data-date]');
     if (nav && !nav.disabled) {
@@ -460,174 +505,66 @@
 
   function pickDate(iso) {
     if (!dayOk(iso)) return;
+    const hadTime = state.time;
     state.date = iso;
-    if (state.time && !slotOk(iso, state.time)) { state.time = null; state.timeCustom = false; }
-    save();
-    const d = fromISO(iso);
-    viewMonth = new Date(d.getFullYear(), d.getMonth(), 1);
-    renderDates();
-    sparkleAt($('#pickedDate'));
+    showWhenError('');
+    if (hadTime && !slotOk(iso, hadTime)) showWhenError(`Na dnes je ${hadTime} už neskoro. Vyber si neskorší čas.`);
+    setPop(false);
+    renderWhen();
+    const r = dateField.getBoundingClientRect();
+    if (!reducedMotion) burst(r.left + r.width / 2, r.top + r.height / 2, 6, ['✨', '💗']);
+    if (!state.time) timeSelect.focus({ preventScroll: true });
   }
 
-  // ---------------------------------------------------------------- step 3: čas
-  function renderTimes() {
-    $('#timeLead').textContent = `${cap(fmtNoYear.format(fromISO(state.date)))}. Vyber si čas.`;
-    const wrap = $('#slots');
-    wrap.innerHTML = '';
-    SLOT_GROUPS.forEach((g) => {
-      const available = g.times.filter((t) => slotOk(state.date, t));
-      if (!available.length) return; // dnes už prešlo
-      const group = document.createElement('div');
-      group.className = 'slot-group';
-      group.innerHTML = `<p class="slot-group-label">${g.label}</p><div class="chips"></div>`;
-      const chips = $('.chips', group);
-      g.times.forEach((t) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'chip';
-        b.textContent = t;
-        const ok = slotOk(state.date, t);
-        b.disabled = !ok;
-        b.setAttribute('aria-pressed', String(!state.timeCustom && state.time === t));
-        b.addEventListener('click', () => pickTime(t, false));
-        chips.appendChild(b);
-      });
-      wrap.appendChild(group);
-    });
-
-    const toggle = $('#customToggle');
-    const input = $('#customInput');
-    toggle.setAttribute('aria-pressed', String(state.timeCustom));
-    input.hidden = !state.timeCustom;
-    if (state.timeCustom && state.time) input.value = state.time;
-    $('#timeError').hidden = true;
-    $('#next3').disabled = !(state.time && slotOk(state.date, state.time));
-  }
-
-  function pickTime(t, custom) {
-    const err = $('#timeError');
-    if (!slotOk(state.date, t)) {
-      err.textContent = `Na dnes je to už neskoro. Vyber čas aspoň o ${CONFIG.leadMinutes} minút neskôr.`;
-      err.hidden = false;
-      state.time = null;
-      save();
-      $('#next3').disabled = true;
-      return;
-    }
-    state.time = t;
-    state.timeCustom = custom;
-    save();
-    renderTimes();
-  }
-
-  $('#customToggle').addEventListener('click', () => {
-    const input = $('#customInput');
-    state.timeCustom = true;
-    state.time = null;
-    save();
-    renderTimes();
-    input.hidden = false;
-    input.focus();
-    if (typeof input.showPicker === 'function') { try { input.showPicker(); } catch (_) { /* nie všade povolené */ } }
+  timeSelect.addEventListener('change', () => {
+    state.time = timeSelect.value || null;
+    showWhenError('');
+    renderWhen();
   });
-  $('#customInput').addEventListener('change', (e) => { if (e.target.value) pickTime(e.target.value, true); });
 
-  // ---------------------------------------------------------------- step 4: jedlo
+  // ---------------------------------------------------------------- 4: jedlo + odoslanie
+  const sendBtn = $('#sendBtn');
+
   function renderFoods() {
-    const grid = $('#foods');
-    grid.innerHTML = '';
-    FOODS.forEach((f) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'food';
-      b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', String(state.food === f.id));
-      b.innerHTML = `<span class="food-emoji" aria-hidden="true">${f.emoji}</span><span class="food-name">${f.name}</span><span class="food-desc">${f.desc}</span>`;
-      b.addEventListener('click', () => {
-        state.food = f.id;
-        save();
-        renderFoods();
-        const r = b.getBoundingClientRect();
-        burst(r.left + r.width / 2, r.top + r.height / 2, 8, [f.emoji, '💗']);
-      });
-      grid.appendChild(b);
-    });
-    $('#next4').disabled = !state.food;
+    $('#foods').innerHTML = FOODS.map((f) => `
+      <button type="button" class="food" role="radio" data-food="${f.id}" aria-checked="${state.food === f.id}">
+        <span class="food-emoji" aria-hidden="true">${f.emoji}</span><span>${f.name}</span>
+      </button>`).join('');
+    sendBtn.disabled = !state.food;
   }
-  const foodById = (id) => FOODS.find((f) => f.id === id);
 
-  // ---------------------------------------------------------------- step 5: zhrnutie + odoslanie
-  function summaryItems(withEdit) {
+  $('#foods').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-food]');
+    if (!b) return;
+    state.food = b.dataset.food;
+    save();
+    renderFoods();
+    const r = b.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2, 8, [foodById(state.food).emoji, '💗']);
+  });
+
+  function mainFields() {
     const f = foodById(state.food);
-    const rows = [
-      { icon: '📅', label: 'Deň', value: longDate(state.date), step: 2 },
-      { icon: '🕖', label: 'Čas', value: state.time, step: 3 },
-      { icon: f.emoji, label: 'Jedlo', value: f.name, step: 4 },
-    ];
-    if (!withEdit && state.note) rows.push({ icon: '💌', label: 'Odkaz', value: state.note });
-    return rows.map((r) => `
-      <li>
-        <span class="sum-icon" aria-hidden="true">${r.icon}</span>
-        <span class="sum-body"><span class="sum-label">${r.label}</span><span class="sum-value">${escapeHtml(r.value)}</span></span>
-        ${withEdit ? `<button class="sum-edit" type="button" data-goto="${r.step}">Zmeniť</button>` : ''}
-      </li>`).join('');
-  }
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-
-  const note = $('#note');
-  note.addEventListener('input', () => { state.note = note.value.slice(0, 500); save(); });
-
-  function renderSummary() {
-    $('#summary').innerHTML = summaryItems(true);
-    note.value = state.note || '';
-    $('#sendError').hidden = true;
-  }
-
-  function buildMessage() {
-    const f = foodById(state.food);
-    const think = state.thinkMs ? formatDuration(state.thinkMs) : '—';
-    const subject = `💘 Rande potvrdené: ${shortDate(state.date)} o ${state.time}`;
-    const fields = {
-      'Odpoveď': 'ÁNO 💘',
-      'Deň': cap(longDate(state.date)),
-      'Čas': state.time,
-      'Jedlo': `${f.emoji} ${f.name} (${f.desc})`,
-      'Odkaz': state.note ? state.note : '—',
-      'Koľkokrát jej NIE ušlo': String(state.noAttempts),
-      'Rozmýšľala': think,
-      'Odoslané': new Date().toLocaleString('sk-SK'),
+    return {
+      subject: `💘 Rande potvrdené: ${shortDate(state.date)} o ${state.time}`,
+      fields: {
+        'Odpoveď': 'ÁNO 💘',
+        'Deň': cap(longDate(state.date)),
+        'Čas': state.time,
+        'Jedlo': `${f.emoji} ${f.name}`,
+        'Koľkokrát jej NIE ušlo': String(state.noAttempts),
+        'Rozmýšľala': state.thinkMs != null ? formatDuration(state.thinkMs) : '—',
+        'Odoslané': new Date().toLocaleString('sk-SK'),
+      },
     };
-    return { subject, fields };
   }
 
-  function mailtoHref() {
-    const { subject, fields } = buildMessage();
+  function mailtoHref({ subject, fields }) {
     const body = Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join('\n');
     return `mailto:${CONFIG.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
-  const sendBtn = $('#sendBtn');
-  sendBtn.addEventListener('click', async () => {
-    if (sendBtn.classList.contains('is-sending')) return;
-    const errBox = $('#sendError');
-    errBox.hidden = true;
-
-    // Stránka mohla zostať otvorená cez noc: termín musí byť stále v budúcnosti.
-    if (!state.date || !dayOk(state.date) || !slotOk(state.date, state.time)) {
-      $('#sendErrorText').textContent = 'Tento termín už medzitým prešiel. Vyber prosím nový deň alebo čas.';
-      $('#mailtoFallback').parentElement.hidden = true;
-      errBox.hidden = false;
-      return;
-    }
-    $('#mailtoFallback').parentElement.hidden = false;
-
-    const { subject, fields } = buildMessage();
-    sendBtn.classList.add('is-sending');
-    sendBtn.disabled = true;
-    $('.send-label', sendBtn).textContent = 'Posielam…';
-
+  async function sendMail({ subject, fields }) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
@@ -639,28 +576,62 @@
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || String(data.success) !== 'true') throw new Error(data.message || `HTTP ${res.status}`);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 
+  const errorText = (err) => (/activat/i.test(String(err && err.message))
+    ? 'Odosielanie ešte nie je aktivované: v schránke čaká e-mail od FormSubmit s tlačidlom „Activate Form“.'
+    : 'Skontroluj internet a skús to znova.');
+
+  function setSending(btn, on, label) {
+    btn.classList.toggle('is-sending', on);
+    btn.disabled = on;
+    $('.send-label', btn).textContent = label;
+  }
+
+  sendBtn.addEventListener('click', async () => {
+    if (sendBtn.classList.contains('is-sending') || !state.food) return;
+    const errBox = $('#sendError');
+    errBox.hidden = true;
+
+    // Stránka mohla zostať otvorená cez noc: termín musí byť stále v budúcnosti.
+    if (!whenOk()) {
+      goTo(3);
+      showWhenError('Tento termín už medzitým prešiel. Vyber prosím nový deň alebo čas.');
+      return;
+    }
+
+    const msg = mainFields();
+    setSending(sendBtn, true, 'posielam…');
+    try {
+      await sendMail(msg);
       state.submitted = true;
       state.submittedAt = Date.now();
       save();
-      goTo(6);
+      goTo(5);
       celebrate();
     } catch (err) {
       console.warn('Odoslanie zlyhalo:', err);
-      $('#sendErrorText').textContent = /activat/i.test(String(err && err.message))
-        ? 'Odosielanie ešte nie je aktivované: v schránke čaká e-mail od FormSubmit s tlačidlom „Activate Form“.'
-        : 'Skontroluj internet a skús to znova.';
-      $('#mailtoFallback').href = mailtoHref();
+      $('#sendErrorText').textContent = errorText(err);
+      $('#mailtoFallback').href = mailtoHref(msg);
       errBox.hidden = false;
     } finally {
-      clearTimeout(timer);
-      sendBtn.classList.remove('is-sending');
-      sendBtn.disabled = false;
-      $('.send-label', sendBtn).textContent = 'Potvrdiť rande';
+      setSending(sendBtn, false, 'toto je ten vibe');
+      sendBtn.disabled = !state.food;
     }
   });
 
-  // ---------------------------------------------------------------- step 6: hotovo
+  // ---------------------------------------------------------------- 5: prídem po teba
+  function renderPickup() {
+    $('#pickupTitle').textContent = `som rád, že si nepovedala nie. buď pripravená ${whenPhrase(state.date)} o ${state.time}, prídem po teba 🚗`;
+  }
+
+  // ---------------------------------------------------------------- 6: detail
+  const note = $('#note');
+  const noteBtn = $('#noteBtn');
+
   function eventTimes() {
     const [h, m] = state.time.split(':').map(Number);
     const start = fromISO(state.date);
@@ -669,23 +640,55 @@
     const stamp = (d) => `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
     return { start: stamp(start), end: stamp(end) };
   }
-  function eventDetails() {
+  const eventDetails = () => { const f = foodById(state.food); return `Jedlo: ${f.emoji} ${f.name}\nPrídem po teba 🚗`; };
+
+  function renderDetail() {
     const f = foodById(state.food);
-    return `Jedlo: ${f.emoji} ${f.name}${state.note ? `\nOdkaz: ${state.note}` : ''}`;
+    $('#recap').innerHTML = [`📅 ${friendlyDate(state.date)}`, `🕖 ${state.time}`, `${f.emoji} ${f.name}`]
+      .map((t) => `<span>${escapeHtml(t)}</span>`).join('');
+    const { start, end } = eventTimes();
+    const params = new URLSearchParams({ action: 'TEMPLATE', text: 'Rande 💘', dates: `${start}/${end}`, details: eventDetails(), ctz: CONFIG.timeZone });
+    $('#gcalLink').href = `https://calendar.google.com/calendar/render?${params}`;
+
+    $('#noteBlock').hidden = state.noteSent;
+    $('#noteSent').hidden = !state.noteSent;
+    note.value = state.note || '';
+    noteBtn.disabled = !note.value.trim();
   }
 
-  function renderDone() {
-    $('#doneSummary').innerHTML = summaryItems(false);
-    const { start, end } = eventTimes();
-    const params = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: 'Rande 💘',
-      dates: `${start}/${end}`,
-      details: eventDetails(),
-      ctz: CONFIG.timeZone,
-    });
-    $('#gcalLink').href = `https://calendar.google.com/calendar/render?${params}`;
-  }
+  note.addEventListener('input', () => {
+    state.note = note.value.slice(0, 500);
+    save();
+    noteBtn.disabled = !note.value.trim();
+    $('#noteError').hidden = true;
+  });
+
+  noteBtn.addEventListener('click', async () => {
+    const text = note.value.trim();
+    if (!text || noteBtn.classList.contains('is-sending')) return;
+    const msg = {
+      subject: `💌 Odkaz k randu (${shortDate(state.date)} o ${state.time})`,
+      fields: { 'Odkaz': text, 'Deň': cap(longDate(state.date)), 'Čas': state.time },
+    };
+    const err = $('#noteError');
+    err.hidden = true;
+    setSending(noteBtn, true, 'posielam…');
+    try {
+      await sendMail(msg);
+      state.noteSent = true;
+      save();
+      renderDetail();
+      const r = $('#noteSent').getBoundingClientRect();
+      burst(r.left + r.width / 2, r.top + r.height / 2, 12);
+    } catch (e) {
+      console.warn('Odkaz sa neodoslal:', e);
+      err.innerHTML = `${escapeHtml(errorText(e))} Alebo mi ho <a href="${mailtoHref(msg)}">pošli e-mailom</a>.`;
+      err.hidden = false;
+    } finally {
+      setSending(noteBtn, false, 'poslať odkaz 💌');
+      noteBtn.disabled = !note.value.trim();
+    }
+  });
 
   $('#icsBtn').addEventListener('click', () => {
     const { start, end } = eventTimes();
@@ -718,12 +721,10 @@
     if (!window.confirm('Naozaj začať odznova? Odpoveď, ktorú si už poslala, zostáva platná.')) return;
     Object.assign(state, defaults());
     save();
-    viewMonth = null;
-    card.style.removeProperty('--yes-scale');
     location.replace(location.pathname);
   });
 
-  // ---------------------------------------------------------------- srdiečka
+  // ---------------------------------------------------------------- srdiečka a konfety
   function burst(x, y, count, glyphs = ['💗', '💖', '💕', '✨', '❤️']) {
     if (reducedMotion) count = Math.min(count, 6);
     for (let i = 0; i < count; i++) {
@@ -744,36 +745,47 @@
     }
   }
 
-  function celebrate() {
-    const n = reducedMotion ? 10 : 46;
-    const glyphs = ['💗', '💖', '💕', '❤️', '✨', '🌸'];
+  function rain(n, make) {
     for (let i = 0; i < n; i++) {
-      const el = document.createElement('span');
-      el.className = 'particle';
-      el.textContent = glyphs[i % glyphs.length];
-      el.style.fontSize = `${rand(16, 34)}px`;
+      const el = make(i);
+      el.classList.add('particle');
       document.body.appendChild(el);
       const x = rand(0, window.innerWidth);
-      const drift = rand(-80, 80);
+      const drift = rand(-90, 90);
       const anim = el.animate([
-        { transform: `translate(${x}px, -40px) rotate(0deg)`, opacity: 0 },
-        { opacity: 1, offset: 0.1 },
-        { transform: `translate(${x + drift}px, ${window.innerHeight + 40}px) rotate(${rand(-180, 180)}deg)`, opacity: 0.9 },
-      ], { duration: rand(2400, 4200), delay: rand(0, 900), easing: 'cubic-bezier(.3,.6,.5,1)', fill: 'backwards' });
+        { transform: `translate(${x}px, -30px) rotate(0deg)`, opacity: 0 },
+        { opacity: 1, offset: 0.08 },
+        { transform: `translate(${x + drift}px, ${window.innerHeight + 40}px) rotate(${rand(-540, 540)}deg)`, opacity: 0.9 },
+      ], { duration: rand(2200, 4000), delay: rand(0, 700), easing: 'cubic-bezier(.3,.6,.5,1)', fill: 'backwards' });
       anim.onfinish = () => el.remove();
     }
   }
 
-  function sparkleAt(el) {
-    if (!el || reducedMotion) return;
-    const r = el.getBoundingClientRect();
-    burst(r.left + r.width / 2, r.top + r.height / 2, 6, ['✨', '💗']);
+  // „WAIT YOU ACTUALLY SAID YES??“ → konfety
+  function confetti() {
+    const colors = ['#ec3a86', '#f7a3c8', '#4a0f2b', '#ffc94d', '#b99cff', '#ffffff'];
+    rain(reducedMotion ? 12 : 70, (i) => {
+      const el = document.createElement('span');
+      el.className = 'confetti';
+      el.style.background = colors[i % colors.length];
+      el.style.width = `${rand(6, 10)}px`;
+      el.style.height = `${rand(9, 15)}px`;
+      return el;
+    });
+  }
+
+  function celebrate() {
+    const glyphs = ['💗', '💖', '💕', '❤️', '✨', '🌸'];
+    rain(reducedMotion ? 10 : 46, (i) => {
+      const el = document.createElement('span');
+      el.textContent = glyphs[i % glyphs.length];
+      el.style.fontSize = `${rand(16, 34)}px`;
+      return el;
+    });
   }
 
   // ---------------------------------------------------------------- štart
-  if (!state.submitted && state.date && !dayOk(state.date)) { state.date = null; state.time = null; }
   if (state.noAttempts > 0) card.style.setProperty('--yes-scale', String(Math.min(1.35, 1 + state.noAttempts * 0.035)));
-  const startStep = state.submitted ? 6 : Math.min(state.step || 1, maxReachable());
-  history.replaceState({ step: startStep }, '');
-  goTo(startStep, { push: false, focus: false });
+  if (!state.submitted && state.date && !dayOk(state.date)) { state.date = null; state.time = null; }
+  goTo(state.step || 1, { push: false, focus: false });
 })();

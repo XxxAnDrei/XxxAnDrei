@@ -18,7 +18,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Inter+Tight:wght@700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -28,10 +28,19 @@
     <span class="blob b3"></span>
   </div>
 
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-heart" viewBox="0 0 32 32"><path d="M16 28.5c-.4 0-.8-.1-1.1-.4C9.6 23.7 3 18.4 3 11.6 3 7.4 6.2 4 10.2 4c2.4 0 4.5 1.2 5.8 3.1C17.3 5.2 19.4 4 21.8 4 25.8 4 29 7.4 29 11.6c0 6.8-6.6 12.1-11.9 16.5-.3.3-.7.4-1.1.4z"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></g></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></g></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M7 10l5 5 5-5"/></symbol>
+  </svg>
+
   <main class="shell">
     <header class="topbar">
       <div class="brand">
-        <svg class="brand-heart" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28.5c-.4 0-.8-.1-1.1-.4C9.6 23.7 3 18.4 3 11.6 3 7.4 6.2 4 10.2 4c2.4 0 4.5 1.2 5.8 3.1C17.3 5.2 19.4 4 21.8 4 25.8 4 29 7.4 29 11.6c0 6.8-6.6 12.1-11.9 16.5-.3.3-.7.4-1.1.4z"/></svg>
+        <svg class="brand-heart" aria-hidden="true"><use href="#i-heart"/></svg>
         <span>DateBloom</span>
       </div>
       <div class="counter" aria-live="polite"><span id="stepNum">1</span> / <span id="stepTotal">6</span></div>
@@ -42,104 +51,129 @@
 
       <!-- 1 · otázka -->
       <div class="step is-active" data-step="1">
-        <p class="eyebrow"><i class="eh"></i>Veľmi dôležitá otázka</p>
+        <p class="eyebrow"><svg class="ei ei-fill"><use href="#i-heart"/></svg>Veľmi dôležitá otázka</p>
         <h1 class="title" id="q1Title" tabindex="-1">Pôjdeš so mnou na rande?</h1>
         <p class="lead">Buď úprimná. Správna odpoveď je, samozrejme, jasná.</p>
         <div class="answer-row">
           <button class="btn btn-yes" id="yesBtn" type="button">
             Áno
-            <svg class="sparkle" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>
+            <svg class="sparkle" aria-hidden="true"><use href="#i-sparkle"/></svg>
           </button>
           <span class="no-slot" id="noSlot" aria-hidden="true"></span>
         </div>
         <p class="hint" id="noHint">psst… tlačidlo NIE je trochu hanblivé</p>
       </div>
 
-      <!-- 2 · deň -->
+      <!-- 2 · naozaj áno?! -->
       <div class="step" data-step="2" hidden>
-        <p class="eyebrow"><i class="eh"></i>Vedel som to</p>
-        <h2 class="title title-md" tabindex="-1">Kedy máš čas?</h2>
-        <p class="lead">Vyber deň. Zvyšok nechaj na mňa.</p>
-        <div class="chips" id="quickDates"></div>
-        <div class="cal" id="calendar"></div>
-        <p class="picked" id="pickedDate" aria-live="polite"></p>
-        <div class="nav">
-          <button class="btn-ghost" type="button" data-back>← Späť</button>
-          <button class="btn btn-primary" type="button" data-next id="next2" disabled>Ďalej</button>
+        <div class="tile" aria-hidden="true">🎉</div>
+        <h2 class="title title-md title-upper" tabindex="-1">Počkaj, ty si naozaj povedala áno?? 😭</h2>
+        <p class="lead">Bol som úplne pripravený, že povieš nie 💀.</p>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" data-next>dobre, poďme to naplánovať <svg class="arrow"><use href="#i-arrow"/></svg></button>
         </div>
       </div>
 
-      <!-- 3 · čas -->
+      <!-- 3 · kedy -->
       <div class="step" data-step="3" hidden>
-        <p class="eyebrow"><i class="eh"></i>Skvelá voľba</p>
-        <h2 class="title title-md" tabindex="-1">O koľkej?</h2>
-        <p class="lead" id="timeLead"></p>
-        <div class="slots" id="slots"></div>
-        <div class="custom-time" id="customTime">
-          <button class="chip" type="button" id="customToggle" aria-pressed="false">Iný čas…</button>
-          <input class="time-input" type="time" id="customInput" step="900" hidden aria-label="Vlastný čas">
+        <p class="eyebrow"><svg class="ei"><use href="#i-cal"/></svg>Ulož si ten moment</p>
+        <h2 class="title title-md" tabindex="-1">Tak… kedy máš čas?</h2>
+        <p class="lead">Vyber deň a čas, ktorý ti sedí.</p>
+
+        <div class="fields">
+          <div class="field-wrap">
+            <span class="field-label" id="dateLabel">Dátum</span>
+            <button class="field" type="button" id="dateField" aria-expanded="false" aria-controls="datePop" aria-labelledby="dateLabel dateValue">
+              <svg class="field-icon"><use href="#i-cal"/></svg>
+              <span class="field-value is-empty" id="dateValue">vyber deň</span>
+              <svg class="field-end"><use href="#i-chev"/></svg>
+            </button>
+            <div class="date-pop" id="datePop" hidden>
+              <div class="chips" id="quickDates"></div>
+              <div class="cal" id="calendar"></div>
+            </div>
+          </div>
+
+          <div class="field-wrap">
+            <label class="field-label" for="timeSelect">Čas</label>
+            <div class="field field-select-wrap" id="timeField">
+              <svg class="field-icon"><use href="#i-clock"/></svg>
+              <select id="timeSelect" class="field-select is-empty"></select>
+              <svg class="field-end"><use href="#i-chev"/></svg>
+            </div>
+          </div>
         </div>
-        <p class="field-error" id="timeError" hidden></p>
-        <div class="nav">
-          <button class="btn-ghost" type="button" data-back>← Späť</button>
-          <button class="btn btn-primary" type="button" data-next id="next3" disabled>Ďalej</button>
+        <p class="field-error" id="whenError" role="alert" hidden></p>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="button" data-next id="next3" disabled>ďalej: jedlo <svg class="arrow"><use href="#i-arrow"/></svg></button>
+          <button class="back-link" type="button" data-back>← späť</button>
         </div>
       </div>
 
-      <!-- 4 · jedlo -->
+      <!-- 4 · jedlo (tu sa odosiela e-mail) -->
       <div class="step" data-step="4" hidden>
-        <p class="eyebrow"><i class="eh"></i>Otázka číslo dva</p>
-        <h2 class="title title-md" tabindex="-1">Na čo máš chuť?</h2>
-        <p class="lead">Vyber si. O rezerváciu sa postarám ja.</p>
+        <p class="eyebrow"><svg class="ei"><use href="#i-sparkle"/></svg>Prieskum pred rande</p>
+        <h2 class="title title-md" tabindex="-1">Na čo máme chuť? 🍽️✨</h2>
+        <p class="lead">vyber si vibe</p>
         <div class="food-grid" id="foods" role="radiogroup" aria-label="Typ jedla"></div>
-        <div class="nav">
-          <button class="btn-ghost" type="button" data-back>← Späť</button>
-          <button class="btn btn-primary" type="button" data-next id="next4" disabled>Ďalej</button>
+
+        <div class="send-error" id="sendError" role="alert" hidden>
+          <p><strong>Neodoslalo sa to.</strong> <span id="sendErrorText">Skontroluj internet a skús to znova.</span></p>
+          <p id="mailtoRow">Alebo mi to pošli e-mailom: <a id="mailtoFallback" href="#">otvoriť e-mail s odpoveďou</a></p>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="button" id="sendBtn" disabled>
+            <span class="send-label">toto je ten vibe</span>
+            <svg class="arrow"><use href="#i-arrow"/></svg>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+          <button class="back-link" type="button" data-back>← späť</button>
         </div>
       </div>
 
-      <!-- 5 · zhrnutie -->
+      <!-- 5 · prídem po teba -->
       <div class="step" data-step="5" hidden>
-        <p class="eyebrow"><i class="eh"></i>Skoro hotovo</p>
-        <h2 class="title title-md" tabindex="-1">Takže platí?</h2>
-        <p class="lead">Skontroluj to a potvrď. Potom už niet cesty späť.</p>
-        <ul class="summary" id="summary"></ul>
-        <label class="note-label" for="note">Chceš mi ešte niečo odkázať? <span>nepovinné</span></label>
-        <textarea id="note" maxlength="500" rows="3" placeholder="napríklad čo si oblečieš, či chceš kvety, alebo len že sa tešíš…"></textarea>
-        <div class="send-error" id="sendError" role="alert" hidden>
-          <p><strong>Správa sa neodoslala.</strong> <span id="sendErrorText">Skontroluj internet a skús to znova.</span></p>
-          <p>Alebo mi to pošli priamo e-mailom: <a id="mailtoFallback" href="#">otvoriť e-mail s odpoveďou</a></p>
+        <div class="tile tile-heart" aria-hidden="true"><svg><use href="#i-heart"/></svg></div>
+        <h2 class="title title-md title-lower" tabindex="-1" id="pickupTitle"></h2>
+        <p class="lead ps">P.S. normálni ľudia by poslali SMS. Ja som ti spravil celú webstránku. Nič veľké.</p>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" data-next>ešte jeden malý detail <svg class="arrow"><use href="#i-arrow"/></svg></button>
         </div>
-        <div class="nav">
-          <button class="btn-ghost" type="button" data-back>← Späť</button>
-          <button class="btn btn-primary" type="button" id="sendBtn">
-            <span class="send-label">Potvrdiť rande</span>
+      </div>
+
+      <!-- 6 · detail -->
+      <div class="step" data-step="6" hidden>
+        <div class="tile" aria-hidden="true">📌</div>
+        <p class="eyebrow"><svg class="ei ei-fill"><use href="#i-heart"/></svg>Jeden malý detail</p>
+        <h2 class="title title-md title-lower" tabindex="-1">zapíš si to, nech sa potom nevyhováraš 😌</h2>
+        <div class="recap" id="recap"></div>
+        <div class="cal-actions">
+          <a class="btn btn-primary btn-compact" id="gcalLink" href="#" target="_blank" rel="noopener">pridať do Google Kalendára</a>
+          <button class="btn btn-soft" type="button" id="icsBtn">iný kalendár (.ics)</button>
+        </div>
+
+        <div class="note-block" id="noteBlock">
+          <label class="note-label" for="note">Chceš mi ešte niečo odkázať? <span>nepovinné</span></label>
+          <textarea id="note" maxlength="500" rows="3" placeholder="napríklad čo si oblečieš, či chceš kvety, alebo len že sa tešíš…"></textarea>
+          <p class="field-error" id="noteError" role="alert" hidden></p>
+          <button class="btn btn-soft btn-note" type="button" id="noteBtn" disabled>
+            <span class="send-label">poslať odkaz 💌</span>
             <span class="spinner" aria-hidden="true"></span>
           </button>
         </div>
-      </div>
+        <p class="note-sent" id="noteSent" hidden>Odkaz mi prišiel 💌</p>
 
-      <!-- 6 · hotovo -->
-      <div class="step" data-step="6" hidden>
-        <div class="done-heart" aria-hidden="true">
-          <svg viewBox="0 0 32 32"><path d="M16 28.5c-.4 0-.8-.1-1.1-.4C9.6 23.7 3 18.4 3 11.6 3 7.4 6.2 4 10.2 4c2.4 0 4.5 1.2 5.8 3.1C17.3 5.2 19.4 4 21.8 4 25.8 4 29 7.4 29 11.6c0 6.8-6.6 12.1-11.9 16.5-.3.3-.7.4-1.1.4z"/></svg>
-        </div>
-        <p class="eyebrow"><i class="eh"></i>Je to oficiálne</p>
-        <h2 class="title title-md" tabindex="-1">Máme rande!</h2>
-        <p class="lead">Tvoja odpoveď mi práve prišla. Už sa teším.</p>
-        <ul class="summary summary-done" id="doneSummary"></ul>
-        <div class="cal-actions">
-          <a class="btn btn-primary" id="gcalLink" href="#" target="_blank" rel="noopener">Pridať do Google Kalendára</a>
-          <button class="btn btn-soft" type="button" id="icsBtn">Iný kalendár (.ics)</button>
-        </div>
-        <button class="link-reset" type="button" id="resetBtn">Začať odznova</button>
+        <p class="closing">vidíme sa 💘</p>
+        <button class="link-reset" type="button" id="resetBtn">začať odznova</button>
       </div>
 
       <!-- NIE žije mimo krokov, aby mohlo utekať po celej karte -->
       <button class="btn btn-no" id="noBtn" type="button" tabindex="-1" aria-hidden="true">Nie</button>
     </section>
 
-    <footer class="foot">Rande tu kvitnú krajšie <i class="eh"></i></footer>
+    <footer class="foot">Rande tu kvitnú krajšie <svg class="ei ei-fill"><use href="#i-heart"/></svg></footer>
   </main>
 
   <script src="app.js" defer></script>

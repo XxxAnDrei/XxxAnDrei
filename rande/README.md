@@ -3,11 +3,11 @@
 Statická stránka (HTML + CSS + JS, bez buildu) v štýle DateBloom. Šesť krokov:
 
 1. „Pôjdeš so mnou na rande?“ – tlačidlo **NIE** uteká pred myšou aj prstom a nemá žiadnu akciu.
-2. Deň (kalendár + rýchle voľby, minulé dni sú zablokované).
-3. Čas (sloty, pri dnešku len aspoň hodinu dopredu, alebo vlastný čas).
-4. Typ jedla.
-5. Zhrnutie + nepovinný odkaz → odoslanie na e-mail.
-6. Potvrdenie + pridanie do kalendára (Google / .ics).
+2. „Počkaj, ty si naozaj povedala áno?? 😭“ – konfety.
+3. Deň + čas (kalendár s rýchlymi voľbami; minulé dni a pri dnešku časy skôr než o hodinu sú zablokované).
+4. Typ jedla → **tu sa odosiela e-mail** (deň, čas, jedlo, koľkokrát ušlo NIE, ako dlho rozmýšľala).
+5. „…buď pripravená zajtra / v sobotu o 19:00, prídem po teba 🚗“ – text sa skladá z výberu.
+6. Pridanie do kalendára (Google / .ics) a nepovinný odkaz, ktorý príde ako druhý e-mail.
 
 ## E-mail
 
