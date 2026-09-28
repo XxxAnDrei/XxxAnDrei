@@ -7,7 +7,7 @@ Statická stránka (HTML + CSS + JS, bez buildu) v štýle DateBloom. Šesť kro
 3. Deň + čas (kalendár s rýchlymi voľbami; minulé dni a pri dnešku časy skôr než o hodinu sú zablokované).
 4. Typ jedla → **tu sa odosiela e-mail** (deň, čas, jedlo, koľkokrát ušlo NIE, ako dlho rozmýšľala).
 5. „…buď pripravená zajtra / v sobotu o 19:00, prídem po teba 🚗“ – text sa skladá z výberu.
-6. Pridanie do kalendára (Google / .ics) a nepovinný odkaz, ktorý príde ako druhý e-mail.
+6. „Dohoda o rande™“ za 499 € (platí sa smiechom). „Zaplatiť a potvrdiť“ dá pečiatku ZAPLATENÉ, pošle krátky potvrdzujúci e-mail a ponúkne pridanie do kalendára.
 
 ## E-mail
 

@@ -105,8 +105,8 @@
 
   // ---------------------------------------------------------------- state
   const defaults = () => ({
-    step: 1, date: null, time: null, food: null, note: '', noteSent: false,
-    noAttempts: 0, yesAt: null, thinkMs: null, submitted: false, submittedAt: null,
+    step: 1, date: null, time: null, food: null,
+    noAttempts: 0, yesAt: null, thinkMs: null, submitted: false, submittedAt: null, paid: false,
   });
 
   function load() {
@@ -170,7 +170,7 @@
     else history.replaceState({ step }, '');
 
     if (focus) {
-      const heading = $(`.step[data-step="${step}"] .title`);
+      const heading = $(`.step[data-step="${step}"] .title, .step[data-step="${step}"] .ag-title`);
       heading && heading.focus({ preventScroll: true });
       if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
     }
@@ -193,7 +193,7 @@
     if (step === 3) renderWhen();
     if (step === 4) renderFoods();
     if (step === 5) renderPickup();
-    if (step === 6) renderDetail();
+    if (step === 6) renderAgreement();
   }
 
   // ---------------------------------------------------------------- 1: ÁNO
@@ -628,9 +628,10 @@
     $('#pickupTitle').textContent = `som rád, že si nepovedala nie. buď pripravená ${whenPhrase(state.date)} o ${state.time}, prídem po teba 🚗`;
   }
 
-  // ---------------------------------------------------------------- 6: detail
-  const note = $('#note');
-  const noteBtn = $('#noteBtn');
+  // ---------------------------------------------------------------- 6: Dohoda o rande™
+  const payBtn = $('#payBtn');
+  const fmtWeekdayShort = new Intl.DateTimeFormat('sk-SK', { weekday: 'short' });
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
   function eventTimes() {
     const [h, m] = state.time.split(':').map(Number);
@@ -642,52 +643,41 @@
   }
   const eventDetails = () => { const f = foodById(state.food); return `Jedlo: ${f.emoji} ${f.name}\nPrídem po teba 🚗`; };
 
-  function renderDetail() {
+  function renderAgreement() {
+    const d = fromISO(state.date);
     const f = foodById(state.food);
-    $('#recap').innerHTML = [`📅 ${friendlyDate(state.date)}`, `🕖 ${state.time}`, `${f.emoji} ${f.name}`]
-      .map((t) => `<span>${escapeHtml(t)}</span>`).join('');
+    $('#agWhen').textContent = `${cap(fmtWeekdayShort.format(d))}, ${d.getDate()}. ${d.getMonth() + 1}. · ${state.time}`;
+    $('#agFood').textContent = `${f.emoji} ${f.name}`;
+
+    $('#agreement').classList.toggle('is-paid', state.paid);
+    $('#payActions').hidden = state.paid;
+    $('#afterPay').hidden = !state.paid;
+
     const { start, end } = eventTimes();
     const params = new URLSearchParams({ action: 'TEMPLATE', text: 'Rande 💘', dates: `${start}/${end}`, details: eventDetails(), ctz: CONFIG.timeZone });
     $('#gcalLink').href = `https://calendar.google.com/calendar/render?${params}`;
-
-    $('#noteBlock').hidden = state.noteSent;
-    $('#noteSent').hidden = !state.noteSent;
-    note.value = state.note || '';
-    noteBtn.disabled = !note.value.trim();
   }
 
-  note.addEventListener('input', () => {
-    state.note = note.value.slice(0, 500);
+  payBtn.addEventListener('click', async () => {
+    if (state.paid || payBtn.classList.contains('is-sending')) return;
+    setSending(payBtn, true, 'spracúvam platbu…');
+    // Hlavná odpoveď už prišla po výbere jedla; toto je len potvrdenie, že podpísala.
+    const f = foodById(state.food);
+    sendMail({
+      subject: `✍️ Dohoda o rande™ podpísaná (${shortDate(state.date)} o ${state.time})`,
+      fields: {
+        'Stav': 'Zaplatené smiechom a dobrou spoločnosťou 💸',
+        'Deň': cap(longDate(state.date)),
+        'Čas': state.time,
+        'Jedlo': `${f.emoji} ${f.name}`,
+      },
+    }).catch((e) => console.warn('Potvrdenie podpisu sa neodoslalo:', e));
+    await wait(reducedMotion ? 300 : 1400);
+    state.paid = true;
     save();
-    noteBtn.disabled = !note.value.trim();
-    $('#noteError').hidden = true;
-  });
-
-  noteBtn.addEventListener('click', async () => {
-    const text = note.value.trim();
-    if (!text || noteBtn.classList.contains('is-sending')) return;
-    const msg = {
-      subject: `💌 Odkaz k randu (${shortDate(state.date)} o ${state.time})`,
-      fields: { 'Odkaz': text, 'Deň': cap(longDate(state.date)), 'Čas': state.time },
-    };
-    const err = $('#noteError');
-    err.hidden = true;
-    setSending(noteBtn, true, 'posielam…');
-    try {
-      await sendMail(msg);
-      state.noteSent = true;
-      save();
-      renderDetail();
-      const r = $('#noteSent').getBoundingClientRect();
-      burst(r.left + r.width / 2, r.top + r.height / 2, 12);
-    } catch (e) {
-      console.warn('Odkaz sa neodoslal:', e);
-      err.innerHTML = `${escapeHtml(errorText(e))} Alebo mi ho <a href="${mailtoHref(msg)}">pošli e-mailom</a>.`;
-      err.hidden = false;
-    } finally {
-      setSending(noteBtn, false, 'poslať odkaz 💌');
-      noteBtn.disabled = !note.value.trim();
-    }
+    setSending(payBtn, false, 'Zaplatiť a potvrdiť');
+    renderAgreement();
+    celebrate();
   });
 
   $('#icsBtn').addEventListener('click', () => {

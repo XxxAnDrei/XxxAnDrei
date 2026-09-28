@@ -361,31 +361,58 @@ button { -webkit-tap-highlight-color: transparent; }
 .send-error p + p { margin-top: 6px; }
 .send-error a { color: var(--pink-2); font-weight: 700; }
 
-/* ---------- krok 6 ---------- */
-.recap { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 22px auto 0; max-width: 520px; }
-.recap span {
-  padding: 9px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line);
-  font-size: 14px; font-weight: 600; color: var(--ink-2);
+/* ---------- krok 6: dohoda o rande ---------- */
+.agreement {
+  position: relative; overflow: hidden;
+  max-width: 500px; margin: 0 auto; padding: 26px 26px 22px;
+  text-align: left; border-radius: 18px;
+  background: #fff; border: 1px solid var(--line);
+  box-shadow: 0 30px 50px -34px rgba(120, 25, 75, 0.4);
+  animation: pop 0.6s var(--ease-spring) both 0.05s;
 }
-.cal-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; }
+.ag-top { display: flex; align-items: center; justify-content: space-between; }
+.ag-brand { font-size: 10.5px; font-weight: 800; letter-spacing: 0.24em; text-transform: uppercase; color: var(--pink-2); }
+.ag-heart { width: 16px; height: 16px; fill: var(--pink); }
+.ag-title {
+  margin: 14px 0 8px; outline: none;
+  font-family: "Inter Tight", "Inter", sans-serif; font-weight: 800;
+  font-size: clamp(34px, 6vw, 48px); line-height: 1; letter-spacing: -0.045em; color: var(--ink);
+}
+.ag-sub {
+  margin: 0; padding-bottom: 18px; border-bottom: 1px solid #f1e6ec;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+}
+.ag-line { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 18px 0 14px; }
+.ag-item { display: block; font-size: 15px; font-weight: 600; color: var(--ink-2); }
+.ag-terms { display: block; margin-top: 6px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+.ag-price { font-size: 16px; font-weight: 800; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ag-when {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; border-radius: 12px; background: #faf6f8;
+  font-size: 13.5px; font-weight: 700; color: var(--ink-2);
+}
+.ag-when span:last-child { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.ag-foot { margin: 22px 0 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.ag-stamp {
+  position: absolute; right: 20px; top: 44%;
+  padding: 8px 14px; border: 3px solid var(--pink); border-radius: 10px;
+  background: rgba(255, 255, 255, 0.75); color: var(--pink);
+  font-family: "Inter Tight", "Inter", sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.04em; text-transform: uppercase;
+  opacity: 0; transform: rotate(-14deg) scale(1.8); pointer-events: none;
+}
+.agreement.is-paid .ag-stamp { animation: stamp 0.45s var(--ease-spring) forwards; }
+@keyframes stamp { to { opacity: 0.92; transform: rotate(-14deg) scale(1); } }
+.heart-ic { width: 15px; height: 15px; fill: currentColor; flex: none; }
+.is-sending .heart-ic { display: none; }
 
-.note-block { max-width: 460px; margin: 30px auto 0; text-align: left; }
-.note-label { display: block; margin: 0 0 8px 2px; font-weight: 700; font-size: 13px; color: var(--ink-2); }
-.note-label span { font-weight: 500; color: var(--muted); font-size: 12px; margin-left: 4px; }
-#note {
-  display: block; width: 100%;
-  padding: 14px 16px; border-radius: 14px; resize: vertical; min-height: 88px;
-  border: 1.5px solid transparent; background: var(--soft); font-size: 15px; line-height: 1.45; color: var(--ink-2);
-}
-#note:focus { outline: none; background: #fff; border-color: var(--pink-line); box-shadow: 0 0 0 4px rgba(236, 58, 134, 0.1); }
-.btn-note { display: flex; margin: 12px auto 0; }
-.note-sent { margin: 26px 0 0; font-weight: 600; color: var(--pink-2); }
+.after-pay { animation: stepIn 0.55s var(--ease-out) both; }
+.cal-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
 .closing {
   margin: 30px 0 0;
-  font-family: "Inter Tight", "Inter", sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.03em; color: var(--ink);
+  font-family: "Inter Tight", "Inter", sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.03em; color: var(--ink);
 }
 .link-reset {
-  display: block; margin: 14px auto 0; border: 0; background: none; cursor: pointer;
+  display: block; margin: 18px auto 0; border: 0; background: none; cursor: pointer;
   font-size: 12px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
 }
 
@@ -408,10 +435,13 @@ button { -webkit-tap-highlight-color: transparent; }
   .btn-no { padding: 14px 28px; }
   .food { padding: 14px 12px; gap: 10px; font-size: 14px; }
   .date-pop { padding: 12px 6px 8px; }
+  .agreement { padding: 22px 18px 18px; }
+  .ag-stamp { font-size: 18px; right: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blob, .tile, .tile-heart svg, .step { animation: none; }
+  .blob, .tile, .tile-heart svg, .step, .agreement, .after-pay { animation: none; }
+  .agreement.is-paid .ag-stamp { animation: none; opacity: 0.92; transform: rotate(-14deg); }
   .btn-no { transition-duration: 0.12s; transition-timing-function: ease-out; }
   .progress span { transition: none; }
 }

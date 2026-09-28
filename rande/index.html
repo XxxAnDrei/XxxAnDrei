@@ -143,30 +143,43 @@
         </div>
       </div>
 
-      <!-- 6 · detail -->
+      <!-- 6 · dohoda o rande -->
       <div class="step" data-step="6" hidden>
-        <div class="tile" aria-hidden="true">📌</div>
-        <p class="eyebrow"><svg class="ei ei-fill"><use href="#i-heart"/></svg>Jeden malý detail</p>
-        <h2 class="title title-md title-lower" tabindex="-1">zapíš si to, nech sa potom nevyhováraš 😌</h2>
-        <div class="recap" id="recap"></div>
-        <div class="cal-actions">
-          <a class="btn btn-primary btn-compact" id="gcalLink" href="#" target="_blank" rel="noopener">pridať do Google Kalendára</a>
-          <button class="btn btn-soft" type="button" id="icsBtn">iný kalendár (.ics)</button>
-        </div>
+        <article class="agreement" id="agreement">
+          <div class="ag-top">
+            <span class="ag-brand">DateBloom</span>
+            <svg class="ag-heart" aria-hidden="true"><use href="#i-heart"/></svg>
+          </div>
+          <h2 class="ag-title" tabindex="-1">Dohoda o rande™</h2>
+          <p class="ag-sub">oficiálny a veľmi skutočný dokument</p>
+          <div class="ag-line">
+            <div>
+              <span class="ag-item">Dohoda o rande™</span>
+              <span class="ag-terms">jednorazový poplatok · nevratný · rozhodne to stojí za to</span>
+            </div>
+            <span class="ag-price">499 €</span>
+          </div>
+          <div class="ag-when"><span id="agWhen"></span><span id="agFood"></span></div>
+          <p class="ag-foot">cenu možno uhradiť smiechom, dobrou spoločnosťou a tým, že mi necháš vybrať playlist.</p>
+          <div class="ag-stamp" aria-hidden="true">Zaplatené ♥</div>
+        </article>
 
-        <div class="note-block" id="noteBlock">
-          <label class="note-label" for="note">Chceš mi ešte niečo odkázať? <span>nepovinné</span></label>
-          <textarea id="note" maxlength="500" rows="3" placeholder="napríklad čo si oblečieš, či chceš kvety, alebo len že sa tešíš…"></textarea>
-          <p class="field-error" id="noteError" role="alert" hidden></p>
-          <button class="btn btn-soft btn-note" type="button" id="noteBtn" disabled>
-            <span class="send-label">poslať odkaz 💌</span>
+        <div class="actions" id="payActions">
+          <button class="btn btn-primary" type="button" id="payBtn">
+            <span class="send-label">Zaplatiť a potvrdiť</span>
+            <svg class="heart-ic" aria-hidden="true"><use href="#i-heart"/></svg>
             <span class="spinner" aria-hidden="true"></span>
           </button>
         </div>
-        <p class="note-sent" id="noteSent" hidden>Odkaz mi prišiel 💌</p>
 
-        <p class="closing">vidíme sa 💘</p>
-        <button class="link-reset" type="button" id="resetBtn">začať odznova</button>
+        <div class="after-pay" id="afterPay" hidden>
+          <p class="closing">zaplatené. vidíme sa 💘</p>
+          <div class="cal-actions">
+            <a class="btn btn-primary btn-compact" id="gcalLink" href="#" target="_blank" rel="noopener">pridať do Google Kalendára</a>
+            <button class="btn btn-soft" type="button" id="icsBtn">iný kalendár (.ics)</button>
+          </div>
+          <button class="link-reset" type="button" id="resetBtn">začať odznova</button>
+        </div>
       </div>
 
       <!-- NIE žije mimo krokov, aby mohlo utekať po celej karte -->
