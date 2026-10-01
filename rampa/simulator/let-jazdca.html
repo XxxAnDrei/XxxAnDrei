@@ -75,6 +75,10 @@ legend { font: 700 12px var(--f-display); letter-spacing: .12em; text-transform:
 .stat dd { margin: 1px 0 0; font: 500 18px var(--f-mono); font-variant-numeric: tabular-nums; }
 .stat dd small { font-size: 12px; color: var(--muted); margin-left: 3px; }
 .stat.hl dd { color: var(--accent); }
+.stat.bad dd { color: var(--bad); }
+.ctl.toggle label { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.ctl.toggle input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+.ctl input:disabled { opacity: .4; }
 .charts { display: grid; gap: 10px; }
 .chart h3 { margin: 0 0 3px; font: 600 13px var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
 .chart h3 span { font-family: var(--f-mono); letter-spacing: 0; text-transform: none; color: var(--ink); font-weight: 500; }
@@ -126,9 +130,10 @@ legend { font: 700 12px var(--f-display); letter-spacing: .12em; text-transform:
         <div class="chart"><h3>Rýchlosť <span id="cv">–</span></h3><canvas id="chV"></canvas></div>
         <div class="chart"><h3>Výška kolies nad terénom <span id="ch">–</span></h3><canvas id="chH"></canvas></div>
         <div class="chart"><h3>Preťaženie (g) <span id="cg">–</span></h3><canvas id="chG"></canvas></div>
+        <div class="chart"><h3>Kadencia na rovinke <span id="cc">–</span></h3><canvas id="chC"></canvas></div>
       </div>
       <div class="notes">
-        <p>Model: jazdec ako bod na kolesách, valivý odpor podľa tlaku v pneumatikách (zvýšený prítlakom v rádiusoch) a odpor vzduchu podľa veľkosti jazdca. Jazdec nepumpuje ani nešliape. Pumpovanie v rádiusoch pridá zhruba 0,3–0,8 m/s, zlý nájazd alebo brzdenie rýchlosť ubere.</p>
+        <p>Model: jazdec ako bod na kolesách, valivý odpor podľa tlaku v pneumatikách (zvýšený prítlakom v rádiusoch) a odpor vzduchu podľa veľkosti jazdca. Jazdec nepumpuje; šliapať môže len na rovinke (sila nôh klesá lineárne s kadenciou, pri max. kadencii je nulová). Pumpovanie v rádiusoch pridá zhruba 0,3–0,8 m/s, zlý nájazd alebo brzdenie rýchlosť ubere.</p>
         <p>„Ekvivalent pádu“ je výška, z ktorej by jazdec musel spadnúť na rovinu, aby narazil rovnako tvrdo ako pri tomto dopade (počíta sa len zložka rýchlosti kolmá na plochu dopadu). Do 0,8 m je dopad v pohode, 0,8 až 1,5 m je tvrdý, nad 1,5 m hrozí zranenie.</p>
       </div>
     </div>
@@ -150,7 +155,8 @@ const DEF = [
     { id: "gap", label: "Rovinka pred funboxom", min: 0, max: 15, step: 0.5, val: 3, unit: "m", dec: 1 },
   ]},
   { grp: "Funbox", items: [
-    { id: "kh", label: "Výška odrazu / plošiny", min: 0.5, max: 3, step: 0.1, val: 2.2, unit: "m", dec: 1 },
+    { id: "kh", label: "Výška funboxu (hrana odrazu = plošina)", min: 0.5, max: 4, step: 0.1, val: 2.2, unit: "m", dec: 1,
+      hint: (p) => `dopad klesá z ${fmt(p.kh, 1)} m na terén` },
     { id: "kR", label: "Rádius odrazu", min: 1, max: 8, step: 0.1, val: 2.4, unit: "m", dec: 1,
       hint: (p) => { const a = lipAngle(p.kR, p.kh); return `uhol hrany ${a.toFixed(0)}° · pre hranu 60° treba R ${(p.kh / (1 - Math.cos(Math.PI / 3))).toFixed(1)} m`; } },
     { id: "deck", label: "Dĺžka plošiny", min: 0, max: 4, step: 0.1, val: 1.7, unit: "m", dec: 1 },
@@ -164,15 +170,27 @@ const DEF = [
       hint: (p) => `valivý odpor Crr ≈ ${crr(p.bar).toFixed(4)} (preglejka)` },
     { id: "v0", label: "Rozjazd zo štartu (odraz nohou)", min: 0, max: 3, step: 0.1, val: 0.5, unit: "m/s", dec: 1 },
   ]},
+  { grp: "Pedálovanie na rovinke", items: [
+    { id: "ped", label: "Pedáluje na rovinke", toggle: true, val: 1 },
+    { id: "zubP", label: "Prevodník vpredu", min: 20, max: 36, step: 1, val: 28, unit: "z", dec: 0,
+      hint: (p) => `prevod ${p.zubP}/${p.zubN} = ${fmt(p.zubP / p.zubN, 2)} · ${fmt(devel(p), 2)} m na otáčku kľúk` },
+    { id: "zubN", label: "Pastorok na náboji", min: 8, max: 14, step: 1, val: 9, unit: "z", dec: 0 },
+    { id: "Pw", label: "Max. výkon jazdca (šprint)", min: 100, max: 1300, step: 25, val: 700, unit: "W", dec: 0,
+      hint: () => "orientačne: dieťa 250–400 W, teenager 600–1000 W" },
+    { id: "cMax", label: "Max. kadencia", min: 110, max: 220, step: 5, val: 170, unit: "ot/min", dec: 0,
+      hint: (p) => `nad ${fmt(p.cMax / 60 * devel(p) * 3.6, 0)} km/h už nohy nestíhajú a jazdec nezrýchli` },
+  ]},
 ];
 const PRESETS = {
-  navrh: { H: 4.2, ang: 55, Rt: 1.0, Rb: 4.0, gap: 3, kh: 2.2, kR: 2.4, deck: 1.7, land: 4.0, m: 60, bar: 6, v0: 0.5 },
-  odporucane: { H: 4.2, ang: 55, Rt: 1.0, Rb: 4.0, gap: 3, kh: 2.2, kR: 4.4, deck: 1.7, land: 4.0, m: 60, bar: 6, v0: 0.5 },
-  dieta: { m: 32 },
+  navrh: { H: 4.2, ang: 55, Rt: 1.0, Rb: 4.0, gap: 3, kh: 2.2, kR: 2.4, deck: 1.7, land: 4.0, m: 60, bar: 6, v0: 0.5, ped: 1, zubP: 28, zubN: 9, Pw: 700, cMax: 170 },
+  odporucane: { H: 4.2, ang: 55, Rt: 1.0, Rb: 4.0, gap: 3, kh: 2.2, kR: 4.4, deck: 1.7, land: 4.0, m: 60, bar: 6, v0: 0.5, ped: 1, zubP: 28, zubN: 9, Pw: 700, cMax: 170 },
+  dieta: { m: 32, Pw: 300, cMax: 150 },
 };
 const P = {};
 DEF.forEach(gp => gp.items.forEach(it => P[it.id] = it.val));
 
+const WHEEL_D = 0.51;                                         // 20" BMX koleso s plášťom 2,3"
+function devel(p) { return Math.PI * WHEEL_D * p.zubP / p.zubN; }
 function cda(m) { return 0.22 + 0.004 * m; }                 // 30 kg ≈ 0,34 · 60 kg ≈ 0,46 m²
 function crr(bar) { return 0.0045 + 0.021 / bar; }            // 6 bar ≈ 0,008
 function lipAngle(R, h) { return h >= R ? 90 : Math.acos(1 - h / R) * 180 / Math.PI; }
@@ -223,6 +241,8 @@ function simulate(p) {
   let v = p.v0, t = 0, i = 0, sAcc = 0, gMax = 0, gMaxPh = "", vBottom = 0;
   const pts = T.pts;
   let stall = null;
+  const dev = devel(p), vMaxG = p.cMax / 60 * dev;
+  let crank = 0, cadIn = 0, cadOut = 0;
   // jazda po povrchu - integrácia po oblúkovej dĺžke s jemným krokom
   let nextFrame = 0;
   while (i < pts.length - 1) {
@@ -232,17 +252,26 @@ function simulate(p) {
     const N = g * Math.cos(th) + v * v * A.k;           // na kg
     const gl = N / g;
     if (gl > gMax) { gMax = gl; gMaxPh = A.ph; }
-    const acc = -g * Math.sin(th) - cr * Math.max(N, 0) - k * v * v;
+    let acc = -g * Math.sin(th) - cr * Math.max(N, 0) - k * v * v;
+    // pedálovanie: lineárna závislosť sila-rýchlosť nôh, P max pri polovičnej max. kadencii
+    let pedal = false, cad = 0;
+    if (p.ped && A.ph === "rovinka") {
+      cad = v / dev * 60;
+      if (!cadIn) cadIn = cad;
+      if (cad < p.cMax) { acc += (4 * p.Pw / vMaxG) * (1 - v / vMaxG) / m; pedal = true; }
+      crank += ds / dev * 2 * Math.PI;
+      cadOut = cad;
+    }
     let v2 = v * v + 2 * acc * ds;
     if (v2 <= 0) { stall = { x: A.x, z: A.z, ph: A.ph }; v = 0; break; }
     const vn = Math.sqrt(v2);
     t += ds / ((v + vn) / 2);
     v = vn;
     if (A.ph === "spodný rádius" || A.ph === "rovinka") vBottom = Math.max(vBottom, v);
-    if (t >= nextFrame) { frames.push({ t, x: B.x, z: B.z, v, th, phase: A.ph, gl, air: false }); nextFrame += DT; }
+    if (t >= nextFrame) { frames.push({ t, x: B.x, z: B.z, v, th, phase: pedal ? "rovinka – pedáluje" : (p.ped && A.ph === "rovinka" ? "rovinka – nestíha točiť" : A.ph), gl, air: false, cad: p.ped && A.ph === "rovinka" ? v / dev * 60 : 0, crank, pedal }); nextFrame += DT; }
     i++;
   }
-  const res = { T, frames, gMax, gMaxPh, vBottom, stall, cda: cda(p.m), crr: cr };
+  const res = { T, frames, gMax, gMaxPh, vBottom, stall, cda: cda(p.m), crr: cr, cadIn, cadOut, dev, vMaxG };
   if (stall) {
     res.verdict = { cls: "bad", title: "Nevyjde na hranu odrazu", text: `Rýchlosť dôjde v úseku „${stall.ph}“ vo výške ${fmt(stall.z, 2)} m. Jazdec sa zastaví a zíde späť. Zvýš štart, skráť rovinku alebo zníž odraz.` };
     return res;
@@ -312,13 +341,15 @@ DEF.forEach(gp => {
   const fs = document.createElement("fieldset");
   fs.innerHTML = `<legend>${gp.grp}</legend>`;
   gp.items.forEach(it => {
-    const d = document.createElement("div"); d.className = "ctl";
-    d.innerHTML = `<label for="in-${it.id}">${it.label}</label><output id="out-${it.id}" for="in-${it.id}"></output>
+    const d = document.createElement("div"); d.className = it.toggle ? "ctl toggle" : "ctl";
+    d.innerHTML = it.toggle
+      ? `<label for="in-${it.id}"><input type="checkbox" id="in-${it.id}"${it.val ? " checked" : ""}> ${it.label}</label><output id="out-${it.id}" for="in-${it.id}"></output>`
+      : `<label for="in-${it.id}">${it.label}</label><output id="out-${it.id}" for="in-${it.id}"></output>
       <input type="range" id="in-${it.id}" min="${it.min}" max="${it.max}" step="${it.step}" value="${it.val}">` +
       (it.hint ? `<div class="hint" id="hint-${it.id}"></div>` : "");
     fs.appendChild(d);
     const inp = d.querySelector("input");
-    inp.addEventListener("input", () => { P[it.id] = +inp.value; refresh(); });
+    inp.addEventListener(it.toggle ? "change" : "input", () => { P[it.id] = it.toggle ? (inp.checked ? 1 : 0) : +inp.value; refresh(); });
     outputs[it.id] = d.querySelector("output");
     if (it.hint) hints[it.id] = d.querySelector(".hint");
   });
@@ -327,7 +358,10 @@ DEF.forEach(gp => {
 const ALL = DEF.flatMap(gp => gp.items);
 function syncInputs() {
   ALL.forEach(it => {
-    document.getElementById("in-" + it.id).value = P[it.id];
+    const inp = document.getElementById("in-" + it.id);
+    if (it.toggle) { inp.checked = !!P[it.id]; outputs[it.id].textContent = P[it.id] ? "áno" : "nie"; return; }
+    inp.value = P[it.id];
+    inp.disabled = ["zubP", "zubN", "Pw", "cMax"].includes(it.id) && !P.ped;
     outputs[it.id].textContent = `${fmt(P[it.id], it.dec)} ${it.unit}`;
     if (it.hint) hints[it.id].textContent = it.hint(P);
   });
@@ -375,7 +409,8 @@ function frameAt(t) {
   while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (F[mid].t <= t) lo = mid; else hi = mid; }
   const A = F[lo], B = F[hi];
   const f = B.t > A.t ? Math.min(Math.max((t - A.t) / (B.t - A.t), 0), 1) : 0;
-  return { ...A, x: A.x + (B.x - A.x) * f, z: A.z + (B.z - A.z) * f, v: A.v + (B.v - A.v) * f };
+  return { ...A, x: A.x + (B.x - A.x) * f, z: A.z + (B.z - A.z) * f, v: A.v + (B.v - A.v) * f,
+    crank: (A.crank || 0) + ((B.crank || 0) - (A.crank || 0)) * f, cad: (A.cad || 0) + ((B.cad || 0) - (A.cad || 0)) * f };
 }
 
 function renderStats() {
@@ -393,7 +428,14 @@ function renderStats() {
     ["Čas vo vzduchu", `${fmt(s.airTime, 2)}<small>s</small>`],
     ["Dĺžka skoku od hrany", `${fmt(s.dist, 2)}<small>m</small>`],
     ["Ekvivalent pádu", `${fmt(s.eqDrop, 2)}<small>m</small>`]);
-  el.innerHTML = rows.map(r => `<div class="stat${r[2] ? " hl" : ""}"><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");
+  if (P.ped && P.gap > 0) {
+    const s0 = simulate({ ...P, ped: 0 });
+    rows.push(["Kadencia na rovinke", `${fmt(s.cadIn, 0)}–${fmt(s.cadOut, 0)}<small>ot/min · max ${fmt(P.cMax, 0)}</small>`, s.cadIn >= P.cMax ? "bad" : ""]);
+    if (!s.stall && !s0.stall && !s0.error) rows.push(
+      ["Zisk z pedálovania", `+${fmt((s.vLip - s0.vLip) * 3.6, 1)}<small>km/h na hrane</small>`],
+      ["Výška navyše", `+${fmt(s.zMax - s0.zMax, 2)}<small>m · dĺžka +${fmt(s.dist - s0.dist, 2)} m</small>`]);
+  }
+  el.innerHTML = rows.map(r => `<div class="stat${r[2] === "bad" ? " bad" : r[2] ? " hl" : ""}"><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");
   const vd = document.getElementById("verdict");
   vd.className = "verdict " + s.verdict.cls;
   vd.innerHTML = `<strong>${s.verdict.title}</strong><p>${s.verdict.text}</p>`;
@@ -508,14 +550,14 @@ function drawScene() {
   let started = false;
   for (const q of fs) { if (q.t > tNow) break; if (!started) { ctx.moveTo(X(q.x), Z(q.z)); started = true; } else ctx.lineTo(X(q.x), Z(q.z)); }
   ctx.lineTo(X(f.x), Z(f.z)); ctx.stroke(); ctx.globalAlpha = 1;
-  drawRider(ctx, X(f.x), Z(f.z), riderAngle(f, T), sc, col);
+  drawRider(ctx, X(f.x), Z(f.z), riderAngle(f, T), sc, col, f.crank || 0);
   // tachometer pri jazdcovi
   ctx.fillStyle = col.ink; ctx.font = "600 12px " + css("--f-mono");
   const lbl = `${fmt(f.v * 3.6, 0)} km/h · ${fmt(f.z, 2)} m`;
   const tx = Math.min(X(f.x) + 14, w - ctx.measureText(lbl).width - 8);
   ctx.fillText(lbl, tx, Z(f.z) - 1.9 * sc - 4);
   ctx.fillStyle = col.muted; ctx.font = "500 11px " + css("--f-body");
-  ctx.fillText(f.phase, tx, Z(f.z) - 1.9 * sc + 10);
+  ctx.fillText(f.cad ? `${f.phase} · ${fmt(f.cad, 0)} ot/min` : f.phase, tx, Z(f.z) - 1.9 * sc + 10);
 }
 
 function riderAngle(f, T) {
@@ -529,7 +571,7 @@ function riderAngle(f, T) {
   return a0 + (a1 - a0) * s;
 }
 
-function drawRider(ctx, x, y, ang, sc, col) {
+function drawRider(ctx, x, y, ang, sc, col, crank) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(-ang);
   const r = 0.254 * sc, wb = 0.98 * sc;               // 20" koleso, rázvor ~0,98 m
   ctx.lineWidth = Math.max(1.5, 0.035 * sc); ctx.strokeStyle = col.ink; ctx.fillStyle = col.panel;
@@ -541,23 +583,40 @@ function drawRider(ctx, x, y, ang, sc, col) {
   ctx.beginPath(); ctx.moveTo(wx[0], -r); ctx.lineTo(bb[0], bb[1]); ctx.lineTo(head[0], head[1]); ctx.lineTo(wx[1], -r);
   ctx.moveTo(bb[0], bb[1]); ctx.lineTo(seat[0], seat[1]); ctx.lineTo(wx[0], -r);
   ctx.moveTo(head[0], head[1]); ctx.lineTo(head[0] + 0.02 * sc, head[1] - 0.2 * sc); ctx.stroke();
-  // jazdec v postoji
+  // kľuky (175 mm) - pri pedálovaní sa točia, inak vodorovne
+  const cl = 0.175 * sc;
+  const ped = [crank, crank + Math.PI].map(a => [bb[0] + cl * Math.cos(a), bb[1] + cl * Math.sin(a)]);
+  ctx.strokeStyle = col.ink; ctx.lineWidth = Math.max(1.5, 0.03 * sc);
+  ctx.beginPath(); ctx.moveTo(ped[0][0], ped[0][1]); ctx.lineTo(ped[1][0], ped[1][1]); ctx.stroke();
+  // jazdec - nohy cez jednoduchú inverznú kinematiku (stehno + lýtko 0,45 m)
+  const sitting = Math.abs(crank) > 1e-6;
+  const hip = sitting ? [-0.14 * sc, -r - 0.72 * sc] : [-0.12 * sc, -r - 0.85 * sc];
+  const sh = sitting ? [0.22 * sc, -r - 1.18 * sc] : [0.18 * sc, -r - 1.32 * sc];
+  const hand = [head[0] + 0.02 * sc, head[1] - 0.2 * sc];
+  const seg = 0.45 * sc;
+  const knee = (foot) => {
+    const dx = foot[0] - hip[0], dy = foot[1] - hip[1], n = Math.hypot(dx, dy) || 1;
+    const d = Math.min(n, 2 * seg - 0.01);
+    const h = Math.sqrt(Math.max(seg * seg - d * d / 4, 0));
+    let px = -dy / n, py = dx / n;
+    if (px < 0) { px = -px; py = -py; }          // koleno smeruje dopredu
+    return [hip[0] + dx / 2 + px * h, hip[1] + dy / 2 + py * h];
+  };
   ctx.strokeStyle = col.ink; ctx.lineWidth = Math.max(2.2, 0.07 * sc); ctx.lineCap = "round";
-  const hip = [-0.12 * sc, -r - 0.85 * sc], sh = [0.18 * sc, -r - 1.32 * sc], hand = [head[0] + 0.02 * sc, head[1] - 0.2 * sc];
-  ctx.beginPath(); ctx.moveTo(bb[0] - 0.1 * sc, bb[1]); ctx.lineTo(-0.24 * sc, -r - 0.42 * sc); ctx.lineTo(hip[0], hip[1]);
-  ctx.moveTo(bb[0] + 0.12 * sc, bb[1]); ctx.lineTo(0.05 * sc, -r - 0.45 * sc); ctx.lineTo(hip[0], hip[1]);
+  ctx.beginPath();
+  ped.forEach(f => { const k = knee(f); ctx.moveTo(f[0], f[1]); ctx.lineTo(k[0], k[1]); ctx.lineTo(hip[0], hip[1]); });
   ctx.lineTo(sh[0], sh[1]); ctx.lineTo(hand[0], hand[1]); ctx.stroke();
   ctx.fillStyle = col.ink; ctx.beginPath(); ctx.arc(sh[0] + 0.1 * sc, sh[1] - 0.16 * sc, 0.12 * sc, 0, 7); ctx.fill();
   ctx.restore();
 }
 
-function drawChart(id, key, unit, conv, color, labelId, dec) {
+function drawChart(id, key, unit, conv, color, labelId, dec, limit) {
   const c = document.getElementById(id); const { ctx, w, h } = fitCanvas(c);
   ctx.clearRect(0, 0, w, h);
   if (!SIM || SIM.error) return;
   const F = SIM.frames, tMax = totalT() || 1;
   const vals = F.map(f => conv(f));
-  const vMax = Math.max(...vals, 0.1) * 1.12;
+  const vMax = Math.max(...vals, limit || 0, 0.1) * 1.12;
   const L = 38, R = 10, Tp = 8, B = 20;
   const X = t => L + (t / tMax) * (w - L - R), Y = v => h - B - (v / vMax) * (h - Tp - B);
   ctx.font = "500 10.5px " + css("--f-mono"); ctx.fillStyle = css("--muted"); ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
@@ -570,6 +629,8 @@ function drawChart(id, key, unit, conv, color, labelId, dec) {
   // pozadie fázy letu
   const air = F.filter(f => f.air);
   if (air.length) { ctx.fillStyle = css("--accent"); ctx.globalAlpha = 0.08; ctx.fillRect(X(air[0].t), Tp, X(air[air.length - 1].t) - X(air[0].t), h - Tp - B); ctx.globalAlpha = 1; }
+  if (limit) { ctx.strokeStyle = css("--bad"); ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(L, Y(limit)); ctx.lineTo(w - R, Y(limit)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = css("--bad"); ctx.textAlign = "left"; ctx.textBaseline = "bottom"; ctx.fillText(`max ${fmt(limit, 0)}`, L + 4, Y(limit) - 2); }
   ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
   F.forEach((f, i) => { const x = X(f.t), y = Y(vals[i]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
   // kurzor
@@ -591,6 +652,7 @@ function drawAll() {
   drawChart("chV", "v", "km/h", f => f.v * 3.6, css("--accent"), "cv", 0);
   drawChart("chH", "z", "m", f => f.z, css("--wood-dark"), "ch", 2);
   drawChart("chG", "g", "g", f => f.gl, css("--bad"), "cg", 1);
+  drawChart("chC", "cad", "ot/min", f => f.cad || 0, css("--ok"), "cc", 0, P.cMax);
 }
 
 window.addEventListener("resize", () => drawAll());
