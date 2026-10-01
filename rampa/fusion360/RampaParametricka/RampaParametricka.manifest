@@ -1,0 +1,10 @@
+{
+	"autodeskProduct": "Fusion360",
+	"type": "script",
+	"author": "",
+	"description": {
+		"": "Parametricky profil rozbehovej rampy (uhol, radiusy, vyska) + import 3D ramu STEP"
+	},
+	"supportedOS": "windows|mac",
+	"editEnabled": true
+}

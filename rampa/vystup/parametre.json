@@ -1,0 +1,46 @@
+{
+  "parametre": {
+    "VYSKA_KONTAJNERA": 3000.0,
+    "VYSKA_PLOSINY": 1200.0,
+    "DLZKA_PLOSINY": 1200.0,
+    "SIRKA": 1200.0,
+    "UHOL": 55.0,
+    "R_HORNY": 1000.0,
+    "R_SPODNY": 4000.0,
+    "JAKEL": 50.0,
+    "HRUBKA_STENY": 3.0,
+    "PREGLEJKA": 18.0,
+    "ROZOSTUP_STLPIKOV": 750.0,
+    "ROZOSTUP_PRIECNIKOV": 350.0,
+    "URovne_PAZDIKOV": [
+      1300.0,
+      2600.0
+    ],
+    "MIN_VYSKA_STLPIKA": 200.0,
+    "ZABRADLIE": 1100.0,
+    "SIRKA_KONTAJNERA": 2438.0,
+    "DLZKA_KONTAJNERA": 6058.0,
+    "HMOTNOST_KG_M": 4.25
+  },
+  "body": {
+    "vyska_plosiny": 4200.0,
+    "uhol": 55.0,
+    "R_horny": 1000.0,
+    "R_spodny": 4000.0,
+    "x_koniec_horneho_radiusu": 819.1520442889918,
+    "z_koniec_horneho_radiusu": 3773.576436351046,
+    "x_zaciatok_spodneho_radiusu": 2267.0987360835456,
+    "z_zaciatok_spodneho_radiusu": 1705.6942545958154,
+    "x_dotyk_teren": 5543.706913239513,
+    "dlzka_rovneho_useku": 2524.4180200393844,
+    "celkova_dlzka": 6743.706913239513
+  },
+  "stanice_stlpikov": [
+    25.0,
+    775.0,
+    1525.0,
+    2275.0,
+    3025.0,
+    3775.0
+  ]
+}

@@ -1,0 +1,42 @@
+﻿poz;skupina;nazov;profil;dlzka_os_mm;ks;spolu_m;kg;poznamka
+1;A;Plošina - horný rám pozdĺžny;jakel 50x50x3;1200;2;2.40;10.2;
+2;A;Plošina - spodný rám pozdĺžny;jakel 50x50x3;1200;2;2.40;10.2;
+3;A;Plošina - horný rám priečny;jakel 50x50x3;1100;2;2.20;9.4;
+4;A;Plošina - spodný rám priečny;jakel 50x50x3;1100;2;2.20;9.4;
+5;A;Plošina - stĺpik;jakel 50x50x3;1082;4;4.33;18.4;
+6;A;Plošina - priečnik pod preglejku;jakel 50x50x3;1100;3;3.30;14.0;
+7;A;Plošina - diagonála bočná;jakel 50x50x3;1543;2;3.09;13.1;zakrátiť na mieru
+8;A;Plošina - diagonála čelná;jakel 50x50x3;1543;2;3.09;13.1;zakrátiť na mieru
+9;D;Podperný nosník cez kontajner;jakel 50x50x3;2438;2;4.88;20.7;"ukladať na horné pozdĺžniky kontajnera; odporúčané 100x50x4"
+10;B;Horný pás - horný oblúk (zakružiť);jakel 50x50x3;919;2;1.84;7.8;zakružiť v osi R957
+11;B;Horný pás - rovný úsek;jakel 50x50x3;2524;2;5.05;21.5;konce kolmo, sklon 55°
+12;B;Horný pás - spodný plynulý oblúk (zakružiť);jakel 50x50x3;3141;2;6.28;26.7;zakružiť v osi R4043
+13;B;Spodný pás (na teréne);jakel 50x50x3;4571;2;9.14;38.9;koniec zrezať pod horný pás
+14;B;Bočnica - stĺpik;jakel 50x50x3;4082;2;8.16;34.7;hore rez 1.5° (podľa pásu)
+15;B;Bočnica - stĺpik;jakel 50x50x3;3668;2;7.34;31.2;hore rez 55.0° (podľa pásu)
+16;B;Bočnica - stĺpik;jakel 50x50x3;2597;2;5.19;22.1;hore rez 55.0° (podľa pásu)
+17;B;Bočnica - stĺpik;jakel 50x50x3;1528;2;3.06;13.0;hore rez 53.5° (podľa pásu)
+18;B;Bočnica - stĺpik;jakel 50x50x3;756;2;1.51;6.4;hore rez 38.3° (podľa pásu)
+19;B;Bočnica - stĺpik;jakel 50x50x3;287;2;0.57;2.4;hore rez 25.8° (podľa pásu)
+20;B;Bočnica - paždík;jakel 50x50x3;700;8;5.60;23.8;
+21;B;Bočnica - diagonála;jakel 50x50x3;1411;6;8.47;36.0;zakrátiť na mieru (šablóna 1:1)
+22;B;Bočnica - diagonála;jakel 50x50x3;1433;2;2.87;12.2;zakrátiť na mieru (šablóna 1:1)
+23;B;Bočnica - diagonála;jakel 50x50x3;1652;2;3.30;14.0;zakrátiť na mieru (šablóna 1:1)
+24;B;Bočnica - diagonála;jakel 50x50x3;2484;2;4.97;21.1;zakrátiť na mieru (šablóna 1:1)
+25;B;Bočnica - diagonála;jakel 50x50x3;1487;2;2.97;12.6;zakrátiť na mieru (šablóna 1:1)
+26;B;Bočnica - diagonála;jakel 50x50x3;1672;2;3.34;14.2;zakrátiť na mieru (šablóna 1:1)
+27;B;Bočnica - diagonála;jakel 50x50x3;1023;2;2.05;8.7;zakrátiť na mieru (šablóna 1:1)
+28;B;Zadná stena - priečka;jakel 50x50x3;1100;4;4.40;18.7;
+29;B;Zadná stena - diagonála;jakel 50x50x3;1646;1;1.65;7.0;zakrátiť na mieru
+30;B;Zadná stena - diagonála;jakel 50x50x3;1665;1;1.67;7.1;zakrátiť na mieru
+31;B;Zadná stena - diagonála;jakel 50x50x3;1825;1;1.83;7.8;zakrátiť na mieru
+32;B;Spodná priečka;jakel 50x50x3;1100;6;6.60;28.0;
+33;B;Priečna diagonála;jakel 50x50x3;3772;1;3.77;16.0;zakrátiť na mieru
+34;B;Priečna diagonála;jakel 50x50x3;2765;1;2.77;11.8;zakrátiť na mieru
+35;B;Priečna diagonála;jakel 50x50x3;1835;1;1.83;7.8;zakrátiť na mieru
+36;B;Priečnik pod preglejku;jakel 50x50x3;1100;20;22.00;93.5;
+37;C;Zábradlie - stĺpik;jakel 50x50x3;1268;4;5.07;21.6;privariť z boku na horný rám plošiny
+38;C;Zábradlie - madlo/medzimadlo bočné;jakel 50x50x3;1100;4;4.40;18.7;
+39;C;Zábradlie - madlo/medzimadlo zadné;jakel 50x50x3;1200;2;2.40;10.2;
+40;B;Kotviaca pätka 150x100x8;plech 8 mm  150x100;0;14;0.00;13.2;2x otvor Ø14, kotva M12 do betónu
+41;B;Nábehový podkladný plech;plech 5 mm  1123x1200;0;1;0.00;52.9;na betón, k nemu privariť koniec pásov
