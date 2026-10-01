@@ -1,0 +1,602 @@
+<title>Let BMX z rozbehovky</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: plná šírka – bočný rez traťou hore, pod ním ovládanie vľavo a časové priebehy vpravo; na mobile jeden stĺpec */
+:root {
+  --bg: #eef0ef;
+  --panel: #f8f9f8;
+  --ink: #1c2327;
+  --muted: #5d6a70;
+  --line: #cfd6d6;
+  --wood: #c99a58;
+  --wood-dark: #9c7038;
+  --steel: #8b979c;
+  --accent: #2b57d1;
+  --ok: #1f8a4c;
+  --warn: #c98a0b;
+  --bad: #c2362b;
+  --sky: #e4ebee;
+  --f-display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171a; --panel: #192024; --ink: #e6ebec; --muted: #94a2a8; --line: #2c373c;
+    --wood: #b98a4a; --wood-dark: #8a6331; --steel: #6b787e; --accent: #7d9cff;
+    --ok: #4cc57f; --warn: #e2a93a; --bad: #ef6a5e; --sky: #151c20; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171a; --panel: #192024; --ink: #e6ebec; --muted: #94a2a8; --line: #2c373c;
+  --wood: #b98a4a; --wood-dark: #8a6331; --steel: #6b787e; --accent: #7d9cff;
+  --ok: #4cc57f; --warn: #e2a93a; --bad: #ef6a5e; --sky: #151c20; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; padding-inline: 16px; padding-block: 18px 40px; }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(1.6rem, 3.2vw, 2.3rem); letter-spacing: .01em; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0; max-width: 70ch; }
+.stage { background: var(--sky); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; position: relative; }
+#scene { display: block; width: 100%; height: clamp(300px, 46vw, 540px); }
+.transport { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--panel); }
+button { font: 600 14px var(--f-body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 5px; padding: 7px 14px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 92px; }
+.rate { display: flex; gap: 4px; }
+.rate button { padding: 6px 9px; font-family: var(--f-mono); font-weight: 500; font-size: 12.5px; }
+.rate button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+#scrub { flex: 1 1 200px; min-width: 0; accent-color: var(--accent); }
+.clock { font: 500 14px var(--f-mono); font-variant-numeric: tabular-nums; min-width: 9ch; text-align: right; }
+.grid { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 880px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 14px; min-width: 0; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets button { font-size: 13px; padding: 6px 10px; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 9px; }
+legend { font: 700 12px var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0; margin-bottom: 4px; }
+.ctl { display: grid; grid-template-columns: 1fr auto; gap: 1px 10px; align-items: center; }
+.ctl label { font-size: 14px; }
+.ctl output { font: 500 13.5px var(--f-mono); font-variant-numeric: tabular-nums; color: var(--accent); }
+.ctl input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); margin: 2px 0 0; }
+.hint { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); }
+.verdict { border-radius: 6px; padding: 12px 14px; border: 1px solid var(--line); border-left-width: 5px; background: var(--panel); }
+.verdict strong { font-family: var(--f-display); font-size: 1.15rem; display: block; }
+.verdict p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.verdict.ok { border-left-color: var(--ok); } .verdict.ok strong { color: var(--ok); }
+.verdict.warn { border-left-color: var(--warn); } .verdict.warn strong { color: var(--warn); }
+.verdict.bad { border-left-color: var(--bad); } .verdict.bad strong { color: var(--bad); }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel); }
+.stat { padding: 9px 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 -1px -1px 0; }
+.stat dt { font-size: 12px; color: var(--muted); letter-spacing: .02em; }
+.stat dd { margin: 1px 0 0; font: 500 18px var(--f-mono); font-variant-numeric: tabular-nums; }
+.stat dd small { font-size: 12px; color: var(--muted); margin-left: 3px; }
+.stat.hl dd { color: var(--accent); }
+.charts { display: grid; gap: 10px; }
+.chart h3 { margin: 0 0 3px; font: 600 13px var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+.chart h3 span { font-family: var(--f-mono); letter-spacing: 0; text-transform: none; color: var(--ink); font-weight: 500; }
+.chart canvas { display: block; width: 100%; height: 118px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; }
+.notes { font-size: 13px; color: var(--muted); max-width: 95ch; }
+.notes p { margin: 0 0 6px; }
+.right { display: grid; gap: 14px; min-width: 0; }
+.err { color: var(--bad); font-weight: 600; font-size: 14px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Let BMX z rozbehovky na funbox</h1>
+      <p class="sub">Bočný rez traťou s fyzikou jazdy: rozbehovka z kontajnera, rovinka, odraz, plošina a dopad. Posúvaj hodnoty a sleduj rýchlosť, výšku, preťaženie a miesto dopadu v čase.</p>
+    </div>
+  </header>
+
+  <section class="stage" aria-label="Animácia letu">
+    <canvas id="scene" role="img" aria-label="Bočný rez traťou s pohybom jazdca"></canvas>
+    <div class="transport">
+      <button id="play" class="primary" type="button">▶ Spustiť</button>
+      <button id="restart" type="button">⟲ Od začiatku</button>
+      <div class="rate" role="group" aria-label="Rýchlosť prehrávania">
+        <button type="button" data-rate="0.25">0,25×</button>
+        <button type="button" data-rate="0.5" aria-pressed="true">0,5×</button>
+        <button type="button" data-rate="1">1×</button>
+      </div>
+      <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Čas">
+      <span class="clock" id="clock">0,00 s</span>
+    </div>
+  </section>
+
+  <div class="grid">
+    <form class="panel" id="controls" onsubmit="return false">
+      <div class="presets" role="group" aria-label="Predvoľby">
+        <button type="button" data-preset="navrh">Tvoj návrh (R2,4)</button>
+        <button type="button" data-preset="odporucane">Odporúčané (hrana 60°)</button>
+        <button type="button" data-preset="dieta">Dieťa 30 kg</button>
+      </div>
+      <div id="sliders"></div>
+      <div class="err" id="err" hidden></div>
+    </form>
+
+    <div class="right">
+      <div class="verdict" id="verdict"><strong>…</strong><p></p></div>
+      <dl class="stats" id="stats"></dl>
+      <div class="charts">
+        <div class="chart"><h3>Rýchlosť <span id="cv">–</span></h3><canvas id="chV"></canvas></div>
+        <div class="chart"><h3>Výška kolies nad terénom <span id="ch">–</span></h3><canvas id="chH"></canvas></div>
+        <div class="chart"><h3>Preťaženie (g) <span id="cg">–</span></h3><canvas id="chG"></canvas></div>
+      </div>
+      <div class="notes">
+        <p>Model: jazdec ako bod na kolesách, valivý odpor podľa tlaku v pneumatikách (zvýšený prítlakom v rádiusoch) a odpor vzduchu podľa veľkosti jazdca. Jazdec nepumpuje ani nešliape. Pumpovanie v rádiusoch pridá zhruba 0,3–0,8 m/s, zlý nájazd alebo brzdenie rýchlosť ubere.</p>
+        <p>„Ekvivalent pádu“ je výška, z ktorej by jazdec musel spadnúť na rovinu, aby narazil rovnako tvrdo ako pri tomto dopade (počíta sa len zložka rýchlosti kolmá na plochu dopadu). Do 0,8 m je dopad v pohode, 0,8 až 1,5 m je tvrdý, nad 1,5 m hrozí zranenie.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const g = 9.81, RHO = 1.2;
+
+// --------------------------------------------------------------- parametre
+const DEF = [
+  { grp: "Rozbehovka", items: [
+    { id: "H", label: "Výška štartu (plošina)", min: 2, max: 6, step: 0.1, val: 4.2, unit: "m", dec: 1 },
+    { id: "ang", label: "Sklon zjazdu", min: 30, max: 55, step: 1, val: 55, unit: "°", dec: 0 },
+    { id: "Rt", label: "Horný rádius", min: 0.3, max: 3, step: 0.1, val: 1.0, unit: "m", dec: 1 },
+    { id: "Rb", label: "Spodný rádius", min: 2, max: 8, step: 0.1, val: 4.0, unit: "m", dec: 1 },
+    { id: "gap", label: "Rovinka pred funboxom", min: 0, max: 15, step: 0.5, val: 3, unit: "m", dec: 1 },
+  ]},
+  { grp: "Funbox", items: [
+    { id: "kh", label: "Výška odrazu / plošiny", min: 0.5, max: 3, step: 0.1, val: 2.2, unit: "m", dec: 1 },
+    { id: "kR", label: "Rádius odrazu", min: 1, max: 8, step: 0.1, val: 2.4, unit: "m", dec: 1,
+      hint: (p) => { const a = lipAngle(p.kR, p.kh); return `uhol hrany ${a.toFixed(0)}° · pre hranu 60° treba R ${(p.kh / (1 - Math.cos(Math.PI / 3))).toFixed(1)} m`; } },
+    { id: "deck", label: "Dĺžka plošiny", min: 0, max: 4, step: 0.1, val: 1.7, unit: "m", dec: 1 },
+    { id: "land", label: "Dĺžka dopadu", min: 2, max: 8, step: 0.1, val: 4.0, unit: "m", dec: 1,
+      hint: (p) => `sklon dopadu ${(Math.atan2(p.kh, p.land) * 180 / Math.PI).toFixed(0)}°` },
+  ]},
+  { grp: "Jazdec – 20\" BMX", items: [
+    { id: "m", label: "Hmotnosť jazdca s bicyklom", min: 20, max: 100, step: 1, val: 60, unit: "kg", dec: 0,
+      hint: (p) => `plocha čelného odporu CdA ≈ ${cda(p.m).toFixed(2)} m²` },
+    { id: "bar", label: "Tlak v pneumatikách", min: 2, max: 8, step: 0.5, val: 6, unit: "bar", dec: 1,
+      hint: (p) => `valivý odpor Crr ≈ ${crr(p.bar).toFixed(4)} (preglejka)` },
+    { id: "v0", label: "Rozjazd zo štartu (odraz nohou)", min: 0, max: 3, step: 0.1, val: 0.5, unit: "m/s", dec: 1 },
+  ]},
+];
+const PRESETS = {
+  navrh: { H: 4.2, ang: 55, Rt: 1.0, Rb: 4.0, gap: 3, kh: 2.2, kR: 2.4, deck: 1.7, land: 4.0, m: 60, bar: 6, v0: 0.5 },
+  odporucane: { H: 4.2, ang: 55, Rt: 1.0, Rb: 4.0, gap: 3, kh: 2.2, kR: 4.4, deck: 1.7, land: 4.0, m: 60, bar: 6, v0: 0.5 },
+  dieta: { m: 32 },
+};
+const P = {};
+DEF.forEach(gp => gp.items.forEach(it => P[it.id] = it.val));
+
+function cda(m) { return 0.22 + 0.004 * m; }                 // 30 kg ≈ 0,34 · 60 kg ≈ 0,46 m²
+function crr(bar) { return 0.0045 + 0.021 / bar; }            // 6 bar ≈ 0,008
+function lipAngle(R, h) { return h >= R ? 90 : Math.acos(1 - h / R) * 180 / Math.PI; }
+const fmt = (x, d = 1) => x.toFixed(d).replace(".", ",");
+
+// --------------------------------------------------------------- geometria
+function buildTrack(p) {
+  const a = p.ang * Math.PI / 180, H = p.H;
+  const z1 = H - p.Rt * (1 - Math.cos(a)), x1 = p.Rt * Math.sin(a);
+  const z2 = p.Rb * (1 - Math.cos(a));
+  if (z2 >= z1 - 0.05) return { error: "Rádiusy rozbehovky sú pri tejto výške a sklone príliš veľké – zmenši ich alebo zvýš štart." };
+  const x2 = x1 + (z1 - z2) / Math.tan(a), xe = x2 + p.Rb * Math.sin(a);
+  const ks = xe + p.gap;
+  const lipA = lipAngle(p.kR, p.kh) * Math.PI / 180;
+  const arcH = Math.min(p.kh, p.kR);
+  const lipX = ks + p.kR * Math.sin(lipA);
+  const deckEnd = lipX + p.deck, landEnd = deckEnd + p.land;
+  // vzorkovaná dráha po povrchu (x, z, sklon θ, krivosť κ>0 = dutý)
+  const pts = [];
+  const ds = 0.01;
+  const push = (x, z, th, k, ph) => pts.push({ x, z, th, k, ph });
+  const startX = -0.25;
+  for (let x = startX; x < 0; x += ds) push(x, H, 0, 0, "štart");
+  for (let s = 0; s < p.Rt * a; s += ds) { const f = s / p.Rt; push(p.Rt * Math.sin(f), H - p.Rt * (1 - Math.cos(f)), -f, -1 / p.Rt, "rozbehovka"); }
+  const L = (z1 - z2) / Math.sin(a);
+  for (let s = 0; s < L; s += ds) push(x1 + s * Math.cos(a), z1 - s * Math.sin(a), -a, 0, "rozbehovka");
+  for (let s = 0; s < p.Rb * a; s += ds) { const f = a - s / p.Rb; push(xe - p.Rb * Math.sin(f), p.Rb * (1 - Math.cos(f)), -f, 1 / p.Rb, "spodný rádius"); }
+  for (let x = xe; x < ks; x += ds) push(x, 0, 0, 0, "rovinka");
+  for (let s = 0; s < p.kR * lipA; s += ds) { const f = s / p.kR; push(ks + p.kR * Math.sin(f), p.kR * (1 - Math.cos(f)), f, 1 / p.kR, "odraz"); }
+  if (p.kh > p.kR) for (let z = p.kR; z < p.kh; z += ds) push(ks + p.kR, z, Math.PI / 2, 0, "odraz");
+  push(lipX, p.kh, lipA, 0, "odraz");
+  return { a, H, x1, z1, x2, z2, xe, ks, lipX, lipA, deckEnd, landEnd, pts, kh: p.kh, arcH };
+}
+
+function surfaceAfterLip(T, x) {
+  if (x <= T.deckEnd) return { z: T.kh, slope: 0, zone: x - T.lipX < 0.35 ? "hrana" : "plošina" };
+  if (x <= T.landEnd) return { z: T.kh * (1 - (x - T.deckEnd) / (T.landEnd - T.deckEnd)), slope: -Math.atan2(T.kh, T.landEnd - T.deckEnd), zone: "dopad" };
+  return { z: 0, slope: 0, zone: "za dopadom" };
+}
+
+// --------------------------------------------------------------- simulácia
+function simulate(p) {
+  const T = buildTrack(p);
+  if (T.error) return T;
+  const m = p.m, k = 0.5 * RHO * cda(p.m) / m, cr = crr(p.bar);
+  const frames = [];
+  const DT = 1 / 120;
+  let v = p.v0, t = 0, i = 0, sAcc = 0, gMax = 0, gMaxPh = "", vBottom = 0;
+  const pts = T.pts;
+  let stall = null;
+  // jazda po povrchu - integrácia po oblúkovej dĺžke s jemným krokom
+  let nextFrame = 0;
+  while (i < pts.length - 1) {
+    const A = pts[i], B = pts[i + 1];
+    const ds = Math.hypot(B.x - A.x, B.z - A.z) || 1e-4;
+    const th = Math.atan2(B.z - A.z, B.x - A.x);
+    const N = g * Math.cos(th) + v * v * A.k;           // na kg
+    const gl = N / g;
+    if (gl > gMax) { gMax = gl; gMaxPh = A.ph; }
+    const acc = -g * Math.sin(th) - cr * Math.max(N, 0) - k * v * v;
+    let v2 = v * v + 2 * acc * ds;
+    if (v2 <= 0) { stall = { x: A.x, z: A.z, ph: A.ph }; v = 0; break; }
+    const vn = Math.sqrt(v2);
+    t += ds / ((v + vn) / 2);
+    v = vn;
+    if (A.ph === "spodný rádius" || A.ph === "rovinka") vBottom = Math.max(vBottom, v);
+    if (t >= nextFrame) { frames.push({ t, x: B.x, z: B.z, v, th, phase: A.ph, gl, air: false }); nextFrame += DT; }
+    i++;
+  }
+  const res = { T, frames, gMax, gMaxPh, vBottom, stall, cda: cda(p.m), crr: cr };
+  if (stall) {
+    res.verdict = { cls: "bad", title: "Nevyjde na hranu odrazu", text: `Rýchlosť dôjde v úseku „${stall.ph}“ vo výške ${fmt(stall.z, 2)} m. Jazdec sa zastaví a zíde späť. Zvýš štart, skráť rovinku alebo zníž odraz.` };
+    return res;
+  }
+  // let - projektil s odporom vzduchu
+  const vLip = v;
+  let x = T.lipX, z = T.kh, vx = v * Math.cos(T.lipA), vz = v * Math.sin(T.lipA);
+  if (Math.abs(vx) < 1e-6) vx = 0;
+  const h = 1 / 600;
+  let zMax = z, xAtMax = x, tAir = 0, landed = null;
+  const thLaunch = T.lipA;
+  while (tAir < 6) {
+    const sp = Math.hypot(vx, vz);
+    vx += -k * sp * vx * h;
+    vz += (-g - k * sp * vz) * h;
+    x += vx * h; z += vz * h; tAir += h; t += h;
+    if (z > zMax) { zMax = z; xAtMax = x; }
+    const S = surfaceAfterLip(T, x);
+    if (z <= S.z && vz < 0) { landed = { x, z: S.z, vx, vz, S }; break; }
+    if (t >= nextFrame) {
+      frames.push({ t, x, z, v: Math.hypot(vx, vz), th: Math.atan2(vz, vx), phase: "let", gl: 0, air: true });
+      nextFrame += DT;
+    }
+  }
+  if (!landed) landed = { x, z, vx, vz, S: surfaceAfterLip(T, x) };
+  const nx = -Math.sin(landed.S.slope), nz = Math.cos(landed.S.slope);
+  const vn = Math.abs(landed.vx * nx + landed.vz * nz);
+  const eqDrop = vn * vn / (2 * g);
+  frames.push({ t, x: landed.x, z: landed.z, v: Math.hypot(landed.vx, landed.vz), th: landed.S.slope, phase: "dopad", gl: 0, air: false, impact: true });
+  // krátky dojazd pre plynulý koniec
+  const tEnd = t + 0.6;
+  let vr = Math.abs(landed.vx * Math.cos(landed.S.slope) + landed.vz * Math.sin(landed.S.slope));
+  let xr = landed.x;
+  while (t < tEnd) {
+    t += DT; xr += vr * Math.cos(landed.S.slope) * DT;
+    const S = surfaceAfterLip(T, xr);
+    frames.push({ t, x: xr, z: S.z, v: vr, th: S.slope, phase: "dojazd", gl: 0, air: false });
+  }
+  Object.assign(res, { vLip, zMax, xAtMax, airTime: tAir, landed, eqDrop, dist: landed.x - T.lipX });
+  // hodnotenie
+  const zone = landed.S.zone;
+  let cls, title, text;
+  const drop = `ekvivalent pádu ${fmt(eqDrop, 2)} m`;
+  if (zone === "hrana") {
+    cls = "bad"; title = "Dopad späť na hranu odrazu";
+    text = `Hrana s uhlom ${fmt(T.lipA * 180 / Math.PI, 0)}° vynesie jazdca skoro kolmo. Dopredu sa posunie len o ${fmt(res.dist, 2)} m a dopadne natvrdo na hranu (${drop}). Treba väčší rádius odrazu alebo nižší uhol hrany.`;
+  } else if (zone === "plošina") {
+    cls = eqDrop > 1.5 ? "bad" : "warn"; title = "Dopad na plošinu funboxu";
+    text = `Jazdec nepreletí plošinu ${fmt(p.deck, 1)} m, pristane na rovine vo výške ${fmt(T.kh, 1)} m (${drop}). Funguje to ako „drop“ na plošinu, nie ako skok do dopadu.`;
+  } else if (zone === "dopad") {
+    const pos = (landed.x - T.deckEnd) / (T.landEnd - T.deckEnd);
+    cls = eqDrop > 1.5 ? "bad" : eqDrop > 0.8 ? "warn" : "ok";
+    title = cls === "ok" ? "Dopad do dopadovej plochy" : "Dopad do dopadu, ale tvrdý";
+    text = `Pristane ${fmt(landed.x - T.deckEnd, 2)} m za plošinou (${fmt(pos * 100, 0)} % dĺžky dopadu), ${drop}.` + (pos > 0.7 ? " Je to blízko konca dopadu, rezerva je malá." : "");
+  } else {
+    cls = "bad"; title = "Preletí celý dopad";
+    text = `Dopadne ${fmt(landed.x - T.landEnd, 2)} m za koncom dopadu na rovinu (${drop}). Predĺž dopad alebo zníž rýchlosť.`;
+  }
+  res.verdict = { cls, title, text };
+  return res;
+}
+
+// --------------------------------------------------------------- UI
+const slidersEl = document.getElementById("sliders");
+const outputs = {}, hints = {};
+DEF.forEach(gp => {
+  const fs = document.createElement("fieldset");
+  fs.innerHTML = `<legend>${gp.grp}</legend>`;
+  gp.items.forEach(it => {
+    const d = document.createElement("div"); d.className = "ctl";
+    d.innerHTML = `<label for="in-${it.id}">${it.label}</label><output id="out-${it.id}" for="in-${it.id}"></output>
+      <input type="range" id="in-${it.id}" min="${it.min}" max="${it.max}" step="${it.step}" value="${it.val}">` +
+      (it.hint ? `<div class="hint" id="hint-${it.id}"></div>` : "");
+    fs.appendChild(d);
+    const inp = d.querySelector("input");
+    inp.addEventListener("input", () => { P[it.id] = +inp.value; refresh(); });
+    outputs[it.id] = d.querySelector("output");
+    if (it.hint) hints[it.id] = d.querySelector(".hint");
+  });
+  slidersEl.appendChild(fs);
+});
+const ALL = DEF.flatMap(gp => gp.items);
+function syncInputs() {
+  ALL.forEach(it => {
+    document.getElementById("in-" + it.id).value = P[it.id];
+    outputs[it.id].textContent = `${fmt(P[it.id], it.dec)} ${it.unit}`;
+    if (it.hint) hints[it.id].textContent = it.hint(P);
+  });
+}
+document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => {
+  Object.assign(P, PRESETS[b.dataset.preset]); refresh(true);
+}));
+
+let SIM = null, tNow = 0, playing = false, rate = 0.5, lastTs = 0;
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const playBtn = document.getElementById("play"), scrub = document.getElementById("scrub"), clock = document.getElementById("clock");
+
+function refresh() {
+  syncInputs();
+  SIM = simulate(P);
+  const err = document.getElementById("err");
+  if (SIM.error) { err.hidden = false; err.textContent = SIM.error; drawAll(); return; }
+  err.hidden = true;
+  renderStats();
+  tNow = reduce ? totalT() : 0;
+  if (!reduce) setPlaying(true);
+  drawAll();
+}
+const totalT = () => SIM && SIM.frames && SIM.frames.length ? SIM.frames[SIM.frames.length - 1].t : 0;
+function setPlaying(on) { playing = on; playBtn.textContent = on ? "❚❚ Pauza" : "▶ Spustiť"; lastTs = 0; if (on) requestAnimationFrame(loop); }
+playBtn.addEventListener("click", () => { if (!playing && tNow >= totalT() - 1e-3) tNow = 0; setPlaying(!playing); });
+document.getElementById("restart").addEventListener("click", () => { tNow = 0; setPlaying(true); });
+document.querySelectorAll("[data-rate]").forEach(b => b.addEventListener("click", () => {
+  rate = +b.dataset.rate; document.querySelectorAll("[data-rate]").forEach(x => x.setAttribute("aria-pressed", x === b));
+}));
+scrub.addEventListener("input", () => { setPlaying(false); tNow = totalT() * scrub.value / 1000; drawAll(); });
+
+function loop(ts) {
+  if (!playing) return;
+  if (lastTs) tNow += (ts - lastTs) / 1000 * rate;
+  lastTs = ts;
+  if (tNow >= totalT()) { tNow = totalT(); drawAll(); setPlaying(false); return; }
+  drawAll();
+  requestAnimationFrame(loop);
+}
+
+function frameAt(t) {
+  const F = SIM.frames; if (!F.length) return null;
+  let lo = 0, hi = F.length - 1;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (F[mid].t <= t) lo = mid; else hi = mid; }
+  const A = F[lo], B = F[hi];
+  const f = B.t > A.t ? Math.min(Math.max((t - A.t) / (B.t - A.t), 0), 1) : 0;
+  return { ...A, x: A.x + (B.x - A.x) * f, z: A.z + (B.z - A.z) * f, v: A.v + (B.v - A.v) * f };
+}
+
+function renderStats() {
+  const s = SIM, T = s.T, el = document.getElementById("stats");
+  const kmh = v => fmt(v * 3.6, 0);
+  const rows = [
+    ["Rýchlosť dole v rádiuse", `${fmt(s.vBottom, 1)}<small>m/s · ${kmh(s.vBottom)} km/h</small>`],
+    ["Max. preťaženie", `${fmt(s.gMax, 1)}<small>g · ${s.gMaxPh}</small>`],
+    ["Uhol hrany odrazu", `${fmt(T.lipA * 180 / Math.PI, 0)}<small>°</small>`],
+  ];
+  if (!s.stall) rows.push(
+    ["Rýchlosť na hrane", `${fmt(s.vLip, 1)}<small>m/s · ${kmh(s.vLip)} km/h</small>`, true],
+    ["Najvyšší bod kolies", `${fmt(s.zMax, 2)}<small>m nad terénom</small>`, true],
+    ["Výška nad hranou", `${fmt(s.zMax - T.kh, 2)}<small>m</small>`, true],
+    ["Čas vo vzduchu", `${fmt(s.airTime, 2)}<small>s</small>`],
+    ["Dĺžka skoku od hrany", `${fmt(s.dist, 2)}<small>m</small>`],
+    ["Ekvivalent pádu", `${fmt(s.eqDrop, 2)}<small>m</small>`]);
+  el.innerHTML = rows.map(r => `<div class="stat${r[2] ? " hl" : ""}"><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("");
+  const vd = document.getElementById("verdict");
+  vd.className = "verdict " + s.verdict.cls;
+  vd.innerHTML = `<strong>${s.verdict.title}</strong><p>${s.verdict.text}</p>`;
+}
+
+// --------------------------------------------------------------- kreslenie
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function fitCanvas(c) {
+  const dpr = window.devicePixelRatio || 1, r = c.getBoundingClientRect();
+  if (c.width !== Math.round(r.width * dpr) || c.height !== Math.round(r.height * dpr)) { c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); }
+  const ctx = c.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w: r.width, h: r.height };
+}
+
+function drawScene() {
+  const c = document.getElementById("scene"); const { ctx, w, h } = fitCanvas(c);
+  const col = { sky: css("--sky"), ink: css("--ink"), muted: css("--muted"), line: css("--line"), wood: css("--wood"), woodD: css("--wood-dark"), steel: css("--steel"), acc: css("--accent"), ok: css("--ok"), warn: css("--warn"), bad: css("--bad"), panel: css("--panel") };
+  ctx.fillStyle = col.sky; ctx.fillRect(0, 0, w, h);
+  if (!SIM || SIM.error) { ctx.fillStyle = col.bad; ctx.font = "600 15px " + css("--f-body"); ctx.fillText(SIM ? SIM.error : "", 16, 30); return; }
+  const T = SIM.T;
+  const zTop = Math.max(T.H + 1.3, SIM.zMax ? SIM.zMax + 0.8 : 0);
+  const xMin = -3.2, xMax = T.landEnd + 1.5;
+  const pad = 22;
+  const sc = Math.min((w - 2 * pad) / (xMax - xMin), (h - 2 * pad - 14) / (zTop + 0.6));
+  const X = x => pad + (x - xMin) * sc + Math.max(0, (w - 2 * pad - (xMax - xMin) * sc) / 2);
+  const Z = z => h - pad - 14 - z * sc;
+
+  // výškové linky
+  ctx.font = "500 11px " + css("--f-mono"); ctx.textBaseline = "middle";
+  for (let zz = 1; zz <= Math.floor(zTop); zz++) {
+    ctx.strokeStyle = col.line; ctx.lineWidth = 1; ctx.setLineDash([3, 5]);
+    ctx.beginPath(); ctx.moveTo(X(xMin), Z(zz)); ctx.lineTo(X(xMax), Z(zz)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = col.muted; ctx.fillText(`${zz} m`, X(xMin) + 2, Z(zz) - 7);
+  }
+  // terén
+  ctx.fillStyle = col.line; ctx.fillRect(X(xMin), Z(0), X(xMax) - X(xMin), 14);
+  ctx.strokeStyle = col.muted; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(X(xMin), Z(0)); ctx.lineTo(X(xMax), Z(0)); ctx.stroke();
+
+  // kontajner + plošina
+  const zk = Math.max(T.H - 1.2, 0);
+  ctx.fillStyle = col.steel; ctx.globalAlpha = 0.35; ctx.fillRect(X(-3.2), Z(zk), X(0) - X(-3.2), Z(0) - Z(zk)); ctx.globalAlpha = 1;
+  ctx.strokeStyle = col.steel; ctx.lineWidth = 1;
+  for (let x = -3.1; x < 0; x += 0.25) { ctx.beginPath(); ctx.moveTo(X(x), Z(zk)); ctx.lineTo(X(x), Z(0)); ctx.stroke(); }
+  ctx.fillStyle = col.muted; ctx.font = "600 11px " + css("--f-body"); ctx.textBaseline = "alphabetic";
+  if (zk > 0.6) ctx.fillText("kontajner", X(-3.0), Z(zk) + 16);
+  ctx.strokeStyle = col.steel; ctx.lineWidth = 1.2; ctx.strokeRect(X(-1.2), Z(T.H), X(0) - X(-1.2), Z(zk) - Z(T.H));
+  ctx.beginPath(); ctx.moveTo(X(-1.2), Z(zk)); ctx.lineTo(X(0), Z(T.H)); ctx.stroke();
+  // zábradlie
+  ctx.beginPath(); ctx.moveTo(X(-1.2), Z(T.H)); ctx.lineTo(X(-1.2), Z(T.H + 1.1)); ctx.lineTo(X(-0.05), Z(T.H + 1.1)); ctx.lineTo(X(-0.05), Z(T.H)); ctx.stroke();
+
+  // rozbehovka + funbox (výplň)
+  const P0 = T.pts;
+  ctx.beginPath(); ctx.moveTo(X(-1.2), Z(T.H));
+  for (let i = 0; i < P0.length; i += 3) { const q = P0[i]; if (q.ph === "rovinka") break; ctx.lineTo(X(q.x), Z(q.z)); }
+  ctx.lineTo(X(T.xe), Z(0)); ctx.lineTo(X(0), Z(0)); ctx.lineTo(X(0), Z(T.H)); ctx.closePath();
+  ctx.fillStyle = col.wood; ctx.globalAlpha = 0.28; ctx.fill(); ctx.globalAlpha = 1;
+  ctx.beginPath();
+  const kick = P0.filter(q => q.ph === "odraz");
+  ctx.moveTo(X(T.ks), Z(0)); kick.forEach((q, i) => { if (i % 3 === 0) ctx.lineTo(X(q.x), Z(q.z)); });
+  ctx.lineTo(X(T.lipX), Z(T.kh)); ctx.lineTo(X(T.deckEnd), Z(T.kh)); ctx.lineTo(X(T.landEnd), Z(0)); ctx.closePath();
+  ctx.globalAlpha = 0.28; ctx.fill(); ctx.globalAlpha = 1;
+  // jazdná plocha
+  ctx.strokeStyle = col.woodD; ctx.lineWidth = 3.5; ctx.lineJoin = "round";
+  ctx.beginPath(); ctx.moveTo(X(-1.2), Z(T.H)); P0.forEach((q, i) => { if (i % 2 === 0) ctx.lineTo(X(q.x), Z(q.z)); });
+  ctx.lineTo(X(T.lipX), Z(T.kh)); ctx.lineTo(X(T.deckEnd), Z(T.kh)); ctx.lineTo(X(T.landEnd), Z(0)); ctx.stroke();
+  // zóny dopadu
+  ctx.lineWidth = 5;
+  const zoneLine = (x0, z0, x1, z1, c) => { ctx.strokeStyle = c; ctx.globalAlpha = 0.55; ctx.beginPath(); ctx.moveTo(X(x0), Z(z0) + 4); ctx.lineTo(X(x1), Z(z1) + 4); ctx.stroke(); ctx.globalAlpha = 1; };
+  zoneLine(T.lipX, T.kh, T.deckEnd, T.kh, col.bad);
+  const sweet = T.deckEnd + (T.landEnd - T.deckEnd) * 0.7;
+  zoneLine(T.deckEnd, T.kh, sweet, T.kh * 0.3, col.ok);
+  zoneLine(sweet, T.kh * 0.3, T.landEnd, 0, col.warn);
+
+  // popisy kót
+  ctx.fillStyle = col.muted; ctx.font = "500 11px " + css("--f-mono"); ctx.textAlign = "center";
+  ctx.fillText(`${fmt(T.H, 1)} m`, X(-0.6), Z(T.H) - 6 - 1.1 * sc);
+  ctx.fillText(`hrana ${fmt(T.lipA * 180 / Math.PI, 0)}° · ${fmt(T.kh, 1)} m`, X(T.lipX), Z(T.kh) + 16 + 0 * sc);
+  ctx.fillText(`plošina ${fmt(P.deck, 1)} m`, X((T.lipX + T.deckEnd) / 2), Z(T.kh) - 8);
+  ctx.fillText(`dopad ${fmt(P.land, 1)} m`, X((T.deckEnd + T.landEnd) / 2) + 22, Z(T.kh / 2) + 4);
+  if (P.gap > 0.5) ctx.fillText(`rovinka ${fmt(P.gap, 1)} m`, X((T.xe + T.ks) / 2), Z(0) + 12);
+  ctx.textAlign = "left";
+
+  // predpovedaná dráha letu
+  const air = SIM.frames.filter(f => f.air);
+  if (air.length) {
+    ctx.strokeStyle = col.acc; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]); ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.moveTo(X(T.lipX), Z(T.kh)); air.forEach(f => ctx.lineTo(X(f.x), Z(f.z)));
+    if (SIM.landed) ctx.lineTo(X(SIM.landed.x), Z(SIM.landed.z));
+    ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    // vrchol
+    ctx.fillStyle = col.acc; ctx.beginPath(); ctx.arc(X(SIM.xAtMax), Z(SIM.zMax), 3.5, 0, 7); ctx.fill();
+    ctx.font = "600 12px " + css("--f-mono");
+    ctx.fillText(`max ${fmt(SIM.zMax, 2)} m (+${fmt(SIM.zMax - T.kh, 2)} nad hranou)`, X(SIM.xAtMax) + 8, Z(SIM.zMax) - 6);
+    ctx.strokeStyle = col.acc; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+    ctx.beginPath(); ctx.moveTo(X(SIM.xAtMax), Z(SIM.zMax)); ctx.lineTo(X(SIM.xAtMax), Z(T.kh)); ctx.stroke(); ctx.setLineDash([]);
+  }
+  if (SIM.landed) {
+    const v = SIM.verdict.cls, c2 = v === "ok" ? col.ok : v === "warn" ? col.warn : col.bad;
+    ctx.strokeStyle = c2; ctx.lineWidth = 2.5;
+    const lx = X(SIM.landed.x), lz = Z(SIM.landed.z);
+    ctx.beginPath(); ctx.moveTo(lx - 6, lz - 6); ctx.lineTo(lx + 6, lz + 6); ctx.moveTo(lx + 6, lz - 6); ctx.lineTo(lx - 6, lz + 6); ctx.stroke();
+  }
+  if (SIM.stall) {
+    ctx.fillStyle = col.bad; ctx.beginPath(); ctx.arc(X(SIM.stall.x), Z(SIM.stall.z), 5, 0, 7); ctx.fill();
+  }
+
+  // jazdec
+  const f = frameAt(tNow); if (!f) return;
+  const fs = SIM.frames;
+  // stopa
+  ctx.strokeStyle = col.acc; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.85; ctx.beginPath();
+  let started = false;
+  for (const q of fs) { if (q.t > tNow) break; if (!started) { ctx.moveTo(X(q.x), Z(q.z)); started = true; } else ctx.lineTo(X(q.x), Z(q.z)); }
+  ctx.lineTo(X(f.x), Z(f.z)); ctx.stroke(); ctx.globalAlpha = 1;
+  drawRider(ctx, X(f.x), Z(f.z), riderAngle(f, T), sc, col);
+  // tachometer pri jazdcovi
+  ctx.fillStyle = col.ink; ctx.font = "600 12px " + css("--f-mono");
+  const lbl = `${fmt(f.v * 3.6, 0)} km/h · ${fmt(f.z, 2)} m`;
+  const tx = Math.min(X(f.x) + 14, w - ctx.measureText(lbl).width - 8);
+  ctx.fillText(lbl, tx, Z(f.z) - 1.9 * sc - 4);
+  ctx.fillStyle = col.muted; ctx.font = "500 11px " + css("--f-body");
+  ctx.fillText(f.phase, tx, Z(f.z) - 1.9 * sc + 10);
+}
+
+function riderAngle(f, T) {
+  if (!f.air) return f.th;
+  // vo vzduchu: plynulé natočenie z uhla hrany do sklonu dopadu
+  const a0 = T.lipA, a1 = -Math.atan2(T.kh, T.landEnd - T.deckEnd);
+  const air = SIM.frames.filter(q => q.air);
+  const t0 = air[0].t, t1 = air[air.length - 1].t;
+  const u = t1 > t0 ? (f.t - t0) / (t1 - t0) : 1;
+  const s = u * u * (3 - 2 * u);
+  return a0 + (a1 - a0) * s;
+}
+
+function drawRider(ctx, x, y, ang, sc, col) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(-ang);
+  const r = 0.254 * sc, wb = 0.98 * sc;               // 20" koleso, rázvor ~0,98 m
+  ctx.lineWidth = Math.max(1.5, 0.035 * sc); ctx.strokeStyle = col.ink; ctx.fillStyle = col.panel;
+  const wx = [-wb / 2, wb / 2];
+  wx.forEach(cx => { ctx.beginPath(); ctx.arc(cx, -r, r, 0, 7); ctx.fill(); ctx.stroke(); });
+  // rám
+  ctx.strokeStyle = col.acc; ctx.lineWidth = Math.max(2, 0.05 * sc);
+  const bb = [-0.05 * sc, -r - 0.02 * sc], head = [wb / 2 - 0.12 * sc, -r - 0.38 * sc], seat = [-0.2 * sc, -r - 0.32 * sc];
+  ctx.beginPath(); ctx.moveTo(wx[0], -r); ctx.lineTo(bb[0], bb[1]); ctx.lineTo(head[0], head[1]); ctx.lineTo(wx[1], -r);
+  ctx.moveTo(bb[0], bb[1]); ctx.lineTo(seat[0], seat[1]); ctx.lineTo(wx[0], -r);
+  ctx.moveTo(head[0], head[1]); ctx.lineTo(head[0] + 0.02 * sc, head[1] - 0.2 * sc); ctx.stroke();
+  // jazdec v postoji
+  ctx.strokeStyle = col.ink; ctx.lineWidth = Math.max(2.2, 0.07 * sc); ctx.lineCap = "round";
+  const hip = [-0.12 * sc, -r - 0.85 * sc], sh = [0.18 * sc, -r - 1.32 * sc], hand = [head[0] + 0.02 * sc, head[1] - 0.2 * sc];
+  ctx.beginPath(); ctx.moveTo(bb[0] - 0.1 * sc, bb[1]); ctx.lineTo(-0.24 * sc, -r - 0.42 * sc); ctx.lineTo(hip[0], hip[1]);
+  ctx.moveTo(bb[0] + 0.12 * sc, bb[1]); ctx.lineTo(0.05 * sc, -r - 0.45 * sc); ctx.lineTo(hip[0], hip[1]);
+  ctx.lineTo(sh[0], sh[1]); ctx.lineTo(hand[0], hand[1]); ctx.stroke();
+  ctx.fillStyle = col.ink; ctx.beginPath(); ctx.arc(sh[0] + 0.1 * sc, sh[1] - 0.16 * sc, 0.12 * sc, 0, 7); ctx.fill();
+  ctx.restore();
+}
+
+function drawChart(id, key, unit, conv, color, labelId, dec) {
+  const c = document.getElementById(id); const { ctx, w, h } = fitCanvas(c);
+  ctx.clearRect(0, 0, w, h);
+  if (!SIM || SIM.error) return;
+  const F = SIM.frames, tMax = totalT() || 1;
+  const vals = F.map(f => conv(f));
+  const vMax = Math.max(...vals, 0.1) * 1.12;
+  const L = 38, R = 10, Tp = 8, B = 20;
+  const X = t => L + (t / tMax) * (w - L - R), Y = v => h - B - (v / vMax) * (h - Tp - B);
+  ctx.font = "500 10.5px " + css("--f-mono"); ctx.fillStyle = css("--muted"); ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
+  const step = niceStep(vMax / 3);
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let v = 0; v <= vMax; v += step) { ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); ctx.fillText(fmt(v, step < 1 ? 1 : 0), L - 5, Y(v)); }
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  const ts = niceStep(tMax / 6);
+  for (let t = 0; t <= tMax + 1e-6; t += ts) ctx.fillText(fmt(t, ts < 1 ? 1 : 0) + " s", X(t), h - B + 5);
+  // pozadie fázy letu
+  const air = F.filter(f => f.air);
+  if (air.length) { ctx.fillStyle = css("--accent"); ctx.globalAlpha = 0.08; ctx.fillRect(X(air[0].t), Tp, X(air[air.length - 1].t) - X(air[0].t), h - Tp - B); ctx.globalAlpha = 1; }
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+  F.forEach((f, i) => { const x = X(f.t), y = Y(vals[i]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+  // kurzor
+  const fNow = frameAt(tNow);
+  if (fNow) {
+    const v = conv(fNow);
+    ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(tNow), Tp); ctx.lineTo(X(tNow), h - B); ctx.stroke();
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(X(tNow), Y(v), 4, 0, 7); ctx.fill();
+    document.getElementById(labelId).textContent = `${fmt(v, dec)} ${unit}`;
+  }
+}
+function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(x))); const n = x / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; }
+
+function drawAll() {
+  drawScene();
+  const tm = totalT();
+  scrub.value = tm ? Math.round(tNow / tm * 1000) : 0;
+  clock.textContent = `${fmt(tNow, 2)} s`;
+  drawChart("chV", "v", "km/h", f => f.v * 3.6, css("--accent"), "cv", 0);
+  drawChart("chH", "z", "m", f => f.z, css("--wood-dark"), "ch", 2);
+  drawChart("chG", "g", "g", f => f.gl, css("--bad"), "cg", 1);
+}
+
+window.addEventListener("resize", () => drawAll());
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => drawAll());
+new MutationObserver(() => drawAll()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => drawAll());
+refresh();
+})();
+</script>
