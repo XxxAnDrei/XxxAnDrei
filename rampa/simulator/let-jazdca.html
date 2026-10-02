@@ -148,36 +148,37 @@ const g = 9.81, RHO = 1.2;
 // --------------------------------------------------------------- parametre
 const DEF = [
   { grp: "Rozbehovka", items: [
-    { id: "H", label: "Výška štartu (plošina)", min: 2, max: 6, step: 0.1, val: 4.2, unit: "m", dec: 1 },
-    { id: "ang", label: "Sklon zjazdu", min: 30, max: 55, step: 1, val: 55, unit: "°", dec: 0 },
-    { id: "Rt", label: "Horný rádius", min: 0.3, max: 3, step: 0.1, val: 1.0, unit: "m", dec: 1 },
-    { id: "Rb", label: "Spodný rádius", min: 2, max: 8, step: 0.1, val: 4.0, unit: "m", dec: 1 },
-    { id: "gap", label: "Rovinka pred funboxom", min: 0, max: 15, step: 0.5, val: 3, unit: "m", dec: 1 },
+    { id: "H", label: "Výška štartu (plošina)", min: 1, max: 10, step: 0.1, val: 4.2, unit: "m", dec: 1 },
+    { id: "ang", label: "Sklon zjazdu", min: 15, max: 70, step: 1, val: 55, unit: "°", dec: 0,
+      hint: (p) => p.ang > 55 ? "nad 55° – mimo výkresu oceľovej konštrukcie (tá je navrhnutá na max. 55°)" : "výkres konštrukcie platí do 55°" },
+    { id: "Rt", label: "Horný rádius", min: 0.1, max: 6, step: 0.1, val: 1.0, unit: "m", dec: 1 },
+    { id: "Rb", label: "Spodný rádius", min: 1, max: 15, step: 0.1, val: 4.0, unit: "m", dec: 1 },
+    { id: "gap", label: "Rovinka pred funboxom", min: 0, max: 30, step: 0.5, val: 3, unit: "m", dec: 1 },
   ]},
   { grp: "Funbox", items: [
-    { id: "kh", label: "Výška funboxu (hrana odrazu = plošina)", min: 0.5, max: 4, step: 0.1, val: 2.2, unit: "m", dec: 1,
+    { id: "kh", label: "Výška funboxu (hrana odrazu = plošina)", min: 0.3, max: 6, step: 0.1, val: 2.2, unit: "m", dec: 1,
       hint: (p) => `dopad klesá z ${fmt(p.kh, 1)} m na terén` },
-    { id: "kR", label: "Rádius odrazu", min: 1, max: 8, step: 0.1, val: 2.4, unit: "m", dec: 1,
+    { id: "kR", label: "Rádius odrazu", min: 0.5, max: 15, step: 0.1, val: 2.4, unit: "m", dec: 1,
       hint: (p) => { const a = lipAngle(p.kR, p.kh); return `uhol hrany ${a.toFixed(0)}° · pre hranu 60° treba R ${(p.kh / (1 - Math.cos(Math.PI / 3))).toFixed(1)} m`; } },
-    { id: "deck", label: "Dĺžka plošiny", min: 0, max: 4, step: 0.1, val: 1.7, unit: "m", dec: 1 },
-    { id: "land", label: "Dĺžka dopadu", min: 2, max: 8, step: 0.1, val: 4.0, unit: "m", dec: 1,
+    { id: "deck", label: "Dĺžka plošiny", min: 0, max: 8, step: 0.1, val: 1.7, unit: "m", dec: 1 },
+    { id: "land", label: "Dĺžka dopadu", min: 1, max: 15, step: 0.1, val: 4.0, unit: "m", dec: 1,
       hint: (p) => `sklon dopadu ${(Math.atan2(p.kh, p.land) * 180 / Math.PI).toFixed(0)}°` },
   ]},
   { grp: "Jazdec – 20\" BMX", items: [
-    { id: "m", label: "Hmotnosť jazdca s bicyklom", min: 20, max: 100, step: 1, val: 60, unit: "kg", dec: 0,
+    { id: "m", label: "Hmotnosť jazdca s bicyklom", min: 15, max: 130, step: 1, val: 60, unit: "kg", dec: 0,
       hint: (p) => `plocha čelného odporu CdA ≈ ${cda(p.m).toFixed(2)} m²` },
-    { id: "bar", label: "Tlak v pneumatikách", min: 2, max: 8, step: 0.5, val: 6, unit: "bar", dec: 1,
+    { id: "bar", label: "Tlak v pneumatikách", min: 1, max: 10, step: 0.5, val: 6, unit: "bar", dec: 1,
       hint: (p) => `valivý odpor Crr ≈ ${crr(p.bar).toFixed(4)} (preglejka)` },
-    { id: "v0", label: "Rozjazd zo štartu (odraz nohou)", min: 0, max: 3, step: 0.1, val: 0.5, unit: "m/s", dec: 1 },
+    { id: "v0", label: "Rozjazd zo štartu (odraz nohou)", min: 0.2, max: 8, step: 0.1, val: 0.5, unit: "m/s", dec: 1 },
   ]},
   { grp: "Pedálovanie na rovinke", items: [
     { id: "ped", label: "Pedáluje na rovinke", toggle: true, val: 1 },
-    { id: "zubP", label: "Prevodník vpredu", min: 20, max: 36, step: 1, val: 28, unit: "z", dec: 0,
+    { id: "zubP", label: "Prevodník vpredu", min: 18, max: 50, step: 1, val: 28, unit: "z", dec: 0,
       hint: (p) => `prevod ${p.zubP}/${p.zubN} = ${fmt(p.zubP / p.zubN, 2)} · ${fmt(devel(p), 2)} m na otáčku kľúk` },
-    { id: "zubN", label: "Pastorok na náboji", min: 8, max: 14, step: 1, val: 9, unit: "z", dec: 0 },
-    { id: "Pw", label: "Max. výkon jazdca (šprint)", min: 100, max: 1300, step: 25, val: 700, unit: "W", dec: 0,
+    { id: "zubN", label: "Pastorok na náboji", min: 8, max: 25, step: 1, val: 9, unit: "z", dec: 0 },
+    { id: "Pw", label: "Max. výkon jazdca (šprint)", min: 50, max: 2000, step: 25, val: 700, unit: "W", dec: 0,
       hint: () => "orientačne: dieťa 250–400 W, teenager 600–1000 W" },
-    { id: "cMax", label: "Max. kadencia", min: 110, max: 220, step: 5, val: 170, unit: "ot/min", dec: 0,
+    { id: "cMax", label: "Max. kadencia", min: 80, max: 250, step: 5, val: 170, unit: "ot/min", dec: 0,
       hint: (p) => `nad ${fmt(p.cMax / 60 * devel(p) * 3.6, 0)} km/h už nohy nestíhajú a jazdec nezrýchli` },
   ]},
 ];
@@ -378,7 +379,13 @@ function refresh() {
   syncInputs();
   SIM = simulate(P);
   const err = document.getElementById("err");
-  if (SIM.error) { err.hidden = false; err.textContent = SIM.error; drawAll(); return; }
+  if (SIM.error) {
+    err.hidden = false; err.textContent = SIM.error;
+    document.getElementById("stats").innerHTML = "";
+    const vd = document.getElementById("verdict"); vd.className = "verdict bad";
+    vd.innerHTML = `<strong>Trať sa nedá postaviť</strong><p>${SIM.error}</p>`;
+    setPlaying(false); drawAll(); return;
+  }
   err.hidden = true;
   renderStats();
   tNow = reduce ? totalT() : 0;
@@ -457,7 +464,7 @@ function drawScene() {
   if (!SIM || SIM.error) { ctx.fillStyle = col.bad; ctx.font = "600 15px " + css("--f-body"); ctx.fillText(SIM ? SIM.error : "", 16, 30); return; }
   const T = SIM.T;
   const zTop = Math.max(T.H + 1.3, SIM.zMax ? SIM.zMax + 0.8 : 0);
-  const xMin = -3.2, xMax = T.landEnd + 1.5;
+  const xMin = -3.2, xMax = Math.max(T.landEnd, SIM.landed ? SIM.landed.x : 0) + 1.5;
   const pad = 22;
   const sc = Math.min((w - 2 * pad) / (xMax - xMin), (h - 2 * pad - 14) / (zTop + 0.6));
   const X = x => pad + (x - xMin) * sc + Math.max(0, (w - 2 * pad - (xMax - xMin) * sc) / 2);
@@ -528,7 +535,8 @@ function drawScene() {
     // vrchol
     ctx.fillStyle = col.acc; ctx.beginPath(); ctx.arc(X(SIM.xAtMax), Z(SIM.zMax), 3.5, 0, 7); ctx.fill();
     ctx.font = "600 12px " + css("--f-mono");
-    ctx.fillText(`max ${fmt(SIM.zMax, 2)} m (+${fmt(SIM.zMax - T.kh, 2)} nad hranou)`, X(SIM.xAtMax) + 8, Z(SIM.zMax) - 6);
+    const apexLbl = `max ${fmt(SIM.zMax, 2)} m (+${fmt(SIM.zMax - T.kh, 2)} nad hranou)`;
+    ctx.fillText(apexLbl, Math.min(X(SIM.xAtMax) + 8, w - ctx.measureText(apexLbl).width - 8), Z(SIM.zMax) - 6);
     ctx.strokeStyle = col.acc; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
     ctx.beginPath(); ctx.moveTo(X(SIM.xAtMax), Z(SIM.zMax)); ctx.lineTo(X(SIM.xAtMax), Z(T.kh)); ctx.stroke(); ctx.setLineDash([]);
   }
