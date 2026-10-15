@@ -7,29 +7,35 @@
     // aktivačný odkaz; až po jeho potvrdení chodia odpovede. Po aktivácii sa dá
     // e-mail v URL nahradiť náhodným reťazcom, ktorý FormSubmit pošle v tom e-maile.
     endpoint: 'https://formsubmit.co/ajax/micek.andrej1@gmail.com',
-    storageKey: 'datebloom-v2',
-    timeZone: 'Europe/Bratislava',
+    storageKey: 'datebloom-gc-v1',
+    // Deň aj miesto sú dané. Ona vyberá čas a jedlo.
+    date: '2026-10-15',
+    place: 'Gran Canaria',
+    placeIn: 'na Gran Canarii',
+    timeZone: 'Atlantic/Canary',
+    sunset: '19:33', // západ slnka na Gran Canarii 15. 10. 2026, miestny čas (WEST)
     totalSteps: 6,
-    // o koľko minút dopredu najskôr môže byť rande, ak je vybraný dnešok
+    // o koľko minút dopredu najskôr môže byť rande v ten istý deň
     leadMinutes: 60,
-    maxDaysAhead: 365,
-    dateDurationHours: 2,
+    // keď už bežné časy prešli, ponúkne sa „čo najskôr“ aspoň o toľkoto minút
+    asapMinutes: 30,
+    dateDurationHours: 3,
   };
 
   const TIME_GROUPS = [
     { label: 'Obed', from: '11:00', to: '14:00' },
     { label: 'Popoludnie', from: '14:30', to: '17:30' },
-    { label: 'Večer', from: '18:00', to: '22:00' },
+    { label: 'Večer', from: '18:00', to: '22:30' },
   ];
 
   const FOODS = [
+    { id: 'seafood', emoji: '🦐', name: 'Morské plody' },
+    { id: 'fish', emoji: '🐟', name: 'Čerstvá ryba' },
+    { id: 'tapas', emoji: '🫒', name: 'Tapas' },
+    { id: 'paella', emoji: '🥘', name: 'Paella' },
+    { id: 'papas', emoji: '🥔', name: 'Papas arrugadas' },
     { id: 'pizza', emoji: '🍕', name: 'Pizza' },
-    { id: 'sushi', emoji: '🍣', name: 'Sushi' },
     { id: 'burger', emoji: '🍔', name: 'Burger' },
-    { id: 'pasta', emoji: '🍝', name: 'Cestoviny' },
-    { id: 'tacos', emoji: '🌮', name: 'Tacos' },
-    { id: 'ramen', emoji: '🍜', name: 'Ramen' },
-    { id: 'steak', emoji: '🥩', name: 'Steak' },
     { id: 'surprise', emoji: '🎲', name: 'Prekvap ma' },
   ];
 
@@ -53,11 +59,9 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rand = (min, max) => min + Math.random() * (max - min);
   const pad2 = (n) => String(n).padStart(2, '0');
-  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const toISO = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   const fromISO = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
-  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
   const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
   const todayISO = () => toISO(new Date());
   const toMinutes = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
@@ -68,15 +72,9 @@
   const fmtLong = new Intl.DateTimeFormat('sk-SK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const fmtNoYear = new Intl.DateTimeFormat('sk-SK', { weekday: 'long', day: 'numeric', month: 'long' });
   const fmtDayMonth = new Intl.DateTimeFormat('sk-SK', { day: 'numeric', month: 'long' });
-  const fmtMonth = new Intl.DateTimeFormat('sk-SK', { month: 'long', year: 'numeric' });
-  const fmtWeekday = new Intl.DateTimeFormat('sk-SK', { weekday: 'long' });
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const longDate = (iso) => fmtLong.format(fromISO(iso));
   const shortDate = (iso) => { const d = fromISO(iso); return `${d.getDate()}. ${d.getMonth() + 1}.`; };
-  const friendlyDate = (iso) => {
-    const d = fromISO(iso);
-    return d.getFullYear() === new Date().getFullYear() ? fmtNoYear.format(d) : fmtLong.format(d);
-  };
   // „dnes“, „zajtra“, „v sobotu“, „vo štvrtok“, alebo „3. októbra“
   const ON_DAY = ['v nedeľu', 'v pondelok', 'v utorok', 'v stredu', 'vo štvrtok', 'v piatok', 'v sobotu'];
   function whenPhrase(iso) {
@@ -105,7 +103,7 @@
 
   // ---------------------------------------------------------------- state
   const defaults = () => ({
-    step: 1, date: null, time: null, food: null,
+    step: 1, date: CONFIG.date, time: null, food: null,
     noAttempts: 0, yesAt: null, thinkMs: null, submitted: false, submittedAt: null, paid: false,
   });
 
@@ -127,22 +125,30 @@
   }
 
   const state = load();
+  state.date = CONFIG.date;
   const openedAt = Date.now();
 
   // ---------------------------------------------------------------- availability
-  function slotOk(dateISO, hhmm) {
-    if (!hhmm) return false;
-    if (!dateISO || dateISO !== todayISO()) return true;
-    return toMinutes(hhmm) >= nowMinutes() + CONFIG.leadMinutes;
+  // Všetko v miestnom čase zariadenia (na Gran Canarii = kanársky čas).
+  const datePassed = () => CONFIG.date < todayISO();
+  const isToday = () => CONFIG.date === todayISO();
+  function slotOk(hhmm) {
+    if (!hhmm || datePassed()) return false;
+    if (!isToday()) return true;
+    const lead = ALL_TIMES.includes(hhmm) ? CONFIG.leadMinutes : CONFIG.asapMinutes;
+    return toMinutes(hhmm) >= nowMinutes() + lead;
   }
-  function dayOk(dateISO) {
-    const d = fromISO(dateISO);
-    const today = startOfToday();
-    if (d < today || d > addDays(today, CONFIG.maxDaysAhead)) return false;
-    if (dateISO === todayISO()) return ALL_TIMES.some((t) => slotOk(dateISO, t));
-    return true;
+  // Ak už všetky bežné časy prešli, ponúkne jeden „čo najskôr“ (zaokrúhlený na 15 min).
+  function asapTime() {
+    if (!isToday() || ALL_TIMES.some((t) => slotOk(t))) return null;
+    const t = Math.ceil((nowMinutes() + CONFIG.asapMinutes) / 15) * 15;
+    return t <= 23 * 60 + 30 ? fromMinutes(t) : null;
   }
-  const whenOk = () => !!(state.date && dayOk(state.date) && slotOk(state.date, state.time));
+  const noTimeLeft = () => datePassed() || (isToday() && !ALL_TIMES.some((t) => slotOk(t)) && !asapTime());
+  const whenOk = () => slotOk(state.time);
+  // slot, ktorý je najbližšie k západu slnka
+  const SUNSET_SLOT = ALL_TIMES.reduce((best, t) => (
+    Math.abs(toMinutes(t) - toMinutes(CONFIG.sunset)) < Math.abs(toMinutes(best) - toMinutes(CONFIG.sunset)) ? t : best));
 
   // Odoslané: už len kroky 5–6. Inak sa nedá preskočiť nič, čo ešte nie je vyplnené.
   function clampStep(step) {
@@ -388,12 +394,9 @@
     return { reset };
   })();
 
-  // ---------------------------------------------------------------- 3: kedy (deň + čas)
-  const dateField = $('#dateField');
-  const datePop = $('#datePop');
+  // ---------------------------------------------------------------- 3: čas (deň je daný)
   const timeSelect = $('#timeSelect');
   const whenError = $('#whenError');
-  let viewMonth = null; // prvý deň zobrazeného mesiaca
 
   function showWhenError(msg) {
     whenError.textContent = msg || '';
@@ -401,125 +404,38 @@
   }
 
   function renderWhen() {
-    const dv = $('#dateValue');
-    const hasDate = state.date && dayOk(state.date);
-    if (!hasDate) state.date = null;
-    dv.textContent = hasDate ? friendlyDate(state.date) : 'vyber deň';
-    dv.classList.toggle('is-empty', !hasDate);
+    $('#dateValue').textContent = cap(fmtNoYear.format(fromISO(CONFIG.date)));
+    $('#whenLead').textContent = `Ty vyber čas, zvyšok nechaj na mňa. Slnko ${isToday() ? 'dnes ' : ''}zapadá o ${CONFIG.sunset} 🌅`;
 
-    if (state.time && !slotOk(state.date, state.time)) state.time = null;
+    if (state.time && !slotOk(state.time)) state.time = null;
+    const label = (t) => (t === SUNSET_SLOT ? `${t} · západ slnka 🌅` : t);
     let html = `<option value="" disabled ${state.time ? '' : 'selected'}>vyber čas</option>`;
     TIME_SLOTS.forEach((g) => {
-      const opts = g.times.filter((t) => slotOk(state.date, t));
+      const opts = g.times.filter((t) => slotOk(t));
       if (!opts.length) return; // dnes už prešlo
-      html += `<optgroup label="${g.label}">${opts.map((t) => `<option value="${t}" ${state.time === t ? 'selected' : ''}>${t}</option>`).join('')}</optgroup>`;
+      html += `<optgroup label="${g.label}">${opts.map((t) => `<option value="${t}" ${state.time === t ? 'selected' : ''}>${label(t)}</option>`).join('')}</optgroup>`;
     });
+    const asap = asapTime();
+    if (asap) html += `<option value="${asap}" ${state.time === asap ? 'selected' : ''}>čo najskôr (${asap}) ⚡</option>`;
     timeSelect.innerHTML = html;
     timeSelect.classList.toggle('is-empty', !state.time);
+    timeSelect.disabled = noTimeLeft();
+
+    if (datePassed()) showWhenError('Ups, toto rande už malo byť. Napíš mi a vymyslíme nový termín 💌');
+    else if (noTimeLeft()) showWhenError('Na dnes je už naozaj neskoro 😅 Napíš mi a dohodneme sa inak.');
 
     $('#next3').disabled = !whenOk();
     save();
-  }
-
-  function setPop(open) {
-    datePop.hidden = !open;
-    dateField.setAttribute('aria-expanded', String(open));
-    if (open) {
-      const base = state.date ? fromISO(state.date) : startOfToday();
-      viewMonth = new Date(base.getFullYear(), base.getMonth(), 1);
-      renderQuickDates();
-      renderCalendar();
-    }
-  }
-  dateField.addEventListener('click', () => setPop(datePop.hidden));
-  document.addEventListener('click', (e) => {
-    // e.target môže byť už odpojený (kalendár sa pri listovaní prekreslí)
-    if (!datePop.hidden && e.target.isConnected && !e.target.closest('.field-wrap')) setPop(false);
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !datePop.hidden) { setPop(false); dateField.focus(); }
-  });
-
-  function quickDateOptions() {
-    const today = startOfToday();
-    const out = [];
-    const push = (d, label) => {
-      const iso = toISO(d);
-      if (!dayOk(iso) || out.some((o) => o.iso === iso)) return;
-      out.push({ iso, label });
-    };
-    push(today, 'Dnes');
-    push(addDays(today, 1), 'Zajtra');
-    for (let i = 2; i <= 8 && out.length < 5; i++) {
-      const d = addDays(today, i);
-      if ([5, 6, 0].includes(d.getDay())) push(d, `${cap(fmtWeekday.format(d))} ${d.getDate()}. ${d.getMonth() + 1}.`);
-    }
-    return out.slice(0, 5);
-  }
-
-  function renderQuickDates() {
-    $('#quickDates').innerHTML = quickDateOptions()
-      .map((o) => `<button type="button" class="chip" data-date="${o.iso}" aria-pressed="${state.date === o.iso}">${o.label}</button>`)
-      .join('');
-  }
-
-  function renderCalendar() {
-    const today = startOfToday();
-    const first = new Date(today.getFullYear(), today.getMonth(), 1);
-    const last = addDays(today, CONFIG.maxDaysAhead);
-    const lastMonth = new Date(last.getFullYear(), last.getMonth(), 1);
-    const y = viewMonth.getFullYear(), m = viewMonth.getMonth();
-    const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const lead = (new Date(y, m, 1).getDay() + 6) % 7; // pondelok ako prvý
-    const tISO = todayISO();
-
-    let html = `
-      <div class="cal-head">
-        <button class="cal-nav" type="button" data-cal="-1" aria-label="Predchádzajúci mesiac" ${viewMonth <= first ? 'disabled' : ''}>‹</button>
-        <div class="cal-title" aria-live="polite">${fmtMonth.format(viewMonth)}</div>
-        <button class="cal-nav" type="button" data-cal="1" aria-label="Ďalší mesiac" ${viewMonth >= lastMonth ? 'disabled' : ''}>›</button>
-      </div>
-      <div class="cal-grid">
-        ${['Po', 'Ut', 'St', 'Št', 'Pi', 'So', 'Ne'].map((d) => `<div class="cal-dow" aria-hidden="true">${d}</div>`).join('')}
-        ${'<span></span>'.repeat(lead)}`;
-    for (let day = 1; day <= daysInMonth; day++) {
-      const d = new Date(y, m, day);
-      const iso = toISO(d);
-      const cls = ['cal-day'];
-      if (d.getDay() === 0 || d.getDay() === 6) cls.push('is-weekend');
-      if (iso === tISO) cls.push('is-today');
-      html += `<button type="button" class="${cls.join(' ')}" data-date="${iso}" aria-pressed="${state.date === iso}" aria-label="${fmtLong.format(d)}" ${dayOk(iso) ? '' : 'disabled'}>${day}</button>`;
-    }
-    $('#calendar').innerHTML = `${html}</div>`;
-  }
-
-  datePop.addEventListener('click', (e) => {
-    const nav = e.target.closest('[data-cal]');
-    const day = e.target.closest('[data-date]');
-    if (nav && !nav.disabled) {
-      viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + Number(nav.dataset.cal), 1);
-      renderCalendar();
-    }
-    if (day && !day.disabled) pickDate(day.dataset.date);
-  });
-
-  function pickDate(iso) {
-    if (!dayOk(iso)) return;
-    const hadTime = state.time;
-    state.date = iso;
-    showWhenError('');
-    if (hadTime && !slotOk(iso, hadTime)) showWhenError(`Na dnes je ${hadTime} už neskoro. Vyber si neskorší čas.`);
-    setPop(false);
-    renderWhen();
-    const r = dateField.getBoundingClientRect();
-    if (!reducedMotion) burst(r.left + r.width / 2, r.top + r.height / 2, 6, ['✨', '💗']);
-    if (!state.time) timeSelect.focus({ preventScroll: true });
   }
 
   timeSelect.addEventListener('change', () => {
     state.time = timeSelect.value || null;
     showWhenError('');
     renderWhen();
+    if (state.time === SUNSET_SLOT) {
+      const r = timeSelect.getBoundingClientRect();
+      burst(r.left + r.width / 2, r.top + r.height / 2, 8, ['🌅', '✨', '💗']);
+    }
   });
 
   // ---------------------------------------------------------------- 4: jedlo + odoslanie
@@ -546,11 +462,12 @@
   function mainFields() {
     const f = foodById(state.food);
     return {
-      subject: `💘 Rande potvrdené: ${shortDate(state.date)} o ${state.time}`,
+      subject: `💘 Rande ${CONFIG.placeIn}: ${shortDate(state.date)} o ${state.time}`,
       fields: {
         'Odpoveď': 'ÁNO 💘',
+        'Kde': `${CONFIG.place} 🌴`,
         'Deň': cap(longDate(state.date)),
-        'Čas': state.time,
+        'Čas': state.time + (state.time === SUNSET_SLOT ? ' (západ slnka 🌅)' : ''),
         'Jedlo': `${f.emoji} ${f.name}`,
         'Koľkokrát jej NIE ušlo': String(state.noAttempts),
         'Rozmýšľala': state.thinkMs != null ? formatDuration(state.thinkMs) : '—',
@@ -596,10 +513,10 @@
     const errBox = $('#sendError');
     errBox.hidden = true;
 
-    // Stránka mohla zostať otvorená cez noc: termín musí byť stále v budúcnosti.
+    // Stránka mohla zostať dlho otvorená: vybraný čas musí byť stále v budúcnosti.
     if (!whenOk()) {
       goTo(3);
-      showWhenError('Tento termín už medzitým prešiel. Vyber prosím nový deň alebo čas.');
+      if (!noTimeLeft()) showWhenError('Tento čas už medzitým prešiel. Vyber prosím neskorší.');
       return;
     }
 
@@ -641,6 +558,7 @@
     const stamp = (d) => `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
     return { start: stamp(start), end: stamp(end) };
   }
+  const eventTitle = `Rande ${CONFIG.placeIn} 💘`;
   const eventDetails = () => { const f = foodById(state.food); return `Jedlo: ${f.emoji} ${f.name}\nPrídem po teba 🚗`; };
 
   function renderAgreement() {
@@ -654,7 +572,7 @@
     $('#afterPay').hidden = !state.paid;
 
     const { start, end } = eventTimes();
-    const params = new URLSearchParams({ action: 'TEMPLATE', text: 'Rande 💘', dates: `${start}/${end}`, details: eventDetails(), ctz: CONFIG.timeZone });
+    const params = new URLSearchParams({ action: 'TEMPLATE', text: eventTitle, dates: `${start}/${end}`, details: eventDetails(), location: CONFIG.place, ctz: CONFIG.timeZone });
     $('#gcalLink').href = `https://calendar.google.com/calendar/render?${params}`;
   }
 
@@ -664,7 +582,7 @@
     // Hlavná odpoveď už prišla po výbere jedla; toto je len potvrdenie, že podpísala.
     const f = foodById(state.food);
     sendMail({
-      subject: `✍️ Dohoda o rande™ podpísaná (${shortDate(state.date)} o ${state.time})`,
+      subject: `✍️ Dohoda o rande™ podpísaná (${CONFIG.place}, ${shortDate(state.date)} o ${state.time})`,
       fields: {
         'Stav': 'Zaplatené smiechom a dobrou spoločnosťou 💸',
         'Deň': cap(longDate(state.date)),
@@ -692,7 +610,8 @@
       `DTSTAMP:${utc}`,
       `DTSTART:${start}`,
       `DTEND:${end}`,
-      `SUMMARY:${esc('Rande 💘')}`,
+      `SUMMARY:${esc(eventTitle)}`,
+      `LOCATION:${esc(CONFIG.place)}`,
       `DESCRIPTION:${esc(eventDetails())}`,
       'BEGIN:VALARM', 'TRIGGER:-PT2H', 'ACTION:DISPLAY', `DESCRIPTION:${esc('Rande o 2 hodiny 💘')}`, 'END:VALARM',
       'END:VEVENT', 'END:VCALENDAR',
@@ -776,6 +695,6 @@
 
   // ---------------------------------------------------------------- štart
   if (state.noAttempts > 0) card.style.setProperty('--yes-scale', String(Math.min(1.35, 1 + state.noAttempts * 0.035)));
-  if (!state.submitted && state.date && !dayOk(state.date)) { state.date = null; state.time = null; }
+  $('#q1Lead').textContent = `${cap(whenPhrase(CONFIG.date))}, ${CONFIG.placeIn} 🌴 Buď úprimná, správna odpoveď je jasná.`;
   goTo(state.step || 1, { push: false, focus: false });
 })();

@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#f7e6f0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mám pre teba jednu otázku 💌">
-  <meta property="og:description" content="Veľmi dôležitú. Správna odpoveď je, samozrejme, jasná.">
+  <meta property="og:description" content="Veľmi dôležitú. 15. 10. na Gran Canarii 🌴">
   <meta property="og:image" content="https://mam-pre-teba-otazku.vercel.app/og.png">
   <meta property="og:url" content="https://mam-pre-teba-otazku.vercel.app/">
   <meta property="og:image:width" content="1200">
@@ -53,7 +53,7 @@
       <div class="step is-active" data-step="1">
         <p class="eyebrow"><svg class="ei ei-fill"><use href="#i-heart"/></svg>Veľmi dôležitá otázka</p>
         <h1 class="title" id="q1Title" tabindex="-1">Pôjdeš so mnou na rande?</h1>
-        <p class="lead">Buď úprimná. Správna odpoveď je, samozrejme, jasná.</p>
+        <p class="lead" id="q1Lead">Na Gran Canarii 🌴 Buď úprimná, správna odpoveď je jasná.</p>
         <div class="answer-row">
           <button class="btn btn-yes" id="yesBtn" type="button">
             Áno
@@ -74,23 +74,19 @@
         </div>
       </div>
 
-      <!-- 3 · kedy -->
+      <!-- 3 · o koľkej (deň a miesto sú dané) -->
       <div class="step" data-step="3" hidden>
         <p class="eyebrow"><svg class="ei"><use href="#i-cal"/></svg>Ulož si ten moment</p>
-        <h2 class="title title-md" tabindex="-1">Tak… kedy máš čas?</h2>
-        <p class="lead">Vyber deň a čas, ktorý ti sedí.</p>
+        <h2 class="title title-md" tabindex="-1">Deň už mám. O koľkej?</h2>
+        <p class="lead" id="whenLead">Ty vyber čas, zvyšok nechaj na mňa.</p>
 
         <div class="fields">
           <div class="field-wrap">
-            <span class="field-label" id="dateLabel">Dátum</span>
-            <button class="field" type="button" id="dateField" aria-expanded="false" aria-controls="datePop" aria-labelledby="dateLabel dateValue">
+            <span class="field-label">Kedy a kde</span>
+            <div class="field field-static">
               <svg class="field-icon"><use href="#i-cal"/></svg>
-              <span class="field-value is-empty" id="dateValue">vyber deň</span>
-              <svg class="field-end"><use href="#i-chev"/></svg>
-            </button>
-            <div class="date-pop" id="datePop" hidden>
-              <div class="chips" id="quickDates"></div>
-              <div class="cal" id="calendar"></div>
+              <span class="field-value" id="dateValue"></span>
+              <span class="field-tag">🌴 Gran Canaria</span>
             </div>
           </div>
 
@@ -114,8 +110,8 @@
       <!-- 4 · jedlo (tu sa odosiela e-mail) -->
       <div class="step" data-step="4" hidden>
         <p class="eyebrow"><svg class="ei"><use href="#i-sparkle"/></svg>Prieskum pred rande</p>
-        <h2 class="title title-md" tabindex="-1">Na čo máme chuť? 🍽️✨</h2>
-        <p class="lead">vyber si vibe</p>
+        <h2 class="title title-md" tabindex="-1">Na čo máme chuť? 🍽️🌊</h2>
+        <p class="lead">ostrovná edícia, vyber si vibe 🌴</p>
         <div class="food-grid" id="foods" role="radiogroup" aria-label="Typ jedla"></div>
 
         <div class="send-error" id="sendError" role="alert" hidden>
@@ -151,10 +147,10 @@
             <svg class="ag-heart" aria-hidden="true"><use href="#i-heart"/></svg>
           </div>
           <h2 class="ag-title" tabindex="-1">Dohoda o rande™</h2>
-          <p class="ag-sub">oficiálny a veľmi skutočný dokument</p>
+          <p class="ag-sub">oficiálny a veľmi skutočný dokument · Gran Canaria</p>
           <div class="ag-line">
             <div>
-              <span class="ag-item">Dohoda o rande™</span>
+              <span class="ag-item">Dohoda o rande™ na Gran Canarii 🌴</span>
               <span class="ag-terms">jednorazový poplatok · nevratný · rozhodne to stojí za to</span>
             </div>
             <span class="ag-price">499 €</span>
